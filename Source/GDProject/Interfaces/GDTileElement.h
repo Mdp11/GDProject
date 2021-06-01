@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "UObject/Interface.h"
 #include "GDTileElement.generated.h"
+
+class AGDTile;
 
 UINTERFACE(MinimalAPI)
 class UGDTileElement : public UInterface
@@ -18,7 +21,10 @@ class GDPROJECT_API IGDTileElement
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
-	UObject* GetTile();
+	AGDTile* GetTile();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
+	void SetTile(AGDTile* Tile);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
 	bool CanBeSelected();
