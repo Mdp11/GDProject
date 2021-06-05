@@ -1,27 +1,111 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Tiles/GDTile.h"
+#include "GDTile.h"
+#include "GDTile_Forest.h"
+#include "GDTile_River.h"
 
-// Sets default values
 AGDTile::AGDTile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DummyRoot"));
+	RootComponent = DummyRoot;
 
+	TileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TileMesh"));
+	TileMesh->SetupAttachment(DummyRoot);
+
+
+	bIsActive = false;
 }
 
-// Called when the game starts or when spawned
-void AGDTile::BeginPlay()
+void AGDTile::SetOwningGrid(AGDGrid* Grid)
 {
-	Super::BeginPlay();
-	
+	OwningGrid = Grid;
 }
 
-// Called every frame
-void AGDTile::Tick(float DeltaTime)
+void AGDTile::SetCoordinates(const FIntPoint& NewCoordinates)
 {
-	Super::Tick(DeltaTime);
-
+	Coordinates = NewCoordinates;
 }
 
+void AGDTile::HandleClicked()
+{
+	if (!bIsActive)
+	{
+		if (SelectedMaterial)
+		{
+			TileMesh->SetMaterial(0, SelectedMaterial);
+		}
+	}
+	else
+	{
+		if (SelectedMaterial)
+		{
+			TileMesh->SetMaterial(0, BaseMaterial);
+		}
+	}
+
+	bIsActive = !bIsActive;
+}
+
+void AGDTile::Highlight(const bool bOn) const
+{
+	if (!bIsActive)
+	{
+		if (bOn)
+		{
+			if (HoverMaterial)
+			{
+				TileMesh->SetMaterial(0, HoverMaterial);
+			}
+		}
+		else
+		{
+			if (BaseMaterial)
+			{
+				TileMesh->SetMaterial(0, BaseMaterial);
+			}
+		}
+	}
+}
+
+void AGDTile::AddElement(AActor* NewTileElement)
+{
+	/*
+	if (NewTileElement->GetClass()->ImplementsInterface(UGDTileElement::StaticClass()))
+	{
+		TileElement = NewTileElement;
+	}
+	*/
+}
+
+void AGDTile::ChangeInForest() {
+	TSubclassOf<AGDTile_Forest> TileClass;
+	AGDTile* ClassGetter = NewObject<AGDTile_Forest>(AGDTile_Forest::StaticClass());
+	TileClass = ClassGetter->GetClass();
+	AGDTile* Tile = GetWorld()->SpawnActor<AGDTile_Forest>(TileClass, 
+		this->GetActorLocation(), 
+		FRotator(0, 0, 0));
+	TArray<TArray<AGDTile*>> TilesGrid = this->OwningGrid->GetTilesGrid();
+	int32 X = this->Coordinates.X;
+	int32 Y = this->Coordinates.Y;
+	TilesGrid[X][Y] = Tile;
+	Tile->SetCoordinates({ X, Y });
+	Tile->SetOwningGrid(OwningGrid);
+	GetWorld()->DestroyActor(this);
+}
+
+void AGDTile::ChangeInRiver() {
+	TSubclassOf<AGDTile_River> TileClass;
+	AGDTile* ClassGetter = NewObject<AGDTile_River>(AGDTile_River::StaticClass());
+	TileClass = ClassGetter->GetClass();
+	AGDTile* Tile = GetWorld()->SpawnActor<AGDTile_River>(TileClass,
+		this->GetActorLocation(),
+		FRotator(0, 0, 0));
+	TArray<TArray<AGDTile*>> TilesGrid = this->OwningGrid->GetTilesGrid();
+	int32 X = this->Coordinates.X;
+	int32 Y = this->Coordinates.Y;
+	TilesGrid[X][Y] = Tile;
+	Tile->SetCoordinates({ X, Y });
+	Tile->SetOwningGrid(OwningGrid);
+	GetWorld()->DestroyActor(this);
+}
