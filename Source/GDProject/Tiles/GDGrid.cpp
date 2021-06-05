@@ -12,8 +12,8 @@ AGDGrid::AGDGrid()
 	RootComponent = DummyRoot;
 
 
-	Width = 6;
-	Hight = 6;
+	Width = 20;
+	Hight = 20;
 	BlockSpacing = 100.f;
 	mapGenerated = false;
 
