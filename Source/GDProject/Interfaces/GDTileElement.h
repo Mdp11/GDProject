@@ -31,4 +31,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
 	bool CanMove();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
+	void Select();
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
+	void Deselect();
 };
