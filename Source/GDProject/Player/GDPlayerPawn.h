@@ -56,6 +56,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	AGDUnit* SelectedUnit;
 
 public:
 	virtual void Tick(float DeltaTime) override;

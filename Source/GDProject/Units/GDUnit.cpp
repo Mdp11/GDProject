@@ -39,6 +39,7 @@ AGDUnit::AGDUnit()
 	bIsDead = false;
 
 	bMoveRequested = false;
+	bRotationRequested = false;
 }
 
 void AGDUnit::BeginPlay()
@@ -103,9 +104,56 @@ void AGDUnit::StopMove()
 	if (TargetToAttackAfterMove)
 	{
 		RequestAttack(TargetToAttackAfterMove, false);
+	} else
+	{
+		bRotationRequested = true;
 	}
 
 	UpdateTransparency();
+	OnActionFinished();
+}
+
+void AGDUnit::PerformRotation(float DeltaTime)
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player Controller null"));
+		return;
+	}
+	FVector Start, Dir;
+	PC->DeprojectMousePositionToWorld(Start, Dir);
+	FHitResult HitResult;
+	const FVector End = Start + Dir * 8000.f;
+	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+	FRotator CurrentUnitRotation = GetActorRotation();
+	FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
+	FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
+	this->SetActorRotation(NewRotation);
+}
+
+void AGDUnit::Rotate()
+{
+	bRotationRequested = false;
+	FRotator NewRotation(0, 0, 0);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
+	{
+		SetActorRotation(NewRotation);
+		
+	} else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
+	{
+		NewRotation.Yaw = 90.0f;
+		SetActorRotation(NewRotation);
+	} else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 && GetActorRotation().Yaw > -180))
+	{
+		NewRotation.Yaw = 180.0f;
+		SetActorRotation(NewRotation);
+	} else
+	{
+		NewRotation.Yaw = -90.0f;
+		SetActorRotation(NewRotation);
+	}
 	OnActionFinished();
 }
 
@@ -127,6 +175,10 @@ void AGDUnit::Tick(float DeltaTime)
 	if (bMoveRequested)
 	{
 		PerformMove(DeltaTime);
+	}
+	if (bRotationRequested)
+	{
+		PerformRotation(DeltaTime);
 	}
 }
 
@@ -420,6 +472,11 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 	{
 		OnActionFinished();
 	}
+}
+
+bool AGDUnit::isUnitRotating()
+{
+	return bRotationRequested;
 }
 
 void AGDUnit::HighlightMovementRange()
