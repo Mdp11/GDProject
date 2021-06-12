@@ -38,7 +38,7 @@ void AGDPlayerPawn::ActionFinished(AGDTile* NewCurrentTile)
 
 	if (NewCurrentTile && NewCurrentTile != SelectedTile)
 	{
-		DeselectTile();
+		//DeselectTile();
 		SelectTile(NewCurrentTile);
 	}
 }
@@ -106,12 +106,18 @@ void AGDPlayerPawn::RequestUnitAction()
 	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
 	{
 		bWaitingForActionCompletion = true;
+		SelectedUnit = Unit;
 		Unit->RequestAction(HoveringTile);
 	}
 }
 
 void AGDPlayerPawn::TriggerClick()
 {
+	if (SelectedUnit && SelectedUnit->IsUnitRotating())
+	{
+     	UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
+     	SelectedUnit->Rotate();
+	}
 	if (!bWaitingForActionCompletion)
 	{
 		if (!SelectedTile)
@@ -149,6 +155,13 @@ void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
 
 void AGDPlayerPawn::DeselectTile()
 {
+	if (SelectedUnit && SelectedUnit->IsUnitRotating())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
+		SelectedUnit->Rotate();
+		SelectedUnit = nullptr;
+	
+	}
 	if (!bWaitingForActionCompletion && SelectedTile)
 	{
 		if (SelectedTile->IsOccupied())

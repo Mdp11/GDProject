@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* SelectedTile;
 
+	UPROPERTY()
+	AGDUnit* SelectedUnit;
+
 	TArray<AGDTile*> HighlightedPath;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -55,7 +58,6 @@ protected:
 	AGDTile* GetTileUnderMouse() const;
 
 	virtual void BeginPlay() override;
-
 
 public:
 	virtual void Tick(float DeltaTime) override;

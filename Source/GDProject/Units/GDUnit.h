@@ -66,6 +66,9 @@ protected:
 	bool bMoveRequested;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bRotationRequested;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bIsWalking;
 
 	UPROPERTY(EditDefaultsOnly, Category="Special")
@@ -106,7 +109,9 @@ protected:
 	void PerformMove(float DeltaTime);
 
 	void StopMove();
-
+	
+	void PerformRotation(float DeltaTime);
+	
 	void DecreaseActionPointsBy(const int Value);
 
 	UFUNCTION(BlueprintCallable)
@@ -161,6 +166,9 @@ public:
 
 	void RequestAction(AGDTile* TargetTile);
 
+	bool IsUnitRotating();
+
+	void Rotate();
 private:
 	float CriticalChanceAdjuster;
 
