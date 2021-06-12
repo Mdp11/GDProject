@@ -166,7 +166,7 @@ public:
 
 	void RequestAction(AGDTile* TargetTile);
 
-	bool isUnitRotating();
+	bool IsUnitRotating();
 
 	void Rotate();
 private:

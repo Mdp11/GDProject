@@ -113,13 +113,10 @@ void AGDPlayerPawn::RequestUnitAction()
 
 void AGDPlayerPawn::TriggerClick()
 {
-	if (SelectedUnit)
+	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-     	if (SelectedUnit->isUnitRotating())
-     	{
-     		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
-     		SelectedUnit->Rotate();
-     	}
+     	UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
+     	SelectedUnit->Rotate();
 	}
 	if (!bWaitingForActionCompletion)
 	{
@@ -158,15 +155,12 @@ void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
 
 void AGDPlayerPawn::DeselectTile()
 {
-	if (SelectedUnit)
+	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AAA"));
-		if (SelectedUnit->isUnitRotating())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
-			SelectedUnit->Rotate();
-			SelectedUnit = nullptr;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
+		SelectedUnit->Rotate();
+		SelectedUnit = nullptr;
+	
 	}
 	if (!bWaitingForActionCompletion && SelectedTile)
 	{

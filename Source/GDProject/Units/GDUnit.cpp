@@ -474,7 +474,7 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 	}
 }
 
-bool AGDUnit::isUnitRotating()
+bool AGDUnit::IsUnitRotating()
 {
 	return bRotationRequested;
 }
