@@ -164,12 +164,17 @@ void AGDUnit::Rotate()
 
 bool AGDUnit::IsEnemy(AGDUnit* OtherUnit) const
 {
-	return Team != OtherUnit->Team;
+	return OwningPlayer != OtherUnit->OwningPlayer;
 }
 
-void AGDUnit::SetTeam(const int NewTeam)
+void AGDUnit::SetOwningPlayer(const int NewOwningPlayer)
 {
-	Team = NewTeam;
+	OwningPlayer = NewOwningPlayer;
+}
+
+bool AGDUnit::IsOwnedByPlayer(const int Player) const
+{
+	return Player == OwningPlayer;
 }
 
 void AGDUnit::OnTurnBegin()
@@ -289,6 +294,8 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 	{
 		bAttackPerformed = true;
 
+		LastAttackedEnemy = Enemy;
+
 		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Enemy->GetActorLocation()));
 
 		if (!bIgnoreActionPoints)
@@ -310,15 +317,19 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 		{
 			float Damage = BaseDamage + CurrentTile->GetAttackModifier();
 
+			UAnimMontage* AttackAnimation;
+
 			const bool CriticalHit = FMath::FRandRange(0.f, 100.f) <= CriticalChance + CurrentTile->
 				GetCriticalChanceModifier() + CriticalChanceAdjuster;
 			if (!CriticalHit)
 			{
+				AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
 				CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
+				AttackAnimation = CriticalAttackAnimation;
 				CriticalChanceAdjuster = 0.f;
 				Damage *= CriticalDamageMultiplier;
 			}
@@ -327,12 +338,8 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 
 			Enemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
 
-			AttackAnimationDuration += FMath::RandBool()
-				                           ? PlayAnimMontage(AttackAnimation)
-				                           : PlayAnimMontage(AlternativeAttackAnimation);
+			AttackAnimationDuration += PlayAnimMontage(AttackAnimation);
 		}
-
-		LastAttackedEnemy = Enemy;
 
 		if (!bIgnoreActionPoints)
 		{

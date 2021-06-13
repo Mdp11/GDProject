@@ -17,6 +17,8 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Special")
 	float DefenceBonus;
+	
+	float BaseDefence;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInGuard;

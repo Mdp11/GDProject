@@ -4,7 +4,6 @@
 #include "GDGrid.h"
 
 #include "GDTile.h"
-#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Units/GDUnit.h"
 
 AGDGrid::AGDGrid()

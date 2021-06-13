@@ -83,6 +83,11 @@ void AGDProjectGameModeBase::GameOver(int WinningPlayer)
 	OnGameOver(WinningPlayer);
 }
 
+int AGDProjectGameModeBase::GetCurrentPlayerTurn() const
+{
+	return CurrentPlayerTurn;
+}
+
 void AGDProjectGameModeBase::SetupGame()
 {
 	CurrentPlayerTurn = 0;
@@ -98,6 +103,6 @@ void AGDProjectGameModeBase::SetupGame()
 void AGDProjectGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SetupGame();
 }

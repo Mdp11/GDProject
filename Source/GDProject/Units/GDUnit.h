@@ -75,10 +75,13 @@ protected:
 	TSubclassOf<UUserWidget> SpecialWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
-	UAnimMontage* AttackAnimation;
+	UAnimMontage* BaseAttackAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* AlternativeAttackAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* CriticalAttackAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* MissAnimation;
@@ -92,7 +95,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AGDUnit* LastAttackedEnemy;
 
-	int Team;
+	int OwningPlayer;
 
 	virtual void BeginPlay() override;
 
@@ -175,7 +178,9 @@ public:
 	bool IsEnemy(AGDUnit* OtherUnit) const;
 
 	UFUNCTION(BlueprintCallable)
-	void SetTeam(int NewTeam);
+	void SetOwningPlayer(int NewOwningPlayer);
+
+	bool IsOwnedByPlayer(int Player) const; 
 
 	void OnTurnBegin();
 	

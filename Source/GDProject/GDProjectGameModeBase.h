@@ -15,7 +15,25 @@ class GDPROJECT_API AGDProjectGameModeBase : public AGameModeBase
 
 public:
 	AGDProjectGameModeBase();
-	
+
+protected:
+	TMap<int, TSet<AGDUnit*>> PlayersUnits;
+
+	TMap<int, bool> Players;
+
+	UPROPERTY(BlueprintReadOnly)
+	int CurrentPlayerTurn;
+
+	int NumPlayers;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnGameOver(int WinningPlayer);
+
+	void SetupGame();
+
+	virtual void BeginPlay() override;
+
+public:
 	void SetNextPlayerTurn();
 
 	UFUNCTION(BlueprintCallable)
@@ -32,20 +50,5 @@ public:
 
 	void GameOver(int WinningPlayer);
 
-protected:
-	TMap<int, TSet<AGDUnit*>> PlayersUnits;
-	
-	TMap<int, bool> Players;
-
-	UPROPERTY(BlueprintReadOnly)
-	int CurrentPlayerTurn;
-
-	int NumPlayers;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnGameOver(int WinningPlayer);
-
-	void SetupGame();
-	
-	virtual void BeginPlay() override;
+	int GetCurrentPlayerTurn() const;
 };

@@ -29,10 +29,12 @@ void AGDWarrior::UseSpecial()
 void AGDWarrior::RemoveSpecial()
 {
 	bIsInGuard = false;
-	Defence -= DefenceBonus;
+	Defence = BaseDefence;
 }
 
 void AGDWarrior::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BaseDefence = Defence;
 }
