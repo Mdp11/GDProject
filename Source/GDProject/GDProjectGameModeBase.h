@@ -25,6 +25,7 @@ public:
 
 	void OnTurnEnd();
 
+	UFUNCTION(BlueprintCallable)
 	void AssignUnitToPlayer(AGDUnit* Unit, int Player);
 
 	void OnUnitDead(AGDUnit* Unit, int Player);
