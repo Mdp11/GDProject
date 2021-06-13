@@ -104,7 +104,8 @@ void AGDUnit::StopMove()
 	if (TargetToAttackAfterMove)
 	{
 		RequestAttack(TargetToAttackAfterMove, false);
-	} else
+	}
+	else
 	{
 		bRotationRequested = true;
 	}
@@ -136,25 +137,49 @@ void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange,
+	                                 FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
 		SetActorRotation(NewRotation);
-		
-	} else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
+	}
+	else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
 	{
 		NewRotation.Yaw = 90.0f;
 		SetActorRotation(NewRotation);
-	} else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 && GetActorRotation().Yaw > -180))
+	}
+	else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 &&
+		GetActorRotation().Yaw > -180))
 	{
 		NewRotation.Yaw = 180.0f;
 		SetActorRotation(NewRotation);
-	} else
+	}
+	else
 	{
 		NewRotation.Yaw = -90.0f;
 		SetActorRotation(NewRotation);
 	}
 	OnActionFinished();
+}
+
+bool AGDUnit::IsEnemy(AGDUnit* OtherUnit) const
+{
+	return Team != OtherUnit->Team;
+}
+
+void AGDUnit::SetTeam(const int NewTeam)
+{
+	Team = NewTeam;
+}
+
+void AGDUnit::OnTurnBegin()
+{
+	CurrentActionPoints = MaxActionPoints;
+	RemoveSpecial();
+}
+
+void AGDUnit::OnTurnEnd()
+{
 }
 
 void AGDUnit::DecreaseActionPointsBy(const int Value)

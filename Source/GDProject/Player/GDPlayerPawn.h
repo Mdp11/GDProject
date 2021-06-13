@@ -65,4 +65,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void ActionFinished(AGDTile* NewCurrentTile);
+
+	void OnTurnBegin();
+
+	void OnTurnEnd();
 };

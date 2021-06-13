@@ -4,6 +4,7 @@
 #include "GDGrid.h"
 
 #include "GDTile.h"
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Units/GDUnit.h"
 
 AGDGrid::AGDGrid()
@@ -33,28 +34,11 @@ void AGDGrid::BeginPlay()
 	TileScheme.Init(TileMapRow, Height);
 
 	BuildMap(TileScheme);
-
-	//TODO: Remove - Placeholder to have units available
-	for (auto& Tile : Tiles[0])
-	{
-		if (Tile)
-		{
-			FVector UnitLocation = Tile->GetActorLocation();
-			UnitLocation.Z += 100.f;
-			FActorSpawnParameters SpawnParameters;
-			SpawnParameters.SpawnCollisionHandlingOverride =
-				ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			AGDUnit* NewUnit = GetWorld()->SpawnActor<AGDUnit>(TileUnitClassDummy, UnitLocation,
-			                                                   FRotator(0, 0, 0), SpawnParameters);
-			IGDTileElement::Execute_SetTile(NewUnit, Tile);
-		}
-	}
 }
 
 void AGDGrid::BuildMap(const TArray<TArray<int>>& TileScheme)
 {
 	const int32 NumBlocks = Width * Height;
-
 
 	TArray<AGDTile*> SampleRow;
 	SampleRow.Init(nullptr, Width);

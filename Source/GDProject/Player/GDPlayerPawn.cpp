@@ -43,6 +43,15 @@ void AGDPlayerPawn::ActionFinished(AGDTile* NewCurrentTile)
 	}
 }
 
+void AGDPlayerPawn::OnTurnBegin()
+{
+}
+
+void AGDPlayerPawn::OnTurnEnd()
+{
+	DeselectTile();
+}
+
 void AGDPlayerPawn::HandleTilesHovering()
 {
 	AGDTile* TargetTile = GetTileUnderMouse();

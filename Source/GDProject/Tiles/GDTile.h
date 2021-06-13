@@ -76,7 +76,6 @@ public:
 
 	void SetTileElement(UObject* NewTileElement);
 
-public:
 	UFUNCTION(CallInEditor, Category = "Tile Type")
 	void ChangeInForest();
 
@@ -94,12 +93,14 @@ public:
 
 	bool IsTraversable() const;
 
+	UFUNCTION(BlueprintCallable)
 	FIntPoint GetCoordinates() const;
 
 	int GetDistanceFrom(AGDTile* TargetTile) const;
 
 	TArray<AGDTile*> GetTraversableNeighbours() const;
 
+	UFUNCTION(BlueprintCallable)
 	AGDGrid* GetGrid() const;
 
 	void ApplyMovementRangeInfoDecal(bool bShort) const;

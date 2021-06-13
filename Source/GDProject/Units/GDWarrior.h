@@ -23,7 +23,7 @@ protected:
 
 	virtual void UseSpecial() override;
 
-	virtual void RemoveGuard();
+	virtual void RemoveSpecial() override;
 
 	virtual void BeginPlay() override;
 };

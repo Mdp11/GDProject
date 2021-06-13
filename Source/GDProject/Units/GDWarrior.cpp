@@ -26,7 +26,7 @@ void AGDWarrior::UseSpecial()
 	}
 }
 
-void AGDWarrior::RemoveGuard()
+void AGDWarrior::RemoveSpecial()
 {
 	bIsInGuard = false;
 	Defence -= DefenceBonus;

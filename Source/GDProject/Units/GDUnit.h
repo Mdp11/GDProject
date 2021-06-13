@@ -92,6 +92,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AGDUnit* LastAttackedEnemy;
 
+	int Team;
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -169,6 +171,16 @@ public:
 	bool IsUnitRotating();
 
 	void Rotate();
+
+	bool IsEnemy(AGDUnit* OtherUnit) const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetTeam(int NewTeam);
+
+	void OnTurnBegin();
+	
+	void OnTurnEnd();
+	
 private:
 	float CriticalChanceAdjuster;
 
