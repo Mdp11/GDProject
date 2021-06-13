@@ -37,6 +37,7 @@ protected:
 	
 	TMap<int, bool> Players;
 
+	UPROPERTY(BlueprintReadOnly)
 	int CurrentPlayerTurn;
 
 	int NumPlayers;

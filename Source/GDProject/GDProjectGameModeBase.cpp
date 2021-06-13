@@ -97,5 +97,7 @@ void AGDProjectGameModeBase::SetupGame()
 
 void AGDProjectGameModeBase::BeginPlay()
 {
+	Super::BeginPlay();
+	
 	SetupGame();
 }
