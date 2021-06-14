@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Units/GDUnit.h"
 
 #include "GDProjectGameModeBase.generated.h"
+
+class AGDUnit;
 
 UCLASS()
 class GDPROJECT_API AGDProjectGameModeBase : public AGameModeBase

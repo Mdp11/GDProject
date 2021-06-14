@@ -5,6 +5,7 @@
 
 #include "Controllers/GDPlayerController.h"
 #include "Player/GDPlayerPawn.h"
+#include "GDProject/Units/GDUnit.h"
 
 AGDProjectGameModeBase::AGDProjectGameModeBase()
 {

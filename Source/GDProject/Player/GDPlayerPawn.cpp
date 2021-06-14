@@ -6,7 +6,6 @@
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
 #include "GDProject/GDProjectGameModeBase.h"
-#include "GDProject/Tiles/GDGrid.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 

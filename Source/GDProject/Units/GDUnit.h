@@ -71,9 +71,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsWalking;
 
-	UPROPERTY(EditDefaultsOnly, Category="Special")
-	TSubclassOf<UUserWidget> SpecialWidgetClass;
-
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* BaseAttackAnimation;
 

@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 
 #include "GameFramework/Actor.h"
-#include "GDProject/Units/GDUnit.h"
 
 #include "GDTile.generated.h"
 
 class AGDGrid;
+class AGDUnit;
 
 UCLASS()
 class GDPROJECT_API AGDTile : public AActor

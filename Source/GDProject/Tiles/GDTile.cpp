@@ -6,8 +6,8 @@
 #include "GDGrid.h"
 #include "GDTileForest.h"
 #include "GDTileRiver.h"
-#include "GDProject/Interfaces/GDTileElement.h"
 #include "Components/DecalComponent.h"
+#include "GDProject/Units/GDUnit.h"
 
 AGDTile::AGDTile()
 {

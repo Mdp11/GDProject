@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "GDProject/Interfaces/GDTileElement.h"
-#include "GDProject/Units/GDUnit.h"
 
 #include "GDPlayerPawn.generated.h"
 
 class AGDTile;
+class AGDUnit;
 
 UCLASS()
 class GDPROJECT_API AGDPlayerPawn : public APawn
