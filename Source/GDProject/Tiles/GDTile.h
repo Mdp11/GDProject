@@ -11,6 +11,13 @@
 class AGDGrid;
 class AGDUnit;
 
+enum class EHighlightInfo
+{
+	Default,
+	Enemy,
+	Ally
+};
+
 UCLASS()
 class GDPROJECT_API AGDTile : public AActor
 {
@@ -73,7 +80,9 @@ public:
 
 	void Deselect();
 
-	void Highlight(bool bOn) const;
+	void Highlight(const EHighlightInfo& HighlightInfo) const;
+
+	void RemoveHighlight() const;
 
 	void SetTileElement(UObject* NewTileElement);
 
@@ -84,10 +93,6 @@ public:
 	void ChangeInRiver();
 
 	void SetCoordinates(const FIntPoint& NewCoordinates);
-
-	void HighlightEnemyTarget(bool bOn) const;
-
-	void HighlighAllyTarget(bool bOn) const;
 
 	UFUNCTION(BlueprintCallable)
 	UObject* GetTileElement() const;

@@ -67,65 +67,47 @@ void AGDTile::Deselect()
 {
 	if (bIsActive)
 	{
-		SelectionDecalComponent->SetHiddenInGame(true);
 		bIsActive = false;
+		RemoveHighlight();
 	}
 }
 
-void AGDTile::Highlight(const bool bOn) const
+void AGDTile::Highlight(const EHighlightInfo& HighlightInfo) const
 {
 	if (!bIsActive)
 	{
-		if (bOn)
+		switch (HighlightInfo)
 		{
+		case EHighlightInfo::Default:
 			if (OwningGrid->HoverDecalMaterial)
 			{
 				SelectionDecalComponent->SetMaterial(0, OwningGrid->HoverDecalMaterial);
-				SelectionDecalComponent->SetHiddenInGame(false);
 			}
-		}
-		else
-		{
-			SelectionDecalComponent->SetHiddenInGame(true);
-		}
-	}
-}
+			break;
 
-void AGDTile::HighlightEnemyTarget(const bool bOn) const
-{
-	if (!bIsActive)
-	{
-		if (bOn)
-		{
+		case EHighlightInfo::Ally:
+			if (OwningGrid->SelectedDecalMaterial)
+			{
+				SelectionDecalComponent->SetMaterial(0, OwningGrid->SelectedDecalMaterial);
+			}
+			break;
+
+		case EHighlightInfo::Enemy:
 			if (OwningGrid->TargetedEnemyDecalMaterial)
 			{
 				SelectionDecalComponent->SetMaterial(0, OwningGrid->TargetedEnemyDecalMaterial);
-				SelectionDecalComponent->SetHiddenInGame(false);
 			}
 		}
-		else
-		{
-			SelectionDecalComponent->SetHiddenInGame(true);
-		}
+
+		SelectionDecalComponent->SetHiddenInGame(false);
 	}
 }
 
-void AGDTile::HighlighAllyTarget(const bool bOn) const
+void AGDTile::RemoveHighlight() const
 {
-	if (!bIsActive)
+	if(!bIsActive)
 	{
-		if (bOn)
-		{
-			if (OwningGrid->TargetedEnemyDecalMaterial)
-			{
-				SelectionDecalComponent->SetMaterial(0, OwningGrid->SelectedDecalMaterial);
-				SelectionDecalComponent->SetHiddenInGame(false);
-			}
-		}
-		else
-		{
-			SelectionDecalComponent->SetHiddenInGame(true);
-		}
+		SelectionDecalComponent->SetHiddenInGame(true);
 	}
 }
 
@@ -153,7 +135,7 @@ bool AGDTile::IsOccupied() const
 
 bool AGDTile::IsOccupiedByEnemy(AGDUnit* OtherUnit) const
 {
-	if(AGDUnit* Unit = Cast<AGDUnit>(TileElement))
+	if (AGDUnit* Unit = Cast<AGDUnit>(TileElement))
 	{
 		return OtherUnit->IsEnemy(Unit);
 	}

@@ -107,27 +107,28 @@ void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 {
 	if (HoveringTile)
 	{
-		HoveringTile->Highlight(false);
+		HoveringTile->RemoveHighlight();
 	}
 
 	if (NewHoveringTile)
 	{
+		EHighlightInfo HighlightInfo = EHighlightInfo::Default;
+		
 		AGDUnit* HoveringUnit = Cast<AGDUnit>(NewHoveringTile->GetTileElement());
 		if (HoveringUnit)
 		{
 			if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
 			{
-				NewHoveringTile->HighlighAllyTarget(true);
+				HighlightInfo = EHighlightInfo::Ally;
 			}
 			else
 			{
-				NewHoveringTile->HighlightEnemyTarget(true);
+				HighlightInfo = EHighlightInfo::Enemy;
 			}
 		}
-		else
-		{
-			NewHoveringTile->Highlight(true);
-		}
+
+		NewHoveringTile->Highlight(HighlightInfo);
+		
 	}
 
 	HoveringTile = NewHoveringTile;

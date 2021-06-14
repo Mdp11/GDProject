@@ -409,13 +409,13 @@ void AGDUnit::ResetHighlightedActionTiles()
 {
 	if (HighlightedEnemyTile)
 	{
-		HighlightedEnemyTile->HighlightEnemyTarget(false);
+		HighlightedEnemyTile->RemoveHighlight();
 		HighlightedEnemyTile = nullptr;
 	}
 
 	for (const auto& Tile : MovementPath)
 	{
-		Tile->Highlight(false);
+		Tile->RemoveHighlight();
 	}
 }
 
@@ -463,7 +463,7 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 			MovementPath = MoveTemp(NewMovementPath);
 			for (const auto& Tile : MovementPath)
 			{
-				Tile->Highlight(true);
+				Tile->Highlight(EHighlightInfo::Default);
 			}
 		}
 		else
@@ -484,7 +484,7 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 		if (TargetTile->IsOccupiedByEnemy(this))
 		{
 			HighlightedEnemyTile = TargetTile;
-			HighlightedEnemyTile->HighlightEnemyTarget(true);
+			HighlightedEnemyTile->Highlight(EHighlightInfo::Default);
 
 			StopAtDistance = AttackRange;
 		}
