@@ -5,6 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Tiles/GDGrid.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
@@ -115,7 +116,6 @@ void AGDPlayerPawn::RequestUnitAction()
 	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
 	{
 		bWaitingForActionCompletion = true;
-		SelectedUnit = Unit;
 		Unit->RequestAction(HoveringTile);
 	}
 }
@@ -124,8 +124,8 @@ void AGDPlayerPawn::TriggerClick()
 {
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-     	UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
-     	SelectedUnit->Rotate();
+		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
+		SelectedUnit->Rotate();
 	}
 	if (!bWaitingForActionCompletion)
 	{
@@ -150,14 +150,23 @@ void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
 
 	if (TileToSelect && TileToSelect->IsOccupied())
 	{
-		SelectedTile = TileToSelect;
-		SelectedTile->Select();
-
-		IGDTileElement::Execute_Select(TileToSelect->GetTileElement());
-
-		if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
+		if (AGDUnit* Unit = Cast<AGDUnit>(TileToSelect->GetTileElement()))
 		{
-			UnitActionsWidget->AddToViewport();
+			if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+			{
+				if (Unit->IsOwnedByPlayer(GM->GetCurrentPlayerTurn()))
+				{
+					SelectedTile = TileToSelect;
+					SelectedTile->Select();
+					
+					IGDTileElement::Execute_Select(Unit);
+					SelectedUnit = Unit;
+					if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
+					{
+						UnitActionsWidget->AddToViewport();
+					}
+				}
+			}
 		}
 	}
 }
@@ -169,7 +178,6 @@ void AGDPlayerPawn::DeselectTile()
 		UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
 		SelectedUnit->Rotate();
 		SelectedUnit = nullptr;
-	
 	}
 	if (!bWaitingForActionCompletion && SelectedTile)
 	{

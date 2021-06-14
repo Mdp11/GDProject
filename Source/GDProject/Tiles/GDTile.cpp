@@ -132,6 +132,16 @@ bool AGDTile::IsOccupied() const
 	return TileElement != nullptr;
 }
 
+bool AGDTile::IsOccupiedByEnemy(AGDUnit* OtherUnit) const
+{
+	if(AGDUnit* Unit = Cast<AGDUnit>(TileElement))
+	{
+		return OtherUnit->IsEnemy(Unit);
+	}
+
+	return false;
+}
+
 bool AGDTile::IsTraversable() const
 {
 	return bIsTraversable;

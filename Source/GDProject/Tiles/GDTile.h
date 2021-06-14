@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "GameFramework/Actor.h"
+#include "GDProject/Units/GDUnit.h"
 
 #include "GDTile.generated.h"
 
@@ -90,6 +91,8 @@ public:
 	UObject* GetTileElement() const;
 
 	bool IsOccupied() const;
+
+	bool IsOccupiedByEnemy(AGDUnit* OtherUnit) const;
 
 	bool IsTraversable() const;
 

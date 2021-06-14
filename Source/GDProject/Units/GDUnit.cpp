@@ -420,7 +420,8 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 	{
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
 
-		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupied() && CurrentActionPoints > 1 && NewMovementPath.
+		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupiedByEnemy(this) && CurrentActionPoints > 1 &&
+			NewMovementPath.
 			Num() <= GetMovementRange();
 
 		const bool bCanReachEmptyTile = !TargetTile->IsOccupied() &&
@@ -449,7 +450,7 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 	{
 		float StopAtDistance = 0;
 
-		if (TargetTile->IsOccupied())
+		if (TargetTile->IsOccupiedByEnemy(this))
 		{
 			HighlightedEnemyTile = TargetTile;
 			HighlightedEnemyTile->HighlightTargetEnemy(true);
@@ -485,13 +486,16 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 		}
 		else if (AGDUnit* TargetUnit = Cast<AGDUnit>(TargetTile->GetTileElement()))
 		{
-			if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+			if (IsEnemy(TargetUnit))
 			{
-				bActionPerformed = RequestAttack(TargetUnit);
-			}
-			else
-			{
-				bActionPerformed = RequestMoveAndAttack(TargetUnit);
+				if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+				{
+					bActionPerformed = RequestAttack(TargetUnit);
+				}
+				else
+				{
+					bActionPerformed = RequestMoveAndAttack(TargetUnit);
+				}
 			}
 		}
 	}
@@ -552,7 +556,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 		for (auto& Tile : TilesInAttackRange)
 		{
-			if (Tile->IsOccupied())
+			if (Tile->IsOccupiedByEnemy(this))
 			{
 				Tile->ApplyEnemyInfoDecal();
 				HighlightedTilesInRange.Emplace(MoveTemp(Tile));
