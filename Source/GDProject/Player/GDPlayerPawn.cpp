@@ -13,8 +13,6 @@ AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
-	bWaitingForActionCompletion = false;
 }
 
 void AGDPlayerPawn::Tick(float DeltaTime)
@@ -32,17 +30,6 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::DeselectTile);
 }
 
-void AGDPlayerPawn::ActionFinished(AGDTile* NewCurrentTile)
-{
-	bWaitingForActionCompletion = false;
-
-	if (NewCurrentTile && NewCurrentTile != SelectedTile)
-	{
-		//DeselectTile();
-		SelectTile(NewCurrentTile);
-	}
-}
-
 void AGDPlayerPawn::OnTurnBegin()
 {
 }
@@ -50,6 +37,16 @@ void AGDPlayerPawn::OnTurnBegin()
 void AGDPlayerPawn::OnTurnEnd()
 {
 	DeselectTile();
+}
+
+void AGDPlayerPawn::AddActiveUnit(AGDUnit* Unit)
+{
+	ActiveUnits.Add(Unit);
+}
+
+void AGDPlayerPawn::RemoveActiveUnit(AGDUnit* Unit)
+{
+	ActiveUnits.Remove(Unit);
 }
 
 void AGDPlayerPawn::HandleTilesHovering()
@@ -60,7 +57,7 @@ void AGDPlayerPawn::HandleTilesHovering()
 	{
 		UpdateHoveringTile(TargetTile);
 
-		if (SelectedTile && !bWaitingForActionCompletion)
+		if (SelectedTile && ActiveUnits.Num() == 0)
 		{
 			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
 			{
@@ -110,11 +107,10 @@ void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 	HoveringTile = NewHoveringTile;
 }
 
-void AGDPlayerPawn::RequestUnitAction()
+void AGDPlayerPawn::RequestUnitAction() const
 {
 	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
 	{
-		bWaitingForActionCompletion = true;
 		Unit->RequestAction(HoveringTile);
 	}
 }
@@ -126,7 +122,7 @@ void AGDPlayerPawn::TriggerClick()
 		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
 		SelectedUnit->Rotate();
 	}
-	if (!bWaitingForActionCompletion)
+	if (ActiveUnits.Num() == 0)
 	{
 		if (!SelectedTile)
 		{
@@ -178,7 +174,7 @@ void AGDPlayerPawn::DeselectTile()
 		SelectedUnit->Rotate();
 		SelectedUnit = nullptr;
 	}
-	if (!bWaitingForActionCompletion && SelectedTile)
+	if (ActiveUnits.Num() == 0 && SelectedTile)
 	{
 		if (SelectedTile->IsOccupied())
 		{

@@ -33,14 +33,14 @@ protected:
 
 	TArray<AGDTile*> HighlightedPath;
 
-	UPROPERTY(BlueprintReadWrite)
-	bool bWaitingForActionCompletion;
-
 	UPROPERTY(EditDefaultsOnly, Category="Widgets")
 	TSubclassOf<UUserWidget> UnitActionsWidgetClass;
 
 	UPROPERTY()
 	UUserWidget* UnitActionsWidget;
+
+	UPROPERTY()
+	TSet<AGDUnit*> ActiveUnits;
 
 	void SelectTile(AGDTile* TargetTile = nullptr);
 
@@ -53,7 +53,7 @@ protected:
 
 	void UpdateHoveringTile(AGDTile* NewHoveringTile);
 
-	void RequestUnitAction();
+	void RequestUnitAction() const;
 
 	AGDTile* GetTileUnderMouse() const;
 
@@ -64,9 +64,11 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void ActionFinished(AGDTile* NewCurrentTile);
-
 	void OnTurnBegin();
 
 	void OnTurnEnd();
+
+	void AddActiveUnit(AGDUnit* Unit);
+
+	void RemoveActiveUnit(AGDUnit* Unit);
 };

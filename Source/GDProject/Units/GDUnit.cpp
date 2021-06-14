@@ -194,6 +194,7 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 
 void AGDUnit::Powerup()
 {
+	AddToActiveUnits();
 	float PowerupAnimationDuration = PlayAnimMontage(PowerupAnimation) + 0.01f;
 
 	FTimerHandle TimerHandle_Powerup;
@@ -264,6 +265,8 @@ bool AGDUnit::RequestMove()
 
 	bMoveRequested = true;
 
+	AddToActiveUnits();
+
 	bIsWalking = MovementPath.Num() <= 2;
 
 	CurrentTile->Deselect();
@@ -292,6 +295,8 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 
 	if (Enemy && (bIgnoreActionPoints || CurrentActionPoints > 0))
 	{
+		AddToActiveUnits();
+
 		bAttackPerformed = true;
 
 		LastAttackedEnemy = Enemy;
@@ -341,12 +346,10 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 			AttackAnimationDuration += PlayAnimMontage(AttackAnimation);
 		}
 
-		if (!bIgnoreActionPoints)
-		{
-			FTimerHandle TimerHandle_AttackOver;
-			GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
-			                                AttackAnimationDuration);
-		}
+
+		FTimerHandle TimerHandle_AttackOver;
+		GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
+		                                AttackAnimationDuration);
 
 
 		UpdateTransparency();
@@ -409,6 +412,22 @@ void AGDUnit::ResetAllHighlightedTiles()
 	ResetHighlightedTilesInRange();
 
 	ResetHighlightedActionTiles();
+}
+
+void AGDUnit::AddToActiveUnits()
+{
+	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+	{
+		PlayerPawn->AddActiveUnit(this);
+	}
+}
+
+void AGDUnit::RemoveFromActiveUnits()
+{
+	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+	{
+		PlayerPawn->RemoveActiveUnit(this);
+	}
 }
 
 
@@ -504,10 +523,6 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 	{
 		ResetAllHighlightedTiles();
 	}
-	else
-	{
-		OnActionFinished();
-	}
 }
 
 bool AGDUnit::IsUnitRotating()
@@ -567,12 +582,6 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 void AGDUnit::OnActionFinished()
 {
+	RemoveFromActiveUnits();
 	TargetToAttackAfterMove = nullptr;
-
-	AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
-
-	if (PlayerPawn)
-	{
-		PlayerPawn->ActionFinished(CurrentTile);
-	}
 }

@@ -149,6 +149,10 @@ protected:
 
 	void ResetAllHighlightedTiles();
 
+	void AddToActiveUnits();
+
+	void RemoveFromActiveUnits();
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
