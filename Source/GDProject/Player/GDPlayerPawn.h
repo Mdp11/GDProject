@@ -19,8 +19,6 @@ class GDPROJECT_API AGDPlayerPawn : public APawn
 public:
 	AGDPlayerPawn();
 
-	void HandleTilesHovering();
-
 protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;
@@ -39,21 +37,6 @@ protected:
 	UPROPERTY()
 	TSet<AGDUnit*> ActiveUnits;
 
-	void SelectTileElement();
-
-	UFUNCTION(BlueprintCallable)
-	void DeselectTile();
-
-	void TriggerClick();
-
-	AGDTile* TraceForTile(const FVector& Start, const FVector& End, bool bDrawDebugHelpers) const;
-
-	void UpdateHoveringTile(AGDTile* NewHoveringTile);
-
-	void RequestUnitAction() const;
-
-	AGDTile* GetTileUnderMouse() const;
-
 	virtual void BeginPlay() override;
 
 public:
@@ -70,5 +53,25 @@ public:
 	void RemoveActiveUnit(AGDUnit* Unit);
 
 private:
+
+	void HandleTilesHovering();
+
+	AGDTile* GetTileUnderMouse() const;
+
+	AGDTile* TraceForTile(const FVector& Start, const FVector& End, bool bDrawDebugHelpers) const;
+
+	void UpdateHoveringTile(AGDTile* NewHoveringTile);
+
+	void HighlightHoveringTile() const;
+
+	void TriggerClick();
+
+	void SelectTileElement();
+
+	UFUNCTION(BlueprintCallable)
+	void DeselectTileElement();
+
+	void RequestUnitAction() const;
+	
 	int GetCurrentPlayerTurn() const;
 };

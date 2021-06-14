@@ -27,7 +27,7 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::TriggerClick);
-	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::DeselectTile);
+	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::DeselectTileElement);
 }
 
 void AGDPlayerPawn::OnTurnBegin()
@@ -36,7 +36,7 @@ void AGDPlayerPawn::OnTurnBegin()
 
 void AGDPlayerPawn::OnTurnEnd()
 {
-	DeselectTile();
+	DeselectTileElement();
 }
 
 void AGDPlayerPawn::AddActiveUnit(AGDUnit* Unit)
@@ -103,18 +103,13 @@ void AGDPlayerPawn::BeginPlay()
 	}
 }
 
-void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
+void AGDPlayerPawn::HighlightHoveringTile() const
 {
 	if (HoveringTile)
 	{
-		HoveringTile->RemoveHighlight();
-	}
-
-	if (NewHoveringTile)
-	{
 		EHighlightInfo HighlightInfo = EHighlightInfo::Default;
-		
-		AGDUnit* HoveringUnit = Cast<AGDUnit>(NewHoveringTile->GetTileElement());
+
+		AGDUnit* HoveringUnit = Cast<AGDUnit>(HoveringTile->GetTileElement());
 		if (HoveringUnit)
 		{
 			if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
@@ -126,12 +121,20 @@ void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 				HighlightInfo = EHighlightInfo::Enemy;
 			}
 		}
+		HoveringTile->Highlight(HighlightInfo);
+	}
+}
 
-		NewHoveringTile->Highlight(HighlightInfo);
-		
+void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
+{
+	if (HoveringTile)
+	{
+		HoveringTile->RemoveHighlight();
 	}
 
 	HoveringTile = NewHoveringTile;
+
+	HighlightHoveringTile();
 }
 
 void AGDPlayerPawn::RequestUnitAction() const
@@ -190,7 +193,7 @@ void AGDPlayerPawn::SelectTileElement()
 	}
 }
 
-void AGDPlayerPawn::DeselectTile()
+void AGDPlayerPawn::DeselectTileElement()
 {
 	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
