@@ -385,12 +385,24 @@ void AGDUnit::ResetActionPoints()
 
 void AGDUnit::ResetHighlightedTilesInRange()
 {
-	for (const auto& Tile : HighlightedTilesInRange)
+	for (const auto& Tile : HighlightedTilesInShortRange)
 	{
 		Tile->RemoveInfoDecal();
 	}
 
-	HighlightedTilesInRange.Empty();
+	for (const auto& Tile : HighlightedTilesInLongRange)
+	{
+		Tile->RemoveInfoDecal();
+	}
+
+	for (const auto& Tile : HighlightedEnemyTilesInRange)
+	{
+		Tile->RemoveInfoDecal();
+	}
+
+	HighlightedTilesInShortRange.Empty();
+	HighlightedTilesInLongRange.Empty();
+	HighlightedEnemyTilesInRange.Empty();
 }
 
 void AGDUnit::ResetHighlightedActionTiles()
@@ -549,9 +561,17 @@ void AGDUnit::HighlightMovementRange()
 				if (PathLength > 0 && PathLength <= GetMovementRange() * GetActionPoints())
 				{
 					const bool bShortDistance = PathLength <= GetMovementRange() ? true : false;
+
 					Tile->ApplyMovementRangeInfoDecal(bShortDistance);
 
-					HighlightedTilesInRange.Emplace(MoveTemp(Tile));
+					if (bShortDistance)
+					{
+						HighlightedTilesInShortRange.Emplace(MoveTemp(Tile));
+					}
+					else
+					{
+						HighlightedTilesInLongRange.Emplace(MoveTemp(Tile));
+					}
 				}
 			}
 		}
@@ -574,7 +594,25 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 			if (Tile->IsOccupiedByEnemy(this))
 			{
 				Tile->ApplyEnemyInfoDecal();
-				HighlightedTilesInRange.Emplace(MoveTemp(Tile));
+				HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
+			}
+		}
+
+		if (UnitActionPoints > 1)
+		{
+			for (const auto& ReachableTile : HighlightedTilesInShortRange)
+			{
+				TilesInAttackRange = Grid->GetTilesAtDistance(
+					ReachableTile, GetAttackRange());
+
+				for (auto& Tile : TilesInAttackRange)
+				{
+					if (Tile->IsOccupiedByEnemy(this))
+					{
+						Tile->ApplyEnemyInfoDecal();
+						HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
+					}
+				}
 			}
 		}
 	}

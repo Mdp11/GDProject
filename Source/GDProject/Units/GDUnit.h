@@ -190,7 +190,11 @@ public:
 private:
 	float CriticalChanceAdjuster;
 
-	TSet<AGDTile*> HighlightedTilesInRange;
+	TSet<AGDTile*> HighlightedTilesInShortRange;
+	
+	TSet<AGDTile*> HighlightedTilesInLongRange;
+	
+	TSet<AGDTile*> HighlightedEnemyTilesInRange;
 
 	UPROPERTY()
 	AGDTile* HighlightedEnemyTile;
