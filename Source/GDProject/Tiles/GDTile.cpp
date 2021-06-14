@@ -91,7 +91,7 @@ void AGDTile::Highlight(const bool bOn) const
 	}
 }
 
-void AGDTile::HighlightTargetEnemy(const bool bOn) const
+void AGDTile::HighlightEnemyTarget(const bool bOn) const
 {
 	if (!bIsActive)
 	{
@@ -100,6 +100,25 @@ void AGDTile::HighlightTargetEnemy(const bool bOn) const
 			if (OwningGrid->TargetedEnemyDecalMaterial)
 			{
 				SelectionDecalComponent->SetMaterial(0, OwningGrid->TargetedEnemyDecalMaterial);
+				SelectionDecalComponent->SetHiddenInGame(false);
+			}
+		}
+		else
+		{
+			SelectionDecalComponent->SetHiddenInGame(true);
+		}
+	}
+}
+
+void AGDTile::HighlighAllyTarget(const bool bOn) const
+{
+	if (!bIsActive)
+	{
+		if (bOn)
+		{
+			if (OwningGrid->TargetedEnemyDecalMaterial)
+			{
+				SelectionDecalComponent->SetMaterial(0, OwningGrid->SelectedDecalMaterial);
 				SelectionDecalComponent->SetHiddenInGame(false);
 			}
 		}

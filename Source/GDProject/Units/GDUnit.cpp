@@ -397,7 +397,7 @@ void AGDUnit::ResetHighlightedActionTiles()
 {
 	if (HighlightedEnemyTile)
 	{
-		HighlightedEnemyTile->HighlightTargetEnemy(false);
+		HighlightedEnemyTile->HighlightEnemyTarget(false);
 		HighlightedEnemyTile = nullptr;
 	}
 
@@ -472,7 +472,7 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 		if (TargetTile->IsOccupiedByEnemy(this))
 		{
 			HighlightedEnemyTile = TargetTile;
-			HighlightedEnemyTile->HighlightTargetEnemy(true);
+			HighlightedEnemyTile->HighlightEnemyTarget(true);
 
 			StopAtDistance = AttackRange;
 		}

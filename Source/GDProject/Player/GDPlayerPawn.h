@@ -25,11 +25,8 @@ protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	AGDTile* SelectedTile;
-
-	UPROPERTY()
-	AGDUnit* SelectedUnit;
+	UPROPERTY(BlueprintReadWrite)
+	UObject* SelectedTileElement;
 
 	TArray<AGDTile*> HighlightedPath;
 
@@ -42,7 +39,7 @@ protected:
 	UPROPERTY()
 	TSet<AGDUnit*> ActiveUnits;
 
-	void SelectTile(AGDTile* TargetTile = nullptr);
+	void SelectTileElement();
 
 	UFUNCTION(BlueprintCallable)
 	void DeselectTile();
@@ -71,4 +68,7 @@ public:
 	void AddActiveUnit(AGDUnit* Unit);
 
 	void RemoveActiveUnit(AGDUnit* Unit);
+
+private:
+	int GetCurrentPlayerTurn() const;
 };

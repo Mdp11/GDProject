@@ -49,6 +49,17 @@ void AGDPlayerPawn::RemoveActiveUnit(AGDUnit* Unit)
 	ActiveUnits.Remove(Unit);
 }
 
+int AGDPlayerPawn::GetCurrentPlayerTurn() const
+{
+	if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		return GM->GetCurrentPlayerTurn();
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Game mode not found."))
+	return -1;
+}
+
 void AGDPlayerPawn::HandleTilesHovering()
 {
 	AGDTile* TargetTile = GetTileUnderMouse();
@@ -57,9 +68,9 @@ void AGDPlayerPawn::HandleTilesHovering()
 	{
 		UpdateHoveringTile(TargetTile);
 
-		if (SelectedTile && ActiveUnits.Num() == 0)
+		if (SelectedTileElement && ActiveUnits.Num() == 0)
 		{
-			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
+			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 			{
 				Unit->HighlightActions(HoveringTile);
 			}
@@ -101,7 +112,22 @@ void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 
 	if (NewHoveringTile)
 	{
-		NewHoveringTile->Highlight(true);
+		AGDUnit* HoveringUnit = Cast<AGDUnit>(NewHoveringTile->GetTileElement());
+		if (HoveringUnit)
+		{
+			if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
+			{
+				NewHoveringTile->HighlighAllyTarget(true);
+			}
+			else
+			{
+				NewHoveringTile->HighlightEnemyTarget(true);
+			}
+		}
+		else
+		{
+			NewHoveringTile->Highlight(true);
+		}
 	}
 
 	HoveringTile = NewHoveringTile;
@@ -109,7 +135,7 @@ void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 
 void AGDPlayerPawn::RequestUnitAction() const
 {
-	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
+	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 	{
 		Unit->RequestAction(HoveringTile);
 	}
@@ -117,21 +143,24 @@ void AGDPlayerPawn::RequestUnitAction() const
 
 void AGDPlayerPawn::TriggerClick()
 {
+	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
 		SelectedUnit->Rotate();
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Active units = %d"), ActiveUnits.Num());
 	if (ActiveUnits.Num() == 0)
 	{
-		if (!SelectedTile)
+		if (!SelectedTileElement)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Selecting tile"));
-			SelectTile();
+			SelectTileElement();
 		}
 		else
 		{
-			if (SelectedTile != HoveringTile && SelectedTile->IsOccupied())
+			if (IGDTileElement::Execute_GetTile(SelectedTileElement) != HoveringTile)
 			{
 				RequestUnitAction();
 			}
@@ -139,27 +168,21 @@ void AGDPlayerPawn::TriggerClick()
 	}
 }
 
-void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
+void AGDPlayerPawn::SelectTileElement()
 {
-	AGDTile* TileToSelect = TargetTile ? TargetTile : HoveringTile;
-
-	if (TileToSelect && TileToSelect->IsOccupied())
+	if (HoveringTile && HoveringTile->IsOccupied())
 	{
-		if (AGDUnit* Unit = Cast<AGDUnit>(TileToSelect->GetTileElement()))
+		if (AGDUnit* Unit = Cast<AGDUnit>(HoveringTile->GetTileElement()))
 		{
-			if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+			if (Unit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
 			{
-				if (Unit->IsOwnedByPlayer(GM->GetCurrentPlayerTurn()))
+				HoveringTile->Select();
+
+				IGDTileElement::Execute_Select(Unit);
+				SelectedTileElement = Unit;
+				if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
 				{
-					SelectedTile = TileToSelect;
-					SelectedTile->Select();
-					
-					IGDTileElement::Execute_Select(Unit);
-					SelectedUnit = Unit;
-					if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
-					{
-						UnitActionsWidget->AddToViewport();
-					}
+					UnitActionsWidget->AddToViewport();
 				}
 			}
 		}
@@ -168,26 +191,27 @@ void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
 
 void AGDPlayerPawn::DeselectTile()
 {
+	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
-		SelectedUnit->Rotate();
-		SelectedUnit = nullptr;
-	}
-	if (ActiveUnits.Num() == 0 && SelectedTile)
-	{
-		if (SelectedTile->IsOccupied())
+		if (SelectedUnit->IsUnitRotating())
 		{
-			IGDTileElement::Execute_Deselect(SelectedTile->GetTileElement());
+			UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
+			SelectedUnit->Rotate();
+		}
+	}
 
-			if (UnitActionsWidget)
-			{
-				UnitActionsWidget->RemoveFromViewport();
-			}
+	if (ActiveUnits.Num() == 0 && SelectedTileElement)
+	{
+		IGDTileElement::Execute_Deselect(SelectedTileElement);
+		IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();
+
+		if (UnitActionsWidget)
+		{
+			UnitActionsWidget->RemoveFromViewport();
 		}
 
-		SelectedTile->Deselect();
-		SelectedTile = nullptr;
+		SelectedTileElement = nullptr;
 	}
 }
 

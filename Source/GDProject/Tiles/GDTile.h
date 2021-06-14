@@ -85,7 +85,9 @@ public:
 
 	void SetCoordinates(const FIntPoint& NewCoordinates);
 
-	void HighlightTargetEnemy(bool bOn) const;
+	void HighlightEnemyTarget(bool bOn) const;
+
+	void HighlighAllyTarget(bool bOn) const;
 
 	UFUNCTION(BlueprintCallable)
 	UObject* GetTileElement() const;
