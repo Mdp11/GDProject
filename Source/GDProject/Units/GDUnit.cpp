@@ -136,7 +136,7 @@ void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
 		SetActorRotation(NewRotation);
@@ -287,19 +287,29 @@ bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
 
 			const bool CriticalHit = FMath::FRandRange(0.f, 100.f) <= CriticalChance + CurrentTile->
 				GetCriticalChanceModifier() + CriticalChanceAdjuster;
-			if (!CriticalHit)
-			{
-				CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
-			}
-			else
+
+			if (Enemy->GetActorRotation().Equals(GetActorRotation()) || CriticalHit)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
 				CriticalChanceAdjuster = 0.f;
 				Damage *= CriticalDamageMultiplier;
+			} else 
+			{
+				CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
 			}
-
+			
 			Damage /= Enemy->GetDefence();
-
+			//if the attack come from the side will ignore defence
+			float AngleDiff = round(abs(Enemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("Diff: %f"), AngleDiff));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rot: %f"), (-1 * GetActorRotation().Yaw)));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("Enemy rot: %f"), Enemy->GetActorRotation().Yaw));
+			if (AngleDiff == 90)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
+				Damage = BaseDamage;
+			}
+			
 			Enemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
 
 			AttackAnimationDuration += FMath::RandBool()
