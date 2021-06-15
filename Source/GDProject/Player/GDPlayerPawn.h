@@ -52,6 +52,11 @@ public:
 
 	void RemoveActiveUnit(AGDUnit* Unit);
 
+	UFUNCTION(BlueprintCallable)
+	void DeselectTileElement();
+	
+	void OnUnitDead(AGDUnit* Unit, int OwningPlayer);
+
 private:
 	void HandleTilesHovering();
 
@@ -66,9 +71,6 @@ private:
 	void TriggerClick();
 
 	void SelectTileElement();
-
-	UFUNCTION(BlueprintCallable)
-	void DeselectTileElement();
 
 	void RequestUnitAction() const;
 

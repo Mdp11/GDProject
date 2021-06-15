@@ -216,6 +216,19 @@ void AGDPlayerPawn::DeselectTileElement()
 	}
 }
 
+void AGDPlayerPawn::OnUnitDead(AGDUnit* Unit, const int OwningPlayer)
+{
+	if (SelectedTileElement == Unit)
+	{
+		DeselectTileElement();
+	}
+
+	if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnUnitDead(Unit, OwningPlayer);
+	}
+}
+
 AGDTile* AGDPlayerPawn::TraceForTile(const FVector& Start, const FVector& End, bool bDrawDebugHelpers) const
 {
 	FHitResult HitResult;

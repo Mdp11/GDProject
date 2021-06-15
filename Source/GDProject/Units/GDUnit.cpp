@@ -71,6 +71,8 @@ void AGDUnit::Die()
 	bIsDead = true;
 
 	CurrentTile->SetTileElement(nullptr);
+	
+	Execute_Deselect(this);
 
 	const float LifeSpan = 5.f;
 	SetLifeSpan(LifeSpan);
@@ -79,9 +81,9 @@ void AGDUnit::Die()
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([&]()
 	{
-		if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+		if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 		{
-			GM->OnUnitDead(this, OwningPlayer);
+			PlayerPawn->OnUnitDead(this, OwningPlayer);
 		}
 	});
 	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpan - 0.5f, false);
