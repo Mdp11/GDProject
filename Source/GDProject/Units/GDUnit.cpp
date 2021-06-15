@@ -126,12 +126,14 @@ void AGDUnit::PerformRotation(float DeltaTime)
 	}
 	FVector Start, Dir;
 	PC->DeprojectMousePositionToWorld(Start, Dir);
+	
 	FHitResult HitResult;
 	const FVector End = Start + Dir * 8000.f;
 	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-	FRotator CurrentUnitRotation = GetActorRotation();
-	FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
-	FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
+	
+	const FRotator CurrentUnitRotation = GetActorRotation();
+	const FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
+	const FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
 	this->SetActorRotation(NewRotation);
 }
 
@@ -194,13 +196,13 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 	CurrentActionPoints = FMath::Clamp(CurrentActionPoints - Value, 0, MaxActionPoints);
 }
 
-void AGDUnit::Powerup()
+void AGDUnit::PowerUp()
 {
 	AddToActiveUnits();
-	float PowerupAnimationDuration = PlayAnimMontage(PowerupAnimation) + 0.01f;
+	const float PowerUpAnimationDuration = PlayAnimMontage(PowerUpAnimation) + 0.01f;
 
-	FTimerHandle TimerHandle_Powerup;
-	GetWorldTimerManager().SetTimer(TimerHandle_Powerup, this, &AGDUnit::OnActionFinished, PowerupAnimationDuration);
+	FTimerHandle TimerHandle_PowerUp;
+	GetWorldTimerManager().SetTimer(TimerHandle_PowerUp, this, &AGDUnit::OnActionFinished, PowerUpAnimationDuration);
 }
 
 void AGDUnit::Tick(float DeltaTime)
@@ -547,7 +549,7 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 	}
 }
 
-bool AGDUnit::IsUnitRotating()
+bool AGDUnit::IsUnitRotating() const
 {
 	return bRotationRequested;
 }

@@ -35,6 +35,4 @@ private:
 
 public:
 	FOnHealthChangedSignature OnHealthChanged;
-
-	void UpdateDefaultHealth(float NewValue);
 };

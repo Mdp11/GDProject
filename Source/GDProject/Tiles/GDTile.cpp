@@ -230,9 +230,8 @@ void AGDTile::RemoveInfoDecal() const
 
 void AGDTile::ChangeInForest()
 {
-	TSubclassOf<AGDTileForest> TileClass;
 	AGDTile* ClassGetter = NewObject<AGDTileForest>(AGDTileForest::StaticClass());
-	TileClass = ClassGetter->GetClass();
+	const TSubclassOf<AGDTileForest> TileClass = ClassGetter->GetClass();
 	AGDTile* Tile = GetWorld()->SpawnActor<AGDTileForest>(TileClass,
 	                                                      this->GetActorLocation(),
 	                                                      FRotator(0, 0, 0));
@@ -247,15 +246,14 @@ void AGDTile::ChangeInForest()
 
 void AGDTile::ChangeInRiver()
 {
-	TSubclassOf<AGDTileRiver> TileClass;
 	AGDTile* ClassGetter = NewObject<AGDTileRiver>(AGDTileRiver::StaticClass());
-	TileClass = ClassGetter->GetClass();
+	const TSubclassOf<AGDTileRiver> TileClass = ClassGetter->GetClass();
 	AGDTile* Tile = GetWorld()->SpawnActor<AGDTileRiver>(TileClass,
 	                                                     this->GetActorLocation(),
 	                                                     FRotator(0, 0, 0));
 	TArray<TArray<AGDTile*>> TilesGrid = this->OwningGrid->GetTilesGrid();
-	int32 X = this->Coordinates.X;
-	int32 Y = this->Coordinates.Y;
+	const int32 X = this->Coordinates.X;
+	const int32 Y = this->Coordinates.Y;
 	TilesGrid[X][Y] = Tile;
 	Tile->SetCoordinates({X, Y});
 	Tile->SetOwningGrid(OwningGrid);

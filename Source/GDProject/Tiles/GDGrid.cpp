@@ -95,7 +95,7 @@ void AGDGrid::CleanMap()
 			{
 				if (GEngine)
 					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,
-					                                 FString::Printf(TEXT("CREAZIONE MAP %f  %f"), i, j));
+					                                 FString::Printf(TEXT("CREAZIONE MAP %d  %d"), i, j));
 				GetWorld()->DestroyActor(Tiles[i][j]);
 			}
 		}

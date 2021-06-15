@@ -84,7 +84,7 @@ protected:
 	UAnimMontage* MissAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
-	UAnimMontage* PowerupAnimation;
+	UAnimMontage* PowerUpAnimation;
 
 	UPROPERTY()
 	AGDUnit* TargetToAttackAfterMove;
@@ -117,7 +117,7 @@ protected:
 	void DecreaseActionPointsBy(const int Value);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Powerup();
+	virtual void PowerUp();
 
 	void UpdateTransparency() const;
 	
@@ -179,7 +179,7 @@ public:
 
 	void RequestAction(AGDTile* TargetTile);
 
-	bool IsUnitRotating();
+	bool IsUnitRotating() const;
 
 	void Rotate();
 
