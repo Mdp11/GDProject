@@ -81,6 +81,8 @@ void AGDUnit::PerformMove(float DeltaTime)
 
 		if (GetActorLocation().Equals(NextTileLocation))
 		{
+			AGDTile* ReachedTile = MovementPath[0];
+			IGDTileElement::Execute_SetTile(this, ReachedTile);
 			MovementPath.RemoveAt(0);
 		}
 		else
@@ -100,6 +102,8 @@ void AGDUnit::PerformMove(float DeltaTime)
 void AGDUnit::StopMove()
 {
 	bMoveRequested = false;
+
+	CurrentTile->Select();
 
 	if (TargetToAttackAfterMove)
 	{
