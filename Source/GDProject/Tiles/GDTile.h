@@ -56,7 +56,6 @@ protected:
 	FIntPoint Coordinates;
 
 	//Tile Modifiers
-
 	UPROPERTY(EditDefaultsOnly, Category = "Fight Modifiers")
 	float AttackModifier;
 

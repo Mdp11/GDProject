@@ -105,7 +105,7 @@ void AGDTile::Highlight(const EHighlightInfo& HighlightInfo) const
 
 void AGDTile::RemoveHighlight() const
 {
-	if(!bIsActive)
+	if (!bIsActive)
 	{
 		SelectionDecalComponent->SetHiddenInGame(true);
 	}

@@ -80,7 +80,6 @@ void AGDProjectGameModeBase::GameOver(int WinningPlayer)
 	{
 		PlayerPawn->DisableInput(nullptr);
 	}
-
 	OnGameOver(WinningPlayer);
 }
 

@@ -28,7 +28,7 @@ protected:
 	UFUNCTION()
 	virtual void OnTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                             class AController* InstigatedBy, AActor* DamageCauser);
-	
+
 private:
 	float CurrentHealth;
 

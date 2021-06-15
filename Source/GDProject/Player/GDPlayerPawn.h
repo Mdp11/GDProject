@@ -53,7 +53,6 @@ public:
 	void RemoveActiveUnit(AGDUnit* Unit);
 
 private:
-
 	void HandleTilesHovering();
 
 	AGDTile* GetTileUnderMouse() const;
@@ -72,6 +71,6 @@ private:
 	void DeselectTileElement();
 
 	void RequestUnitAction() const;
-	
+
 	int GetCurrentPlayerTurn() const;
 };

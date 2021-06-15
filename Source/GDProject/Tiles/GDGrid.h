@@ -48,7 +48,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDUnit> TileUnitClassDummy;
-	
+
 	bool bMapGenerated;
 
 	virtual void BeginPlay() override;

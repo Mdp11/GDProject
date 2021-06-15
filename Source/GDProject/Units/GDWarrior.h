@@ -19,7 +19,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Special")
 	float DefenceBonus;
-	
+
 	float BaseDefence;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -34,5 +34,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	virtual void OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser) override;
+	virtual void OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
+	                             const UDamageType* DamageType, AController* InstigatedBy,
+	                             AActor* DamageCauser) override;
 };
