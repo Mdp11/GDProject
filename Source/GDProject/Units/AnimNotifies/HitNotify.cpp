@@ -29,7 +29,11 @@ void UHitNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Ani
 			if (AttackingUnit->AttackedEnemy)
 			{
 				AttackingUnit->AttackedEnemy->AddToActiveUnits();
-				AttackingUnit->AttackedEnemy->PlayAnimation(AttackingUnit->AttackedEnemy->ImpactAnimation);
+				AttackingUnit->AttackedEnemy->PlayAnimationAndDoAction(
+					AttackingUnit->ImpactAnimation, [Unit = AttackingUnit->AttackedEnemy]()
+					{
+						Unit->OnActionFinished();
+					});
 			}
 		}
 	}

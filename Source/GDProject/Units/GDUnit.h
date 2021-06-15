@@ -169,7 +169,16 @@ protected:
 
 	void RemoveFromActiveUnits();
 
-	void PlayAnimation(UAnimMontage* Animation);
+	template <typename Function>
+	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
+	{
+		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
+
+		FTimerHandle TimerHandle_Animation;
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda(Action);
+		GetWorldTimerManager().SetTimer(TimerHandle_Animation, TimerDelegate, AnimationDuration, false);
+	}
 
 public:
 	virtual void Tick(float DeltaTime) override;

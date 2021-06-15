@@ -58,7 +58,7 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
 	}
 	else
 	{
-		PlayAnimation(ImpactAnimation);
+		PlayAnimationAndDoAction(ImpactAnimation, [&](){ OnActionFinished();});
 	}
 }
 
@@ -211,7 +211,7 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 void AGDUnit::PowerUp()
 {
 	AddToActiveUnits();
-	PlayAnimation(PowerUpAnimation);
+	PlayAnimationAndDoAction(PowerUpAnimation, [&](){ OnActionFinished();});
 }
 
 void AGDUnit::Tick(float DeltaTime)
@@ -353,7 +353,7 @@ void AGDUnit::Attack()
 		ComputedDamage /= AttackedEnemy->GetDefence();
 	}
 
-	PlayAnimation(AttackAnimation);
+	PlayAnimationAndDoAction(AttackAnimation, [&](){ OnActionFinished();});
 }
 
 void AGDUnit::OnActionBegin()
@@ -464,15 +464,6 @@ void AGDUnit::RemoveFromActiveUnits()
 		PlayerPawn->RemoveActiveUnit(this);
 	}
 }
-
-void AGDUnit::PlayAnimation(UAnimMontage* Animation)
-{
-	const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
-
-	FTimerHandle TimerHandle_Animation;
-	GetWorldTimerManager().SetTimer(TimerHandle_Animation, this, &AGDUnit::OnActionFinished, AnimationDuration);
-}
-
 
 void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 {

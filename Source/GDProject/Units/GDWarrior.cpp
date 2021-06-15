@@ -51,17 +51,16 @@ void AGDWarrior::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, f
 	}
 	else if (bIsInGuard)
 	{
-		float GuardImpactAnimationDuration = 0.1f;
-		GuardImpactAnimationDuration += PlayAnimMontage(GuardImpactAnimation);
-
-		FTimerHandle TimerHandle_Die;
-		GetWorldTimerManager().SetTimer(TimerHandle_Die,
-		                                FTimerDelegate::CreateUObject(this, &AGDWarrior::RequestAttack,
-		                                                              Cast<AGDUnit>(DamageCauser), true),
-		                                GuardImpactAnimationDuration, false);
+		PlayAnimationAndDoAction(GuardImpactAnimation, [&, EnemyToAttack = Cast<AGDUnit>(DamageCauser)]()
+		{
+			RequestAttack(EnemyToAttack, true);
+		});
 	}
 	else
 	{
-		PlayAnimation(ImpactAnimation);
+		PlayAnimationAndDoAction(GuardImpactAnimation, [&]()
+		{
+			OnActionFinished();
+		});
 	}
 }
