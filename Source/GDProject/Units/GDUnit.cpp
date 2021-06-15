@@ -3,9 +3,7 @@
 
 #include "GDUnit.h"
 
-#include "NavigationSystem.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Blueprint/UserWidget.h"
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
@@ -57,6 +55,10 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
 	{
 		Die();
 	}
+	else
+	{
+		PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
+	}
 }
 
 void AGDUnit::RemoveSpecial()
@@ -67,9 +69,24 @@ void AGDUnit::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s died!"), *GetName());
 	bIsDead = true;
-	SetLifeSpan(5.f);
 
 	CurrentTile->SetTileElement(nullptr);
+	
+	Execute_Deselect(this);
+
+	const float LifeSpan = 5.f;
+	SetLifeSpan(LifeSpan);
+
+	FTimerHandle TimerHandle_OnUnitDead;
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([&]()
+	{
+		if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+		{
+			PlayerPawn->OnUnitDead(this, OwningPlayer);
+		}
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpan - 0.5f, false);
 }
 
 void AGDUnit::PerformMove(float DeltaTime)
@@ -81,6 +98,8 @@ void AGDUnit::PerformMove(float DeltaTime)
 
 		if (GetActorLocation().Equals(NextTileLocation))
 		{
+			AGDTile* ReachedTile = MovementPath[0];
+			Execute_SetTile(this, ReachedTile);
 			MovementPath.RemoveAt(0);
 		}
 		else
@@ -101,10 +120,14 @@ void AGDUnit::StopMove()
 {
 	bMoveRequested = false;
 
+	CurrentTile->Select();
+	Execute_Select(this);
+
 	if (TargetToAttackAfterMove)
 	{
 		RequestAttack(TargetToAttackAfterMove, false);
-	} else
+	}
+	else
 	{
 		bRotationRequested = true;
 	}
@@ -123,12 +146,14 @@ void AGDUnit::PerformRotation(float DeltaTime)
 	}
 	FVector Start, Dir;
 	PC->DeprojectMousePositionToWorld(Start, Dir);
+
 	FHitResult HitResult;
 	const FVector End = Start + Dir * 8000.f;
 	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-	FRotator CurrentUnitRotation = GetActorRotation();
-	FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
-	FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
+
+	const FRotator CurrentUnitRotation = GetActorRotation();
+	const FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
+	const FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
 	this->SetActorRotation(NewRotation);
 }
 
@@ -136,20 +161,24 @@ void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange,
+	                                 FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
 		SetActorRotation(NewRotation);
-		
-	} else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
+	}
+	else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
 	{
 		NewRotation.Yaw = 90.0f;
 		SetActorRotation(NewRotation);
-	} else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 && GetActorRotation().Yaw > -180))
+	}
+	else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 &&
+		GetActorRotation().Yaw > -180))
 	{
 		NewRotation.Yaw = 180.0f;
 		SetActorRotation(NewRotation);
-	} else
+	}
+	else
 	{
 		NewRotation.Yaw = -90.0f;
 		SetActorRotation(NewRotation);
@@ -157,17 +186,39 @@ void AGDUnit::Rotate()
 	OnActionFinished();
 }
 
+bool AGDUnit::IsEnemy(AGDUnit* OtherUnit) const
+{
+	return OwningPlayer != OtherUnit->OwningPlayer;
+}
+
+void AGDUnit::SetOwningPlayer(const int NewOwningPlayer)
+{
+	OwningPlayer = NewOwningPlayer;
+}
+
+bool AGDUnit::IsOwnedByPlayer(const int Player) const
+{
+	return Player == OwningPlayer;
+}
+
+void AGDUnit::OnTurnBegin()
+{
+	CurrentActionPoints = MaxActionPoints;
+	RemoveSpecial();
+}
+
+void AGDUnit::OnTurnEnd()
+{
+}
+
 void AGDUnit::DecreaseActionPointsBy(const int Value)
 {
 	CurrentActionPoints = FMath::Clamp(CurrentActionPoints - Value, 0, MaxActionPoints);
 }
 
-void AGDUnit::Powerup()
+void AGDUnit::PowerUp()
 {
-	float PowerupAnimationDuration = PlayAnimMontage(PowerupAnimation) + 0.01f;
-
-	FTimerHandle TimerHandle_Powerup;
-	GetWorldTimerManager().SetTimer(TimerHandle_Powerup, this, &AGDUnit::OnActionFinished, PowerupAnimationDuration);
+	PlayAnimationAndDoAction(PowerUpAnimation, [&]() { OnActionFinished(); });
 }
 
 void AGDUnit::Tick(float DeltaTime)
@@ -223,28 +274,48 @@ void AGDUnit::Deselect_Implementation()
 	ResetAllHighlightedTiles();
 }
 
-bool AGDUnit::RequestMove()
+void AGDUnit::RequestMove()
 {
-	if (MovementPath.Num() < 1 || MovementPath.Num() > MovementRange * CurrentActionPoints)
+	if (MovementPath.Num() >= 1 && MovementPath.Num() <= MovementRange * CurrentActionPoints)
 	{
-		return false;
+		OnActionBegin();
+
+		MovementPath.Num() <= MovementRange ? DecreaseActionPointsBy(1) : DecreaseActionPointsBy(2);
+
+		bMoveRequested = true;
+
+		bIsWalking = MovementPath.Num() <= 2;
+
+		CurrentTile->Deselect();
 	}
-
-	MovementPath.Num() <= MovementRange ? DecreaseActionPointsBy(1) : DecreaseActionPointsBy(2);
-
-	bMoveRequested = true;
-
-	bIsWalking = MovementPath.Num() <= 2;
-
-	CurrentTile->Deselect();
-	IGDTileElement::Execute_SetTile(this, MovementPath.Top());
-
-	return true;
 }
 
 float AGDUnit::GetDefence() const
 {
 	return Defence + CurrentTile->GetDefenceModifier();
+}
+
+bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
+{
+	return Enemy && Execute_GetTile(Enemy)->GetDistanceFrom(CurrentTile) <= AttackRange
+		&& (bIgnoreActionPoints || CurrentActionPoints > 0);
+}
+
+bool AGDUnit::IsCriticalHit()
+{
+	const bool bCriticalHit = FMath::FRandRange(0.f, 100.f)
+		<= CriticalChance + CurrentTile->GetCriticalChanceModifier() + CriticalChanceAdjuster;
+
+	if (!bCriticalHit)
+	{
+		CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
+	}
+	else
+	{
+		CriticalChanceAdjuster = 0.f;
+	}
+
+	return bCriticalHit;
 }
 
 void AGDUnit::UpdateTransparency() const
@@ -256,71 +327,66 @@ void AGDUnit::UpdateTransparency() const
 	}
 }
 
-bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
+void AGDUnit::ApplyDamage()
 {
-	bool bAttackPerformed = false;
+	AttackedEnemy->TakeDamage(ComputedDamage, FDamageEvent{}, GetController(), this);
+}
 
-	if (Enemy && (bIgnoreActionPoints || CurrentActionPoints > 0))
+void AGDUnit::Attack()
+{
+	ComputedDamage = 0.f;
+	UAnimMontage* AttackAnimation;
+
+	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
+	if (Miss)
 	{
-		bAttackPerformed = true;
+		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
+		AttackAnimation = MissAnimation;
+	}
+	else
+	{
+		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
 
-		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Enemy->GetActorLocation()));
+		if (!IsCriticalHit())
+		{
+			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
+		}
+		else
+		{
+			AttackAnimation = CriticalAttackAnimation;
+			ComputedDamage *= CriticalDamageMultiplier;
+		}
+
+		ComputedDamage /= AttackedEnemy->GetDefence();
+	}
+
+	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
+}
+
+void AGDUnit::OnActionBegin()
+{
+	AddToActiveUnits();
+	ResetAllHighlightedTiles();
+}
+
+void AGDUnit::RequestAttack(AGDUnit* Enemy, const bool bIgnoreActionPoints)
+{
+	if (CanAttackUnit(Enemy, bIgnoreActionPoints))
+	{
+		OnActionBegin();
+
+		AttackedEnemy = Enemy;
+		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), AttackedEnemy->GetActorLocation()));
 
 		if (!bIgnoreActionPoints)
 		{
 			DecreaseActionPointsBy(MaxActionPoints);
 		}
 
-		float AttackAnimationDuration = 0.01f;
-
-		const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
-		if (Miss)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Missed!"));
-			Enemy->TakeDamage(0.f, FDamageEvent{}, GetController(), this);
-
-			AttackAnimationDuration += PlayAnimMontage(MissAnimation);
-		}
-		else
-		{
-			float Damage = BaseDamage + CurrentTile->GetAttackModifier();
-
-			const bool CriticalHit = FMath::FRandRange(0.f, 100.f) <= CriticalChance + CurrentTile->
-				GetCriticalChanceModifier() + CriticalChanceAdjuster;
-			if (!CriticalHit)
-			{
-				CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
-				CriticalChanceAdjuster = 0.f;
-				Damage *= CriticalDamageMultiplier;
-			}
-
-			Damage /= Enemy->GetDefence();
-
-			Enemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
-
-			AttackAnimationDuration += FMath::RandBool()
-				                           ? PlayAnimMontage(AttackAnimation)
-				                           : PlayAnimMontage(AlternativeAttackAnimation);
-		}
-
-		LastAttackedEnemy = Enemy;
-
-		if (!bIgnoreActionPoints)
-		{
-			FTimerHandle TimerHandle_AttackOver;
-			GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
-			                                AttackAnimationDuration);
-		}
-
+		Attack();
 
 		UpdateTransparency();
 	}
-
-	return bAttackPerformed;
 }
 
 int AGDUnit::GetMovementRange() const
@@ -350,25 +416,36 @@ void AGDUnit::ResetActionPoints()
 
 void AGDUnit::ResetHighlightedTilesInRange()
 {
-	for (const auto& Tile : HighlightedTilesInRange)
+	for (const auto& Tile : HighlightedTilesInShortRange)
 	{
 		Tile->RemoveInfoDecal();
 	}
+	HighlightedTilesInShortRange.Empty();
 
-	HighlightedTilesInRange.Empty();
+	for (const auto& Tile : HighlightedTilesInLongRange)
+	{
+		Tile->RemoveInfoDecal();
+	}
+	HighlightedTilesInLongRange.Empty();
+
+	for (const auto& Tile : HighlightedEnemyTilesInRange)
+	{
+		Tile->RemoveInfoDecal();
+	}
+	HighlightedEnemyTilesInRange.Empty();
 }
 
 void AGDUnit::ResetHighlightedActionTiles()
 {
 	if (HighlightedEnemyTile)
 	{
-		HighlightedEnemyTile->HighlightTargetEnemy(false);
+		HighlightedEnemyTile->RemoveHighlight();
 		HighlightedEnemyTile = nullptr;
 	}
 
 	for (const auto& Tile : MovementPath)
 	{
-		Tile->Highlight(false);
+		Tile->RemoveHighlight();
 	}
 }
 
@@ -379,6 +456,21 @@ void AGDUnit::ResetAllHighlightedTiles()
 	ResetHighlightedActionTiles();
 }
 
+void AGDUnit::AddToActiveUnits()
+{
+	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+	{
+		PlayerPawn->AddActiveUnit(this);
+	}
+}
+
+void AGDUnit::RemoveFromActiveUnits()
+{
+	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
+	{
+		PlayerPawn->RemoveActiveUnit(this);
+	}
+}
 
 void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 {
@@ -388,7 +480,8 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 	{
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
 
-		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupied() && CurrentActionPoints > 1 && NewMovementPath.
+		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupiedByEnemy(this) && CurrentActionPoints > 1 &&
+			NewMovementPath.
 			Num() <= GetMovementRange();
 
 		const bool bCanReachEmptyTile = !TargetTile->IsOccupied() &&
@@ -399,7 +492,7 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 			MovementPath = MoveTemp(NewMovementPath);
 			for (const auto& Tile : MovementPath)
 			{
-				Tile->Highlight(true);
+				Tile->Highlight(EHighlightInfo::Default);
 			}
 		}
 		else
@@ -411,70 +504,65 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 
 void AGDUnit::HighlightActions(AGDTile* TargetTile)
 {
-	ResetHighlightedActionTiles();
-
-	if (TargetTile && TargetTile->IsTraversable())
+	if (!bRotationRequested)
 	{
-		float StopAtDistance = 0;
+		ResetHighlightedActionTiles();
 
-		if (TargetTile->IsOccupied())
+		if (TargetTile && TargetTile->IsTraversable())
 		{
-			HighlightedEnemyTile = TargetTile;
-			HighlightedEnemyTile->HighlightTargetEnemy(true);
+			float StopAtDistance = 0;
 
-			StopAtDistance = AttackRange;
+			if (TargetTile->IsOccupiedByEnemy(this))
+			{
+				HighlightedEnemyTile = TargetTile;
+				HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
+
+				StopAtDistance = AttackRange;
+			}
+
+			if (IsTileInRangeOfAction(TargetTile))
+			{
+				HighlightMovementPath(TargetTile, StopAtDistance);
+			}
 		}
-
-		HighlightMovementPath(TargetTile, StopAtDistance);
 	}
 }
 
-bool AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
+void AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
 {
 	if (CurrentActionPoints > 1 && MovementPath.Num() > 0 && MovementRange >= MovementPath.Num())
 	{
 		TargetToAttackAfterMove = Enemy;
-
 		RequestMove();
-		return true;
 	}
-	return false;
 }
 
 void AGDUnit::RequestAction(AGDTile* TargetTile)
 {
-	bool bActionPerformed = false;
-
 	if (TargetTile)
 	{
 		if (!TargetTile->IsOccupied())
 		{
-			bActionPerformed = RequestMove();
+			RequestMove();
 		}
 		else if (AGDUnit* TargetUnit = Cast<AGDUnit>(TargetTile->GetTileElement()))
 		{
-			if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+			if (IsEnemy(TargetUnit))
 			{
-				bActionPerformed = RequestAttack(TargetUnit);
-			}
-			else
-			{
-				bActionPerformed = RequestMoveAndAttack(TargetUnit);
+				if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+				{
+					RequestAttack(TargetUnit);
+				}
+				else
+				{
+					RequestMoveAndAttack(TargetUnit);
+				}
 			}
 		}
 	}
-
-	if (bActionPerformed)
-	{
-		ResetAllHighlightedTiles();
-	}
-	else
-	{
-		OnActionFinished();
-	}
 }
 
-bool AGDUnit::IsUnitRotating()
+bool AGDUnit::IsUnitRotating() const
 {
 	return bRotationRequested;
 }
@@ -498,9 +586,17 @@ void AGDUnit::HighlightMovementRange()
 				if (PathLength > 0 && PathLength <= GetMovementRange() * GetActionPoints())
 				{
 					const bool bShortDistance = PathLength <= GetMovementRange() ? true : false;
+
 					Tile->ApplyMovementRangeInfoDecal(bShortDistance);
 
-					HighlightedTilesInRange.Emplace(MoveTemp(Tile));
+					if (bShortDistance)
+					{
+						HighlightedTilesInShortRange.Emplace(MoveTemp(Tile));
+					}
+					else
+					{
+						HighlightedTilesInLongRange.Emplace(MoveTemp(Tile));
+					}
 				}
 			}
 		}
@@ -520,23 +616,41 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 		for (auto& Tile : TilesInAttackRange)
 		{
-			if (Tile->IsOccupied())
+			if (Tile->IsOccupiedByEnemy(this))
 			{
 				Tile->ApplyEnemyInfoDecal();
-				HighlightedTilesInRange.Emplace(MoveTemp(Tile));
+				HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
+			}
+		}
+
+		if (UnitActionPoints > 1)
+		{
+			for (const auto& ReachableTile : HighlightedTilesInShortRange)
+			{
+				TilesInAttackRange = Grid->GetTilesAtDistance(
+					ReachableTile, GetAttackRange());
+
+				for (auto& Tile : TilesInAttackRange)
+				{
+					if (Tile->IsOccupiedByEnemy(this))
+					{
+						Tile->ApplyEnemyInfoDecal();
+						HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
+					}
+				}
 			}
 		}
 	}
 }
 
+bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
+{
+	return HighlightedTilesInShortRange.Contains(Tile) || HighlightedTilesInLongRange.Contains(Tile) ||
+		HighlightedEnemyTilesInRange.Contains(Tile);
+}
+
 void AGDUnit::OnActionFinished()
 {
+	RemoveFromActiveUnits();
 	TargetToAttackAfterMove = nullptr;
-
-	AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
-
-	if (PlayerPawn)
-	{
-		PlayerPawn->ActionFinished(CurrentTile);
-	}
 }

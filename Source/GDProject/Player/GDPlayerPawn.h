@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "GDProject/Interfaces/GDTileElement.h"
-#include "GDProject/Units/GDUnit.h"
 
 #include "GDPlayerPawn.generated.h"
 
 class AGDTile;
+class AGDUnit;
 
 UCLASS()
 class GDPROJECT_API AGDPlayerPawn : public APawn
@@ -19,22 +19,14 @@ class GDPROJECT_API AGDPlayerPawn : public APawn
 public:
 	AGDPlayerPawn();
 
-	void HandleTilesHovering();
-
 protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
-	AGDTile* SelectedTile;
-
-	UPROPERTY()
-	AGDUnit* SelectedUnit;
+	UPROPERTY(BlueprintReadWrite)
+	UObject* SelectedTileElement;
 
 	TArray<AGDTile*> HighlightedPath;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bWaitingForActionCompletion;
 
 	UPROPERTY(EditDefaultsOnly, Category="Widgets")
 	TSubclassOf<UUserWidget> UnitActionsWidgetClass;
@@ -42,20 +34,8 @@ protected:
 	UPROPERTY()
 	UUserWidget* UnitActionsWidget;
 
-	void SelectTile(AGDTile* TargetTile = nullptr);
-
-	UFUNCTION(BlueprintCallable)
-	void DeselectTile();
-
-	void TriggerClick();
-
-	AGDTile* TraceForTile(const FVector& Start, const FVector& End, bool bDrawDebugHelpers) const;
-
-	void UpdateHoveringTile(AGDTile* NewHoveringTile);
-
-	void RequestUnitAction();
-
-	AGDTile* GetTileUnderMouse() const;
+	UPROPERTY()
+	TSet<AGDUnit*> ActiveUnits;
 
 	virtual void BeginPlay() override;
 
@@ -64,5 +44,35 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void ActionFinished(AGDTile* NewCurrentTile);
+	void OnTurnBegin();
+
+	void OnTurnEnd();
+
+	void AddActiveUnit(AGDUnit* Unit);
+
+	void RemoveActiveUnit(AGDUnit* Unit);
+
+	UFUNCTION(BlueprintCallable)
+	void DeselectTileElement();
+	
+	void OnUnitDead(AGDUnit* Unit, int OwningPlayer);
+
+private:
+	void HandleTilesHovering();
+
+	AGDTile* GetTileUnderMouse() const;
+
+	AGDTile* TraceForTile(const FVector& Start, const FVector& End, bool bDrawDebugHelpers) const;
+
+	void UpdateHoveringTile(AGDTile* NewHoveringTile);
+
+	void HighlightHoveringTile() const;
+
+	void TriggerClick();
+
+	void SelectTileElement();
+
+	void RequestUnitAction() const;
+
+	int GetCurrentPlayerTurn() const;
 };

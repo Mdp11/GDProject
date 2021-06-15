@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDGrid.generated.h"
@@ -23,7 +22,7 @@ public:
 private:
 	TArray<TArray<AGDTile*>> Tiles;
 
-	TArray<AGDTile*> ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile);
+	static TArray<AGDTile*> ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
@@ -49,7 +48,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDUnit> TileUnitClassDummy;
-	
+
 	bool bMapGenerated;
 
 	virtual void BeginPlay() override;
