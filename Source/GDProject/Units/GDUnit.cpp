@@ -3,6 +3,7 @@
 
 #include "GDUnit.h"
 
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
@@ -56,7 +57,7 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
 	}
 	else
 	{
-		PlayAnimationAndDoAction(ImpactAnimation, [&](){ OnActionFinished();});
+		PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
 	}
 }
 
@@ -73,6 +74,17 @@ void AGDUnit::Die()
 
 	const float LifeSpan = 5.f;
 	SetLifeSpan(LifeSpan);
+
+	FTimerHandle TimerHandle_OnUnitDead;
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([&]()
+	{
+		if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+		{
+			GM->OnUnitDead(this, OwningPlayer);
+		}
+	});
+	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpan - 0.5f, false);
 }
 
 void AGDUnit::PerformMove(float DeltaTime)
@@ -204,7 +216,7 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 
 void AGDUnit::PowerUp()
 {
-	PlayAnimationAndDoAction(PowerUpAnimation, [&](){ OnActionFinished();});
+	PlayAnimationAndDoAction(PowerUpAnimation, [&]() { OnActionFinished(); });
 }
 
 void AGDUnit::Tick(float DeltaTime)
@@ -346,7 +358,7 @@ void AGDUnit::Attack()
 		ComputedDamage /= AttackedEnemy->GetDefence();
 	}
 
-	PlayAnimationAndDoAction(AttackAnimation, [&](){ OnActionFinished();});
+	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
 void AGDUnit::OnActionBegin()

@@ -69,16 +69,16 @@ void AGDProjectGameModeBase::OnUnitDead(AGDUnit* Unit, int Player)
 		Players.Remove(Player);
 		if (Players.Num() == 1)
 		{
-			GameOver(Players[0]);
+			GameOver(Players.begin().Key());
 		}
 	}
 }
 
 void AGDProjectGameModeBase::GameOver(int WinningPlayer)
 {
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	if (APawn* PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn())
 	{
-		PC->DisableInput(nullptr);
+		PlayerPawn->DisableInput(nullptr);
 	}
 
 	OnGameOver(WinningPlayer);
