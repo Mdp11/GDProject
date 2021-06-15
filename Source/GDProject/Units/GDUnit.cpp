@@ -82,7 +82,7 @@ void AGDUnit::PerformMove(float DeltaTime)
 		if (GetActorLocation().Equals(NextTileLocation))
 		{
 			AGDTile* ReachedTile = MovementPath[0];
-			IGDTileElement::Execute_SetTile(this, ReachedTile);
+			Execute_SetTile(this, ReachedTile);
 			MovementPath.RemoveAt(0);
 		}
 		else
@@ -104,6 +104,7 @@ void AGDUnit::StopMove()
 	bMoveRequested = false;
 
 	CurrentTile->Select();
+	Execute_Select(this);
 
 	if (TargetToAttackAfterMove)
 	{
@@ -274,7 +275,6 @@ bool AGDUnit::RequestMove()
 	bIsWalking = MovementPath.Num() <= 2;
 
 	CurrentTile->Deselect();
-	IGDTileElement::Execute_SetTile(this, MovementPath.Top());
 
 	return true;
 }
@@ -478,23 +478,26 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 
 void AGDUnit::HighlightActions(AGDTile* TargetTile)
 {
-	ResetHighlightedActionTiles();
-
-	if (TargetTile && TargetTile->IsTraversable())
+	if (!bRotationRequested)
 	{
-		float StopAtDistance = 0;
+		ResetHighlightedActionTiles();
 
-		if (TargetTile->IsOccupiedByEnemy(this))
+		if (TargetTile && TargetTile->IsTraversable())
 		{
-			HighlightedEnemyTile = TargetTile;
-			HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
+			float StopAtDistance = 0;
 
-			StopAtDistance = AttackRange;
-		}
+			if (TargetTile->IsOccupiedByEnemy(this))
+			{
+				HighlightedEnemyTile = TargetTile;
+				HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
 
-		if(IsTileInRangeOfAction(TargetTile))
-		{
-			HighlightMovementPath(TargetTile, StopAtDistance);
+				StopAtDistance = AttackRange;
+			}
+
+			if (IsTileInRangeOfAction(TargetTile))
+			{
+				HighlightMovementPath(TargetTile, StopAtDistance);
+			}
 		}
 	}
 }
