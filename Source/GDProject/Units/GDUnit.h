@@ -206,4 +206,6 @@ private:
 	void HighlightMovementRange();
 
 	void HighlightEnemiesInAttackRange();
+
+	bool IsTileInRangeOfAction(AGDTile* Tile) const;
 };

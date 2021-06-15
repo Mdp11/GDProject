@@ -389,19 +389,18 @@ void AGDUnit::ResetHighlightedTilesInRange()
 	{
 		Tile->RemoveInfoDecal();
 	}
+	HighlightedTilesInShortRange.Empty();
 
 	for (const auto& Tile : HighlightedTilesInLongRange)
 	{
 		Tile->RemoveInfoDecal();
 	}
+	HighlightedTilesInLongRange.Empty();
 
 	for (const auto& Tile : HighlightedEnemyTilesInRange)
 	{
 		Tile->RemoveInfoDecal();
 	}
-
-	HighlightedTilesInShortRange.Empty();
-	HighlightedTilesInLongRange.Empty();
 	HighlightedEnemyTilesInRange.Empty();
 }
 
@@ -484,12 +483,15 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 		if (TargetTile->IsOccupiedByEnemy(this))
 		{
 			HighlightedEnemyTile = TargetTile;
-			HighlightedEnemyTile->Highlight(EHighlightInfo::Default);
+			HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
 
 			StopAtDistance = AttackRange;
 		}
 
-		HighlightMovementPath(TargetTile, StopAtDistance);
+		if(IsTileInRangeOfAction(TargetTile))
+		{
+			HighlightMovementPath(TargetTile, StopAtDistance);
+		}
 	}
 }
 
@@ -616,6 +618,12 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 			}
 		}
 	}
+}
+
+bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
+{
+	return HighlightedTilesInShortRange.Contains(Tile) || HighlightedTilesInLongRange.Contains(Tile) ||
+		HighlightedEnemyTilesInRange.Contains(Tile);
 }
 
 void AGDUnit::OnActionFinished()
