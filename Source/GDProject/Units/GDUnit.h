@@ -16,6 +16,8 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 {
 	GENERATED_BODY()
 
+	friend class UHitNotify;
+
 public:
 	AGDUnit();
 
@@ -84,6 +86,9 @@ protected:
 	UAnimMontage* MissAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* ImpactAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* PowerUpAnimation;
 
 	UPROPERTY()
@@ -91,6 +96,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	AGDUnit* AttackedEnemy;
+
+	UPROPERTY(BlueprintReadOnly)
+	float ComputedDamage;
 
 	int OwningPlayer;
 
@@ -111,18 +119,19 @@ protected:
 	void PerformMove(float DeltaTime);
 
 	void StopMove();
-	
+
 	void PerformRotation(float DeltaTime);
-	
+
 	void DecreaseActionPointsBy(const int Value);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void PowerUp();
 
 	void UpdateTransparency() const;
-	
+	void ApplyDamage();
+
 	virtual void Attack();
-	
+
 	virtual void RequestMove();
 
 	float GetDefence() const;
@@ -147,7 +156,7 @@ protected:
 	void RequestMoveAndAttack(AGDUnit* Enemy);
 
 	virtual void OnActionBegin();
-	
+
 	virtual void OnActionFinished();
 
 	void ResetHighlightedTilesInRange();
@@ -159,6 +168,8 @@ protected:
 	void AddToActiveUnits();
 
 	void RemoveFromActiveUnits();
+
+	void PlayAnimation(UAnimMontage* Animation);
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -188,19 +199,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOwningPlayer(int NewOwningPlayer);
 
-	bool IsOwnedByPlayer(int Player) const; 
+	bool IsOwnedByPlayer(int Player) const;
 
 	void OnTurnBegin();
-	
+
 	void OnTurnEnd();
-	
+
 private:
 	float CriticalChanceAdjuster;
 
 	TSet<AGDTile*> HighlightedTilesInShortRange;
-	
+
 	TSet<AGDTile*> HighlightedTilesInLongRange;
-	
+
 	TSet<AGDTile*> HighlightedEnemyTilesInRange;
 
 	UPROPERTY()

@@ -38,3 +38,30 @@ void AGDWarrior::BeginPlay()
 
 	BaseDefence = Defence;
 }
+
+void AGDWarrior::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
+                                 const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
+	AddToActiveUnits();
+
+	if (!bIsDead && Health <= 0.f)
+	{
+		Die();
+	}
+	else if (bIsInGuard)
+	{
+		float GuardImpactAnimationDuration = 0.1f;
+		GuardImpactAnimationDuration += PlayAnimMontage(GuardImpactAnimation);
+
+		FTimerHandle TimerHandle_Die;
+		GetWorldTimerManager().SetTimer(TimerHandle_Die,
+		                                FTimerDelegate::CreateUObject(this, &AGDWarrior::RequestAttack,
+		                                                              Cast<AGDUnit>(DamageCauser), true),
+		                                GuardImpactAnimationDuration, false);
+	}
+	else
+	{
+		PlayAnimation(ImpactAnimation);
+	}
+}

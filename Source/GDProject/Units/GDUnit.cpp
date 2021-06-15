@@ -50,9 +50,15 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
                               const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
+	AddToActiveUnits();
+
 	if (!bIsDead && Health <= 0.f)
 	{
 		Die();
+	}
+	else
+	{
+		PlayAnimation(ImpactAnimation);
 	}
 }
 
@@ -64,9 +70,15 @@ void AGDUnit::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s died!"), *GetName());
 	bIsDead = true;
-	SetLifeSpan(5.f);
 
 	CurrentTile->SetTileElement(nullptr);
+
+	const float LifeSpan = 5.f;
+
+	FTimerHandle TimerHandle_Die;
+	GetWorldTimerManager().SetTimer(TimerHandle_Die, this, &AGDUnit::OnActionFinished, LifeSpan - 0.1f);
+
+	SetLifeSpan(LifeSpan);
 }
 
 void AGDUnit::PerformMove(float DeltaTime)
@@ -126,11 +138,11 @@ void AGDUnit::PerformRotation(float DeltaTime)
 	}
 	FVector Start, Dir;
 	PC->DeprojectMousePositionToWorld(Start, Dir);
-	
+
 	FHitResult HitResult;
 	const FVector End = Start + Dir * 8000.f;
 	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
-	
+
 	const FRotator CurrentUnitRotation = GetActorRotation();
 	const FRotator RotationOffset = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), HitResult.Location);
 	const FRotator NewRotation = FRotator(CurrentUnitRotation.Pitch, RotationOffset.Yaw, CurrentUnitRotation.Roll);
@@ -199,10 +211,7 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 void AGDUnit::PowerUp()
 {
 	AddToActiveUnits();
-	const float PowerUpAnimationDuration = PlayAnimMontage(PowerUpAnimation) + 0.01f;
-
-	FTimerHandle TimerHandle_PowerUp;
-	GetWorldTimerManager().SetTimer(TimerHandle_PowerUp, this, &AGDUnit::OnActionFinished, PowerUpAnimationDuration);
+	PlayAnimation(PowerUpAnimation);
 }
 
 void AGDUnit::Tick(float DeltaTime)
@@ -311,11 +320,14 @@ void AGDUnit::UpdateTransparency() const
 	}
 }
 
+void AGDUnit::ApplyDamage()
+{
+	AttackedEnemy->TakeDamage(ComputedDamage, FDamageEvent{}, GetController(), this);
+}
+
 void AGDUnit::Attack()
 {
-	float AttackAnimationDuration = 0.01f;
-
-	float Damage = 0;
+	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation;
 
 	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
@@ -326,7 +338,7 @@ void AGDUnit::Attack()
 	}
 	else
 	{
-		Damage = BaseDamage + CurrentTile->GetAttackModifier();
+		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
 
 		if (!IsCriticalHit())
 		{
@@ -335,18 +347,13 @@ void AGDUnit::Attack()
 		else
 		{
 			AttackAnimation = CriticalAttackAnimation;
-			Damage *= CriticalDamageMultiplier;
+			ComputedDamage *= CriticalDamageMultiplier;
 		}
 
-		Damage /= AttackedEnemy->GetDefence();
+		ComputedDamage /= AttackedEnemy->GetDefence();
 	}
 
-	AttackedEnemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
-	AttackAnimationDuration += PlayAnimMontage(AttackAnimation);
-
-	FTimerHandle TimerHandle_AttackOver;
-	GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
-	                                AttackAnimationDuration);
+	PlayAnimation(AttackAnimation);
 }
 
 void AGDUnit::OnActionBegin()
@@ -456,6 +463,14 @@ void AGDUnit::RemoveFromActiveUnits()
 	{
 		PlayerPawn->RemoveActiveUnit(this);
 	}
+}
+
+void AGDUnit::PlayAnimation(UAnimMontage* Animation)
+{
+	const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
+
+	FTimerHandle TimerHandle_Animation;
+	GetWorldTimerManager().SetTimer(TimerHandle_Animation, this, &AGDUnit::OnActionFinished, AnimationDuration);
 }
 
 
