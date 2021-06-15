@@ -172,6 +172,8 @@ protected:
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
+		AddToActiveUnits();
+		
 		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
 
 		FTimerHandle TimerHandle_Animation;

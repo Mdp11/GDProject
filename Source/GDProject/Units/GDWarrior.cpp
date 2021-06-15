@@ -43,7 +43,6 @@ void AGDWarrior::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, f
                                  const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
-	AddToActiveUnits();
 
 	if (!bIsDead && Health <= 0.f)
 	{
@@ -58,7 +57,7 @@ void AGDWarrior::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, f
 	}
 	else
 	{
-		PlayAnimationAndDoAction(GuardImpactAnimation, [&]()
+		PlayAnimationAndDoAction(ImpactAnimation, [&]()
 		{
 			OnActionFinished();
 		});

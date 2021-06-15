@@ -50,8 +50,6 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
                               const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
-	AddToActiveUnits();
-
 	if (!bIsDead && Health <= 0.f)
 	{
 		Die();
@@ -74,10 +72,6 @@ void AGDUnit::Die()
 	CurrentTile->SetTileElement(nullptr);
 
 	const float LifeSpan = 5.f;
-
-	FTimerHandle TimerHandle_Die;
-	GetWorldTimerManager().SetTimer(TimerHandle_Die, this, &AGDUnit::OnActionFinished, LifeSpan - 0.1f);
-
 	SetLifeSpan(LifeSpan);
 }
 
@@ -210,7 +204,6 @@ void AGDUnit::DecreaseActionPointsBy(const int Value)
 
 void AGDUnit::PowerUp()
 {
-	AddToActiveUnits();
 	PlayAnimationAndDoAction(PowerUpAnimation, [&](){ OnActionFinished();});
 }
 

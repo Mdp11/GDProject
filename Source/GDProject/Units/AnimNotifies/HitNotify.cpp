@@ -24,17 +24,21 @@ void UHitNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Ani
 		{
 			AttackingUnit->ApplyDamage();
 		}
-		else
+		else if (AttackingUnit->AttackedEnemy)
 		{
-			if (AttackingUnit->AttackedEnemy)
+			UAnimMontage* ImpactAnimMontage = AttackingUnit->AttackedEnemy->ImpactAnimation;
+
+			AGDWarrior* EnemyWarrior = Cast<AGDWarrior>(AttackingUnit->AttackedEnemy);
+			if (EnemyWarrior && EnemyWarrior->bIsInGuard)
 			{
-				AttackingUnit->AttackedEnemy->AddToActiveUnits();
-				AttackingUnit->AttackedEnemy->PlayAnimationAndDoAction(
-					AttackingUnit->ImpactAnimation, [Unit = AttackingUnit->AttackedEnemy]()
-					{
-						Unit->OnActionFinished();
-					});
+				ImpactAnimMontage = EnemyWarrior->GuardImpactAnimation;
 			}
+
+			AttackingUnit->AttackedEnemy->PlayAnimationAndDoAction(
+				ImpactAnimMontage, [Unit = AttackingUnit->AttackedEnemy]()
+				{
+					Unit->OnActionFinished();
+				});
 		}
 	}
 }
