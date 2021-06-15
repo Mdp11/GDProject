@@ -3,9 +3,6 @@
 
 #include "GDUnit.h"
 
-#include "NavigationSystem.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Blueprint/UserWidget.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
@@ -259,29 +256,48 @@ void AGDUnit::Deselect_Implementation()
 	ResetAllHighlightedTiles();
 }
 
-bool AGDUnit::RequestMove()
+void AGDUnit::RequestMove()
 {
-	if (MovementPath.Num() < 1 || MovementPath.Num() > MovementRange * CurrentActionPoints)
+	if (MovementPath.Num() >= 1 && MovementPath.Num() <= MovementRange * CurrentActionPoints)
 	{
-		return false;
+		OnActionBegin();
+
+		MovementPath.Num() <= MovementRange ? DecreaseActionPointsBy(1) : DecreaseActionPointsBy(2);
+
+		bMoveRequested = true;
+
+		bIsWalking = MovementPath.Num() <= 2;
+
+		CurrentTile->Deselect();
 	}
-
-	MovementPath.Num() <= MovementRange ? DecreaseActionPointsBy(1) : DecreaseActionPointsBy(2);
-
-	bMoveRequested = true;
-
-	AddToActiveUnits();
-
-	bIsWalking = MovementPath.Num() <= 2;
-
-	CurrentTile->Deselect();
-
-	return true;
 }
 
 float AGDUnit::GetDefence() const
 {
 	return Defence + CurrentTile->GetDefenceModifier();
+}
+
+bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
+{
+	return Enemy && Execute_GetTile(Enemy)->GetDistanceFrom(CurrentTile) <= AttackRange
+		&& (bIgnoreActionPoints || CurrentActionPoints > 0);
+}
+
+bool AGDUnit::IsCriticalHit()
+{
+	const bool bCriticalHit = FMath::FRandRange(0.f, 100.f)
+		<= CriticalChance + CurrentTile->GetCriticalChanceModifier() + CriticalChanceAdjuster;
+
+	if (!bCriticalHit)
+	{
+		CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
+	}
+	else
+	{
+		CriticalChanceAdjuster = 0.f;
+	}
+
+	return bCriticalHit;
 }
 
 void AGDUnit::UpdateTransparency() const
@@ -293,73 +309,68 @@ void AGDUnit::UpdateTransparency() const
 	}
 }
 
-bool AGDUnit::RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints)
+void AGDUnit::Attack()
 {
-	bool bAttackPerformed = false;
+	float AttackAnimationDuration = 0.01f;
 
-	if (Enemy && (bIgnoreActionPoints || CurrentActionPoints > 0))
+	float Damage = 0;
+	UAnimMontage* AttackAnimation;
+
+	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
+	if (Miss)
 	{
-		AddToActiveUnits();
+		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
+		AttackAnimation = MissAnimation;
+	}
+	else
+	{
+		Damage = BaseDamage + CurrentTile->GetAttackModifier();
 
-		bAttackPerformed = true;
+		if (!IsCriticalHit())
+		{
+			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
+		}
+		else
+		{
+			AttackAnimation = CriticalAttackAnimation;
+			Damage *= CriticalDamageMultiplier;
+		}
 
-		LastAttackedEnemy = Enemy;
+		Damage /= AttackedEnemy->GetDefence();
+	}
 
-		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Enemy->GetActorLocation()));
+	AttackedEnemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
+	AttackAnimationDuration += PlayAnimMontage(AttackAnimation);
+
+	FTimerHandle TimerHandle_AttackOver;
+	GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
+	                                AttackAnimationDuration);
+}
+
+void AGDUnit::OnActionBegin()
+{
+	AddToActiveUnits();
+	ResetAllHighlightedTiles();
+}
+
+void AGDUnit::RequestAttack(AGDUnit* Enemy, const bool bIgnoreActionPoints)
+{
+	if (CanAttackUnit(Enemy, bIgnoreActionPoints))
+	{
+		OnActionBegin();
+
+		AttackedEnemy = Enemy;
+		SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), AttackedEnemy->GetActorLocation()));
 
 		if (!bIgnoreActionPoints)
 		{
 			DecreaseActionPointsBy(MaxActionPoints);
 		}
 
-		float AttackAnimationDuration = 0.01f;
-
-		const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
-		if (Miss)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Missed!"));
-			Enemy->TakeDamage(0.f, FDamageEvent{}, GetController(), this);
-
-			AttackAnimationDuration += PlayAnimMontage(MissAnimation);
-		}
-		else
-		{
-			float Damage = BaseDamage + CurrentTile->GetAttackModifier();
-
-			UAnimMontage* AttackAnimation;
-
-			const bool CriticalHit = FMath::FRandRange(0.f, 100.f) <= CriticalChance + CurrentTile->
-				GetCriticalChanceModifier() + CriticalChanceAdjuster;
-			if (!CriticalHit)
-			{
-				AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
-				CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
-				AttackAnimation = CriticalAttackAnimation;
-				CriticalChanceAdjuster = 0.f;
-				Damage *= CriticalDamageMultiplier;
-			}
-
-			Damage /= Enemy->GetDefence();
-
-			Enemy->TakeDamage(Damage, FDamageEvent{}, GetController(), this);
-
-			AttackAnimationDuration += PlayAnimMontage(AttackAnimation);
-		}
-
-
-		FTimerHandle TimerHandle_AttackOver;
-		GetWorldTimerManager().SetTimer(TimerHandle_AttackOver, this, &AGDUnit::OnActionFinished,
-		                                AttackAnimationDuration);
-
+		Attack();
 
 		UpdateTransparency();
 	}
-
-	return bAttackPerformed;
 }
 
 int AGDUnit::GetMovementRange() const
@@ -502,27 +513,22 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 	}
 }
 
-bool AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
+void AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
 {
 	if (CurrentActionPoints > 1 && MovementPath.Num() > 0 && MovementRange >= MovementPath.Num())
 	{
 		TargetToAttackAfterMove = Enemy;
-
 		RequestMove();
-		return true;
 	}
-	return false;
 }
 
 void AGDUnit::RequestAction(AGDTile* TargetTile)
 {
-	bool bActionPerformed = false;
-
 	if (TargetTile)
 	{
 		if (!TargetTile->IsOccupied())
 		{
-			bActionPerformed = RequestMove();
+			RequestMove();
 		}
 		else if (AGDUnit* TargetUnit = Cast<AGDUnit>(TargetTile->GetTileElement()))
 		{
@@ -530,19 +536,14 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 			{
 				if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
 				{
-					bActionPerformed = RequestAttack(TargetUnit);
+					RequestAttack(TargetUnit);
 				}
 				else
 				{
-					bActionPerformed = RequestMoveAndAttack(TargetUnit);
+					RequestMoveAndAttack(TargetUnit);
 				}
 			}
 		}
-	}
-
-	if (bActionPerformed)
-	{
-		ResetAllHighlightedTiles();
 	}
 }
 

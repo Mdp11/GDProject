@@ -90,7 +90,7 @@ protected:
 	AGDUnit* TargetToAttackAfterMove;
 
 	UPROPERTY(BlueprintReadOnly)
-	AGDUnit* LastAttackedEnemy;
+	AGDUnit* AttackedEnemy;
 
 	int OwningPlayer;
 
@@ -117,17 +117,22 @@ protected:
 	void DecreaseActionPointsBy(const int Value);
 
 	UFUNCTION(BlueprintCallable)
-	void Powerup();
+	virtual void Powerup();
 
 	void UpdateTransparency() const;
-
-
-	virtual bool RequestMove();
+	
+	virtual void Attack();
+	
+	virtual void RequestMove();
 
 	float GetDefence() const;
 
+	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
+
+	virtual bool IsCriticalHit();
+
 	UFUNCTION(BlueprintCallable)
-	virtual bool RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints = false);
+	virtual void RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints = false);
 
 	int GetMovementRange() const;
 
@@ -139,9 +144,11 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ResetActionPoints();
 
-	bool RequestMoveAndAttack(AGDUnit* Enemy);
+	void RequestMoveAndAttack(AGDUnit* Enemy);
 
-	void OnActionFinished();
+	virtual void OnActionBegin();
+	
+	virtual void OnActionFinished();
 
 	void ResetHighlightedTilesInRange();
 
