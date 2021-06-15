@@ -27,7 +27,8 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::TriggerClick);
-	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::DeselectTileElement);
+	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this,
+	                                 &AGDPlayerPawn::DeselectTileElement);
 }
 
 void AGDPlayerPawn::OnTurnBegin()
@@ -51,9 +52,9 @@ void AGDPlayerPawn::RemoveActiveUnit(AGDUnit* Unit)
 
 int AGDPlayerPawn::GetCurrentPlayerTurn() const
 {
-	if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+	if (AGDProjectGameModeBase* GameMode = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
-		return GM->GetCurrentPlayerTurn();
+		return GameMode->GetCurrentPlayerTurn();
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Game mode not found."))
@@ -153,13 +154,11 @@ void AGDPlayerPawn::TriggerClick()
 		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
 		SelectedUnit->Rotate();
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Active units = %d"), ActiveUnits.Num());
-	if (ActiveUnits.Num() == 0)
+	else if (ActiveUnits.Num() == 0)
 	{
 		if (!SelectedTileElement)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Selecting tile"));
+			UE_LOG(LogTemp, Warning, TEXT("Selecting tile element"));
 			SelectTileElement();
 		}
 		else
@@ -176,18 +175,16 @@ void AGDPlayerPawn::SelectTileElement()
 {
 	if (HoveringTile && HoveringTile->IsOccupied())
 	{
-		if (AGDUnit* Unit = Cast<AGDUnit>(HoveringTile->GetTileElement()))
+		AGDUnit* Unit = Cast<AGDUnit>(HoveringTile->GetTileElement());
+		if (Unit && Unit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
 		{
-			if (Unit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
-			{
-				HoveringTile->Select();
+			HoveringTile->Select();
 
-				IGDTileElement::Execute_Select(Unit);
-				SelectedTileElement = Unit;
-				if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
-				{
-					UnitActionsWidget->AddToViewport();
-				}
+			IGDTileElement::Execute_Select(Unit);
+			SelectedTileElement = Unit;
+			if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
+			{
+				UnitActionsWidget->AddToViewport();
 			}
 		}
 	}
