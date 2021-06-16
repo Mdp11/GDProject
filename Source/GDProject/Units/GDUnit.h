@@ -214,7 +214,7 @@ public:
 
 	void OnTurnBegin();
 
-	void OnTurnEnd();
+	void OnTurnEnd() const;
 
 private:
 	float CriticalChanceAdjuster;

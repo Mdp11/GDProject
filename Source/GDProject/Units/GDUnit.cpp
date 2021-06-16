@@ -44,7 +44,7 @@ void AGDUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentActionPoints = MaxActionPoints;
+	ResetActionPoints();
 }
 
 void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
@@ -131,8 +131,7 @@ void AGDUnit::StopMove()
 	{
 		bRotationRequested = true;
 	}
-
-	UpdateTransparency();
+	
 	OnActionFinished();
 }
 
@@ -203,12 +202,17 @@ bool AGDUnit::IsOwnedByPlayer(const int Player) const
 
 void AGDUnit::OnTurnBegin()
 {
-	CurrentActionPoints = MaxActionPoints;
+	ResetActionPoints();
 	RemoveSpecial();
 }
 
-void AGDUnit::OnTurnEnd()
+void AGDUnit::OnTurnEnd() const
 {
+	if (ActiveMaterial)
+	{
+		GetMesh()->SetMaterial(0, ActiveMaterial);
+		GetMesh()->SetCastShadow(true);
+	}
 }
 
 void AGDUnit::DecreaseActionPointsBy(const int Value)
@@ -384,8 +388,6 @@ void AGDUnit::RequestAttack(AGDUnit* Enemy, const bool bIgnoreActionPoints)
 		}
 
 		Attack();
-
-		UpdateTransparency();
 	}
 }
 
@@ -407,11 +409,6 @@ int AGDUnit::GetAttackRange() const
 void AGDUnit::ResetActionPoints()
 {
 	CurrentActionPoints = MaxActionPoints;
-	if (ActiveMaterial)
-	{
-		GetMesh()->SetMaterial(0, ActiveMaterial);
-		GetMesh()->SetCastShadow(true);
-	}
 }
 
 void AGDUnit::ResetHighlightedTilesInRange()
@@ -652,5 +649,6 @@ bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
 void AGDUnit::OnActionFinished()
 {
 	RemoveFromActiveUnits();
+	UpdateTransparency();
 	TargetToAttackAfterMove = nullptr;
 }
