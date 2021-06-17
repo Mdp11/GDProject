@@ -3,3 +3,9 @@
 
 #include "GDArcher.h"
 
+AGDArcher::AGDArcher()
+{
+	bIsInOverWatch = false;
+
+	AttackRange = 5;
+}

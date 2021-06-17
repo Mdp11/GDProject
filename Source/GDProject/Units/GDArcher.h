@@ -6,16 +6,14 @@
 #include "GDUnit.h"
 #include "GDArcher.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class GDPROJECT_API AGDArcher : public AGDUnit
 {
 	GENERATED_BODY()
 
-	protected:
-
+public:
+	AGDArcher();
+protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInOverWatch;
 };

@@ -19,7 +19,7 @@ AGDUnit::AGDUnit()
 	HealthComponent = CreateDefaultSubobject<UGDHealthComponent>(TEXT("HealthComp"));
 	HealthComponent->OnHealthChanged.AddDynamic(this, &AGDUnit::OnHealthChanged);
 
-	GetMesh()->SetRenderCustomDepth(true);
+	// GetMesh()->SetRenderCustomDepth(true);
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> OutlineMaterialFinder(
 		TEXT("MaterialInstanceConstant'/Game/Materials/MI_Outline.MI_Outline'"));
@@ -653,10 +653,15 @@ void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
 		OutlineComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		OutlineComponent->SetCastShadow(false);
 
-		UMaterialInstanceDynamic* MaterialInstanceDynamic = OutlineComponent->CreateDynamicMaterialInstance(
+		UMaterialInstanceDynamic* MaterialInstanceDynamic_First = OutlineComponent->CreateDynamicMaterialInstance(
 			0, OutlineMaterialInstance);
-		MaterialInstanceDynamic->SetVectorParameterValue(TEXT("Color"), OutlineColor);
-		MaterialInstanceDynamic->SetScalarParameterValue(TEXT("Scale"), 1.5f);
+		MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
+		MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.5f);
+		
+		UMaterialInstanceDynamic* MaterialInstanceDynamic_Second = OutlineComponent->CreateDynamicMaterialInstance(
+			1, OutlineMaterialInstance);
+		MaterialInstanceDynamic_Second->SetVectorParameterValue(TEXT("Color"), OutlineColor);
+		MaterialInstanceDynamic_Second->SetScalarParameterValue(TEXT("Scale"), 1.5f);
 
 		FinishAddComponent(OutlineComponent, true, GetMesh()->GetRelativeTransform());
 	}
