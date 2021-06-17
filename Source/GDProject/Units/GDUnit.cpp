@@ -213,11 +213,6 @@ void AGDUnit::OnTurnBegin()
 
 void AGDUnit::OnTurnEnd() const
 {
-	if (ActiveMaterial)
-	{
-		GetMesh()->SetMaterial(0, ActiveMaterial);
-		GetMesh()->SetCastShadow(true);
-	}
 }
 
 void AGDUnit::DecreaseActionPointsBy(const int Value)
@@ -327,15 +322,6 @@ bool AGDUnit::IsCriticalHit()
 	}
 
 	return bCriticalHit;
-}
-
-void AGDUnit::UpdateTransparency() const
-{
-	if (CurrentActionPoints == 0 && InactiveMaterial)
-	{
-		GetMesh()->SetMaterial(0, InactiveMaterial);
-		GetMesh()->SetCastShadow(false);
-	}
 }
 
 void AGDUnit::ApplyDamage()
@@ -688,6 +674,5 @@ void AGDUnit::RemoveOutline()
 void AGDUnit::OnActionFinished()
 {
 	RemoveFromActiveUnits();
-	UpdateTransparency();
 	TargetToAttackAfterMove = nullptr;
 }

@@ -32,12 +32,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	UGDHealthComponent* HealthComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Material")
-	UMaterial* ActiveMaterial;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Material")
-	UMaterial* InactiveMaterial;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	int MaxActionPoints;
 
@@ -134,7 +128,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void PowerUp();
 
-	void UpdateTransparency() const;
 	void ApplyDamage();
 
 	virtual void Attack();
