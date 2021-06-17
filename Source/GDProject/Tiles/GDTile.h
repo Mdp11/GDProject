@@ -9,6 +9,14 @@
 #include "GDTile.generated.h"
 
 class AGDGrid;
+class AGDUnit;
+
+enum class EHighlightInfo
+{
+	Default,
+	Enemy,
+	Ally
+};
 
 UCLASS()
 class GDPROJECT_API AGDTile : public AActor
@@ -48,7 +56,6 @@ protected:
 	FIntPoint Coordinates;
 
 	//Tile Modifiers
-
 	UPROPERTY(EditDefaultsOnly, Category = "Fight Modifiers")
 	float AttackModifier;
 
@@ -72,11 +79,12 @@ public:
 
 	void Deselect();
 
-	void Highlight(bool bOn) const;
+	void Highlight(const EHighlightInfo& HighlightInfo) const;
+
+	void RemoveHighlight() const;
 
 	void SetTileElement(UObject* NewTileElement);
 
-public:
 	UFUNCTION(CallInEditor, Category = "Tile Type")
 	void ChangeInForest();
 
@@ -85,21 +93,23 @@ public:
 
 	void SetCoordinates(const FIntPoint& NewCoordinates);
 
-	void HighlightTargetEnemy(bool bOn) const;
-
 	UFUNCTION(BlueprintCallable)
 	UObject* GetTileElement() const;
 
 	bool IsOccupied() const;
 
+	bool IsOccupiedByEnemy(AGDUnit* OtherUnit) const;
+
 	bool IsTraversable() const;
 
+	UFUNCTION(BlueprintCallable)
 	FIntPoint GetCoordinates() const;
 
 	int GetDistanceFrom(AGDTile* TargetTile) const;
 
 	TArray<AGDTile*> GetTraversableNeighbours() const;
 
+	UFUNCTION(BlueprintCallable)
 	AGDGrid* GetGrid() const;
 
 	void ApplyMovementRangeInfoDecal(bool bShort) const;

@@ -16,6 +16,8 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 {
 	GENERATED_BODY()
 
+	friend class UHitNotify;
+
 public:
 	AGDUnit();
 
@@ -71,26 +73,34 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsWalking;
 
-	UPROPERTY(EditDefaultsOnly, Category="Special")
-	TSubclassOf<UUserWidget> SpecialWidgetClass;
-
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
-	UAnimMontage* AttackAnimation;
+	UAnimMontage* BaseAttackAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* AlternativeAttackAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* CriticalAttackAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* MissAnimation;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
-	UAnimMontage* PowerupAnimation;
+	UAnimMontage* ImpactAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* PowerUpAnimation;
 
 	UPROPERTY()
 	AGDUnit* TargetToAttackAfterMove;
 
 	UPROPERTY(BlueprintReadOnly)
-	AGDUnit* LastAttackedEnemy;
+	AGDUnit* AttackedEnemy;
+
+	UPROPERTY(BlueprintReadOnly)
+	float ComputedDamage;
+
+	int OwningPlayer;
 
 	virtual void BeginPlay() override;
 
@@ -109,23 +119,29 @@ protected:
 	void PerformMove(float DeltaTime);
 
 	void StopMove();
-	
+
 	void PerformRotation(float DeltaTime);
-	
+
 	void DecreaseActionPointsBy(const int Value);
 
 	UFUNCTION(BlueprintCallable)
-	void Powerup();
+	virtual void PowerUp();
 
 	void UpdateTransparency() const;
+	void ApplyDamage();
 
+	virtual void Attack();
 
-	virtual bool RequestMove();
+	virtual void RequestMove();
 
 	float GetDefence() const;
 
+	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
+
+	virtual bool IsCriticalHit();
+
 	UFUNCTION(BlueprintCallable)
-	virtual bool RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints = false);
+	virtual void RequestAttack(AGDUnit* Enemy, bool bIgnoreActionPoints = false);
 
 	int GetMovementRange() const;
 
@@ -137,15 +153,34 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void ResetActionPoints();
 
-	bool RequestMoveAndAttack(AGDUnit* Enemy);
+	void RequestMoveAndAttack(AGDUnit* Enemy);
 
-	void OnActionFinished();
+	virtual void OnActionBegin();
+
+	virtual void OnActionFinished();
 
 	void ResetHighlightedTilesInRange();
 
 	void ResetHighlightedActionTiles();
 
 	void ResetAllHighlightedTiles();
+
+	void AddToActiveUnits();
+
+	void RemoveFromActiveUnits();
+
+	template <typename Function>
+	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
+	{
+		AddToActiveUnits();
+		
+		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
+
+		FTimerHandle TimerHandle_Animation;
+		FTimerDelegate TimerDelegate;
+		TimerDelegate.BindLambda(Action);
+		GetWorldTimerManager().SetTimer(TimerHandle_Animation, TimerDelegate, AnimationDuration, false);
+	}
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -166,13 +201,29 @@ public:
 
 	void RequestAction(AGDTile* TargetTile);
 
-	bool IsUnitRotating();
+	bool IsUnitRotating() const;
 
 	void Rotate();
+
+	bool IsEnemy(AGDUnit* OtherUnit) const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetOwningPlayer(int NewOwningPlayer);
+
+	bool IsOwnedByPlayer(int Player) const;
+
+	void OnTurnBegin();
+
+	void OnTurnEnd();
+
 private:
 	float CriticalChanceAdjuster;
 
-	TSet<AGDTile*> HighlightedTilesInRange;
+	TSet<AGDTile*> HighlightedTilesInShortRange;
+
+	TSet<AGDTile*> HighlightedTilesInLongRange;
+
+	TSet<AGDTile*> HighlightedEnemyTilesInRange;
 
 	UPROPERTY()
 	AGDTile* HighlightedEnemyTile;
@@ -184,4 +235,6 @@ private:
 	void HighlightMovementRange();
 
 	void HighlightEnemiesInAttackRange();
+
+	bool IsTileInRangeOfAction(AGDTile* Tile) const;
 };

@@ -5,7 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
-#include "GDProject/Tiles/GDGrid.h"
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 
@@ -13,8 +13,6 @@ AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
-	bWaitingForActionCompletion = false;
 }
 
 void AGDPlayerPawn::Tick(float DeltaTime)
@@ -29,18 +27,38 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::TriggerClick);
-	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::DeselectTile);
+	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this,
+	                                 &AGDPlayerPawn::DeselectTileElement);
 }
 
-void AGDPlayerPawn::ActionFinished(AGDTile* NewCurrentTile)
+void AGDPlayerPawn::OnTurnBegin()
 {
-	bWaitingForActionCompletion = false;
+}
 
-	if (NewCurrentTile && NewCurrentTile != SelectedTile)
+void AGDPlayerPawn::OnTurnEnd()
+{
+	DeselectTileElement();
+}
+
+void AGDPlayerPawn::AddActiveUnit(AGDUnit* Unit)
+{
+	ActiveUnits.Add(Unit);
+}
+
+void AGDPlayerPawn::RemoveActiveUnit(AGDUnit* Unit)
+{
+	ActiveUnits.Remove(Unit);
+}
+
+int AGDPlayerPawn::GetCurrentPlayerTurn() const
+{
+	if (AGDProjectGameModeBase* GameMode = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
-		//DeselectTile();
-		SelectTile(NewCurrentTile);
+		return GameMode->GetCurrentPlayerTurn();
 	}
+
+	UE_LOG(LogTemp, Error, TEXT("Game mode not found."))
+	return -1;
 }
 
 void AGDPlayerPawn::HandleTilesHovering()
@@ -51,9 +69,9 @@ void AGDPlayerPawn::HandleTilesHovering()
 	{
 		UpdateHoveringTile(TargetTile);
 
-		if (SelectedTile && !bWaitingForActionCompletion)
+		if (SelectedTileElement && ActiveUnits.Num() == 0)
 		{
-			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
+			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 			{
 				Unit->HighlightActions(HoveringTile);
 			}
@@ -86,48 +104,66 @@ void AGDPlayerPawn::BeginPlay()
 	}
 }
 
+void AGDPlayerPawn::HighlightHoveringTile() const
+{
+	if (HoveringTile)
+	{
+		EHighlightInfo HighlightInfo = EHighlightInfo::Default;
+
+		AGDUnit* HoveringUnit = Cast<AGDUnit>(HoveringTile->GetTileElement());
+		if (HoveringUnit)
+		{
+			if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
+			{
+				HighlightInfo = EHighlightInfo::Ally;
+			}
+			else
+			{
+				HighlightInfo = EHighlightInfo::Enemy;
+			}
+		}
+		HoveringTile->Highlight(HighlightInfo);
+	}
+}
+
 void AGDPlayerPawn::UpdateHoveringTile(AGDTile* NewHoveringTile)
 {
 	if (HoveringTile)
 	{
-		HoveringTile->Highlight(false);
-	}
-
-	if (NewHoveringTile)
-	{
-		NewHoveringTile->Highlight(true);
+		HoveringTile->RemoveHighlight();
 	}
 
 	HoveringTile = NewHoveringTile;
+
+	HighlightHoveringTile();
 }
 
-void AGDPlayerPawn::RequestUnitAction()
+void AGDPlayerPawn::RequestUnitAction() const
 {
-	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTile->GetTileElement()))
+	if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 	{
-		bWaitingForActionCompletion = true;
-		SelectedUnit = Unit;
 		Unit->RequestAction(HoveringTile);
 	}
 }
 
 void AGDPlayerPawn::TriggerClick()
 {
+	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-     	UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
-     	SelectedUnit->Rotate();
+		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
+		SelectedUnit->Rotate();
 	}
-	if (!bWaitingForActionCompletion)
+	else if (ActiveUnits.Num() == 0)
 	{
-		if (!SelectedTile)
+		if (!SelectedTileElement)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Selecting tile"));
-			SelectTile();
+			UE_LOG(LogTemp, Warning, TEXT("Selecting tile element"));
+			SelectTileElement();
 		}
 		else
 		{
-			if (SelectedTile != HoveringTile && SelectedTile->IsOccupied())
+			if (IGDTileElement::Execute_GetTile(SelectedTileElement) != HoveringTile)
 			{
 				RequestUnitAction();
 			}
@@ -135,47 +171,61 @@ void AGDPlayerPawn::TriggerClick()
 	}
 }
 
-void AGDPlayerPawn::SelectTile(AGDTile* TargetTile)
+void AGDPlayerPawn::SelectTileElement()
 {
-	AGDTile* TileToSelect = TargetTile ? TargetTile : HoveringTile;
-
-	if (TileToSelect && TileToSelect->IsOccupied())
+	if (HoveringTile && HoveringTile->IsOccupied())
 	{
-		SelectedTile = TileToSelect;
-		SelectedTile->Select();
-
-		IGDTileElement::Execute_Select(TileToSelect->GetTileElement());
-
-		if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
+		AGDUnit* Unit = Cast<AGDUnit>(HoveringTile->GetTileElement());
+		if (Unit && Unit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
 		{
-			UnitActionsWidget->AddToViewport();
+			HoveringTile->Select();
+
+			IGDTileElement::Execute_Select(Unit);
+			SelectedTileElement = Unit;
+			if (UnitActionsWidget && !UnitActionsWidget->IsInViewport())
+			{
+				UnitActionsWidget->AddToViewport();
+			}
 		}
 	}
 }
 
-void AGDPlayerPawn::DeselectTile()
+void AGDPlayerPawn::DeselectTileElement()
 {
+	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
 	if (SelectedUnit && SelectedUnit->IsUnitRotating())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
-		SelectedUnit->Rotate();
-		SelectedUnit = nullptr;
-	
-	}
-	if (!bWaitingForActionCompletion && SelectedTile)
-	{
-		if (SelectedTile->IsOccupied())
+		if (SelectedUnit->IsUnitRotating())
 		{
-			IGDTileElement::Execute_Deselect(SelectedTile->GetTileElement());
+			UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
+			SelectedUnit->Rotate();
+		}
+	}
 
-			if (UnitActionsWidget)
-			{
-				UnitActionsWidget->RemoveFromViewport();
-			}
+	if (ActiveUnits.Num() == 0 && SelectedTileElement)
+	{
+		IGDTileElement::Execute_Deselect(SelectedTileElement);
+		IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();
+
+		if (UnitActionsWidget)
+		{
+			UnitActionsWidget->RemoveFromViewport();
 		}
 
-		SelectedTile->Deselect();
-		SelectedTile = nullptr;
+		SelectedTileElement = nullptr;
+	}
+}
+
+void AGDPlayerPawn::OnUnitDead(AGDUnit* Unit, const int OwningPlayer)
+{
+	if (SelectedTileElement == Unit)
+	{
+		DeselectTileElement();
+	}
+
+	if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+	{
+		GM->OnUnitDead(Unit, OwningPlayer);
 	}
 }
 
