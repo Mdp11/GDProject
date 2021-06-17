@@ -9,6 +9,7 @@
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Tiles/GDGrid.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/CapsuleComponent.h"
 
 
 AGDUnit::AGDUnit()
@@ -19,6 +20,10 @@ AGDUnit::AGDUnit()
 	HealthComponent->OnHealthChanged.AddDynamic(this, &AGDUnit::OnHealthChanged);
 
 	GetMesh()->SetRenderCustomDepth(true);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> OutlineMaterialFinder(
+		TEXT("MaterialInstanceConstant'/Game/Materials/MI_Outline.MI_Outline'"));
+	OutlineMaterialInstance = OutlineMaterialFinder.Object;
 
 	MaxActionPoints = 2;
 
@@ -71,7 +76,7 @@ void AGDUnit::Die()
 	bIsDead = true;
 
 	CurrentTile->SetTileElement(nullptr);
-	
+
 	Execute_Deselect(this);
 
 	const float LifeSpan = 5.f;
@@ -131,7 +136,7 @@ void AGDUnit::StopMove()
 	{
 		bRotationRequested = true;
 	}
-	
+
 	OnActionFinished();
 }
 
@@ -269,12 +274,14 @@ bool AGDUnit::CanMove_Implementation()
 
 void AGDUnit::Select_Implementation()
 {
+	AddOutline(FLinearColor::Green);
 	HighlightMovementRange();
 	HighlightEnemiesInAttackRange();
 }
 
 void AGDUnit::Deselect_Implementation()
 {
+	RemoveOutline();
 	ResetAllHighlightedTiles();
 }
 
@@ -644,6 +651,38 @@ bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
 {
 	return HighlightedTilesInShortRange.Contains(Tile) || HighlightedTilesInLongRange.Contains(Tile) ||
 		HighlightedEnemyTilesInRange.Contains(Tile);
+}
+
+void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
+{
+	if (!OutlineComponent)
+	{
+		OutlineComponent = Cast<USkeletalMeshComponent>(
+			AddComponentByClass(USkeletalMeshComponent::StaticClass(), true, GetMesh()->GetRelativeTransform(), true));
+		OutlineComponent->SetupAttachment(GetCapsuleComponent());
+
+		OutlineComponent->SetSkeletalMesh(GetMesh()->SkeletalMesh, false);
+		OutlineComponent->SetMasterPoseComponent(GetMesh());
+
+		OutlineComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		OutlineComponent->SetCastShadow(false);
+
+		UMaterialInstanceDynamic* MaterialInstanceDynamic = OutlineComponent->CreateDynamicMaterialInstance(
+			0, OutlineMaterialInstance);
+		MaterialInstanceDynamic->SetVectorParameterValue(TEXT("Color"), OutlineColor);
+		MaterialInstanceDynamic->SetScalarParameterValue(TEXT("Scale"), 1.5f);
+
+		FinishAddComponent(OutlineComponent, true, GetMesh()->GetRelativeTransform());
+	}
+}
+
+void AGDUnit::RemoveOutline()
+{
+	if (OutlineComponent)
+	{
+		OutlineComponent->DestroyComponent();
+		OutlineComponent = nullptr;
+	}
 }
 
 void AGDUnit::OnActionFinished()

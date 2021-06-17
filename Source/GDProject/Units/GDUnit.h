@@ -22,6 +22,13 @@ public:
 	AGDUnit();
 
 protected:
+
+	UPROPERTY()
+	USkeletalMeshComponent* OutlineComponent;
+
+	UPROPERTY()
+	UMaterialInstance* OutlineMaterialInstance;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	UGDHealthComponent* HealthComponent;
 
@@ -237,4 +244,8 @@ private:
 	void HighlightEnemiesInAttackRange();
 
 	bool IsTileInRangeOfAction(AGDTile* Tile) const;
+
+	void AddOutline(const FLinearColor& OutlineColor);
+
+	void RemoveOutline();
 };
