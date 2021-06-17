@@ -13,5 +13,9 @@ UCLASS()
 class GDPROJECT_API AGDArcher : public AGDUnit
 {
 	GENERATED_BODY()
-	
+
+	protected:
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsInOverWatch;
 };
