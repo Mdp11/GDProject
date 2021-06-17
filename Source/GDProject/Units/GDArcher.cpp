@@ -8,4 +8,15 @@ AGDArcher::AGDArcher()
 	bIsInOverWatch = false;
 
 	AttackRange = 5;
+
+	ArrowAttachSocketName = "ArrowSocket";
 }
+
+void AGDArcher::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AlternativeAttackAnimation = CriticalAttackAnimation = MissAnimation = BaseAttackAnimation;
+}
+
+
