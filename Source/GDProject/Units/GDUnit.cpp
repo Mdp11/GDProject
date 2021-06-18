@@ -28,6 +28,9 @@ AGDUnit::AGDUnit()
 	AttackRange = 5;
 	HitChance = 90.f;
 
+	SideAttackModifier = 0.2f; 
+	BackAttackModifier = 0.5f;
+
 	CriticalChance = 10.f;
 	CriticalChanceAdjuster = 0.f;
 	CriticalDamageMultiplier = 2.f;
@@ -337,6 +340,7 @@ void AGDUnit::Attack()
 {
 	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation;
+	const float AngleDiff = round(abs(AttackedEnemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
 
 	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
 	if (Miss)
@@ -347,29 +351,34 @@ void AGDUnit::Attack()
 	else
 	{
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
-
-		if (AttackedEnemy->GetActorRotation().Equals(GetActorRotation()) || IsCriticalHit())
+		ComputedDamage /= AttackedEnemy->GetDefence();
+		
+		if (AngleDiff == 0)
+		{
+			CriticalChance += 30.f;
+			ComputedDamage /= (AttackedEnemy->GetDefence() * BackAttackModifier);
+			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
+			
+		} else if (AngleDiff == 90 || AngleDiff == 270)
+		{
+			CriticalChance += 20.f;
+            ComputedDamage /= (AttackedEnemy->GetDefence() * SideAttackModifier);
+            UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
+		}
+		
+		if (IsCriticalHit())
 		{
 			AttackAnimation = CriticalAttackAnimation;
-         	ComputedDamage *= CriticalDamageMultiplier;
-		}
-		else
+			ComputedDamage *= CriticalDamageMultiplier;
+		} else
 		{
 			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
-		}
-
-		ComputedDamage /= AttackedEnemy->GetDefence();
-
-		const float AngleDiff = round(abs(AttackedEnemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
-		if (AngleDiff == 90 || AngleDiff == 270)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
-			ComputedDamage = BaseDamage;
 		}
 	}
 
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
+
 
 void AGDUnit::OnActionBegin()
 {
