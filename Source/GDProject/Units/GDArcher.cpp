@@ -52,9 +52,8 @@ void AGDArcher::SpawnArrow()
 }
 
 void AGDArcher::FireArrow() const
-{
+{	
 	FVector TargetLocation;
-	
 	if(bMiss)
 	{
 		TargetLocation = AttackedEnemy->GetActorLocation();

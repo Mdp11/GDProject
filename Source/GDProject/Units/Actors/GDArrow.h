@@ -8,7 +8,7 @@
 
 #include "GDArrow.generated.h"
 
-class UCapsuleComponent;
+class AGDUnit;
 
 UCLASS()
 class GDPROJECT_API AGDArrow : public AActor
@@ -19,14 +19,14 @@ public:
 	AGDArrow();
 
 protected:
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-	UCapsuleComponent* CollisionComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY()
+	AGDUnit* OwnerUnit;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void Fire(const FVector& Target);

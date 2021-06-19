@@ -4,7 +4,7 @@
 #include "GDArrow.h"
 
 #include "DrawDebugHelpers.h"
-#include "Components/CapsuleComponent.h"
+#include "GDProject/Units/GDUnit.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AGDArrow::AGDArrow()
@@ -32,6 +32,7 @@ void AGDArrow::Tick(float DeltaTime)
 
 void AGDArrow::FireInDirection(const FVector& TargetLocation)
 {
+	OwnerUnit = Cast<AGDUnit>(GetOwner());
 	StaticMeshComponent->IgnoreActorWhenMoving(GetOwner(), true);
 
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
@@ -57,5 +58,11 @@ void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 	                 ETeleportType::TeleportPhysics);
 
 	AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
+
+	if (OwnerUnit)
+	{
+		OwnerUnit->ApplyDamage();
+	}
+
 	SetLifeSpan(3.f);
 }

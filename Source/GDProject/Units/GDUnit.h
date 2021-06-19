@@ -127,8 +127,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void PowerUp();
-
-	void ApplyDamage();
 	
 	virtual bool Miss();
 
@@ -217,6 +215,8 @@ public:
 	void OnTurnBegin();
 
 	void OnTurnEnd() const;
+
+	void ApplyDamage();
 
 private:
 	float CriticalChanceAdjuster;
