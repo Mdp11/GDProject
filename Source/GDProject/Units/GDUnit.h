@@ -134,8 +134,6 @@ protected:
 
 	virtual void RequestMove();
 
-	float GetDefence() const;
-
 	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
 
 	virtual bool IsCriticalHit();
@@ -217,6 +215,8 @@ public:
 	void OnTurnEnd() const;
 
 	void ApplyDamage();
+
+	float GetDefence() const;
 
 private:
 	float CriticalChanceAdjuster;

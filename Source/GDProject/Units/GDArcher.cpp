@@ -4,6 +4,7 @@
 #include "GDArcher.h"
 
 #include "Actors/GDArrow.h"
+#include "GDProject/Tiles/GDTile.h"
 
 AGDArcher::AGDArcher()
 {
@@ -26,6 +27,30 @@ bool AGDArcher::Miss()
 	bMiss = Super::Miss();
 
 	return bMiss;
+}
+
+void AGDArcher::Attack()
+{
+	ComputedDamage = 0.f;
+	UAnimMontage* AttackAnimation = CurrentTile->GetDistanceFrom(IGDTileElement::Execute_GetTile(AttackedEnemy)) <= 1
+		                                ? MeleeAttackAnimation
+		                                : BaseAttackAnimation;
+
+	if (!Miss())
+	{
+		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
+		if (IsCriticalHit())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
+			ComputedDamage *= CriticalDamageMultiplier;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
+	}
+
+	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
 void AGDArcher::BeginPlay()
@@ -52,14 +77,14 @@ void AGDArcher::SpawnArrow()
 }
 
 void AGDArcher::FireArrow() const
-{	
+{
 	FVector TargetLocation;
-	if(bMiss)
+	if (bMiss)
 	{
 		TargetLocation = AttackedEnemy->GetActorLocation();
 		TargetLocation.Z += FMath::RandRange(150.f, 300.f);
 	}
-	else if(bCriticalHit)
+	else if (bCriticalHit)
 	{
 		TargetLocation = AttackedEnemy->GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace);
 		TargetLocation.Y += FMath::RandRange(-5.f, 5.f);

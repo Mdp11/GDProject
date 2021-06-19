@@ -28,6 +28,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category="Arrow")
 	FName ArrowAttachSocketName;
 
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* MeleeAttackAnimation;
+
 	bool bCriticalHit;
 
 	bool bMiss;
@@ -35,6 +38,8 @@ protected:
 	virtual bool IsCriticalHit() override;
 
 	virtual bool Miss() override;
+
+	virtual void Attack() override;
 
 	virtual void BeginPlay() override;
 
