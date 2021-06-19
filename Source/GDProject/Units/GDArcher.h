@@ -17,7 +17,7 @@ class GDPROJECT_API AGDArcher : public AGDUnit
 
 public:
 	AGDArcher();
-	
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInOverWatch;
@@ -28,8 +28,13 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category="Arrow")
 	FName ArrowAttachSocketName;
 
+	virtual void BeginPlay() override;
+
+private:
 	UPROPERTY()
 	AGDArrow* Arrow;
 
-	virtual void BeginPlay() override;
+	void SpawnArrow();
+
+	void FireArrow() const;
 };

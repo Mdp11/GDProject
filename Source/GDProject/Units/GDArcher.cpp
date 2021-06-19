@@ -3,6 +3,8 @@
 
 #include "GDArcher.h"
 
+#include "Actors/GDArrow.h"
+
 AGDArcher::AGDArcher()
 {
 	bIsInOverWatch = false;
@@ -15,8 +17,27 @@ AGDArcher::AGDArcher()
 void AGDArcher::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	AlternativeAttackAnimation = CriticalAttackAnimation = MissAnimation = BaseAttackAnimation;
 }
 
+void AGDArcher::SpawnArrow()
+{
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+	SpawnParameters.Instigator = GetInstigator();
+	SpawnParameters.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
+	Arrow = GetWorld()->SpawnActor<AGDArrow>(ArrowClass, SpawnParameters);
+	if (Arrow)
+	{
+		Arrow->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		                         ArrowAttachSocketName);
+	}
+}
+
+void AGDArcher::FireArrow() const
+{
+	Arrow->FireInDirection(AttackedEnemy->GetActorLocation());
+}
