@@ -5,14 +5,24 @@
 
 #include "DrawDebugHelpers.h"
 #include "Blueprint/UserWidget.h"
+#include "Camera/CameraActor.h"
 #include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundActors);
+	UE_LOG(LogTemp, Error, TEXT("Founded CameraManager, %i"), FoundActors.Num())
+	if (FoundActors.Num() > 0)
+	{
+		CameraManger = Cast<AGDCameraManager>(FoundActors[0]);
+		if (CameraManger) UE_LOG(LogTemp, Error, TEXT("Founded CameraManager"));
+	}
 }
 
 void AGDPlayerPawn::Tick(float DeltaTime)
@@ -29,6 +39,8 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::TriggerClick);
 	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this,
 	                                 &AGDPlayerPawn::DeselectTileElement);
+	PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
+	PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
 }
 
 void AGDPlayerPawn::OnTurnBegin()
@@ -169,6 +181,18 @@ void AGDPlayerPawn::TriggerClick()
 			}
 		}
 	}
+}
+
+void AGDPlayerPawn::RotateCameraLeft()
+{
+	UE_LOG(LogTemp, Error, TEXT("Rotating Left"));
+	if (CameraManger) CameraManger->RotateCamera(1);
+}
+
+void AGDPlayerPawn::RotateCameraRight()
+{
+	UE_LOG(LogTemp, Error, TEXT("Rotating Right"));
+	if (CameraManger) CameraManger->RotateCamera(-1);
 }
 
 void AGDPlayerPawn::SelectTileElement()
