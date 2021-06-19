@@ -15,8 +15,6 @@ class GDPROJECT_API AGDArrow : public AActor
 {
 	GENERATED_BODY()
 
-	friend class UArrowNotify;
-
 public:
 	AGDArrow();
 

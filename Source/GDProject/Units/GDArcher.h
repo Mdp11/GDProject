@@ -28,6 +28,14 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category="Arrow")
 	FName ArrowAttachSocketName;
 
+	bool bCriticalHit;
+
+	bool bMiss;
+
+	virtual bool IsCriticalHit() override;
+
+	virtual bool Miss() override;
+
 	virtual void BeginPlay() override;
 
 private:

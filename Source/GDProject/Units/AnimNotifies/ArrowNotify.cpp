@@ -5,7 +5,6 @@
 
 #include "GDProject/Units/GDArcher.h"
 #include "GDProject/Units/Actors/GDArrow.h"
-#include "Kismet/KismetMathLibrary.h"
 
 void UArrowNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -16,7 +15,7 @@ void UArrowNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* A
 		{
 			Archer->SpawnArrow();
 		}
-		else if (bFireArrow)
+		else if (bFireArrow && Archer->Arrow)
 		{
 			Archer->FireArrow();
 		}

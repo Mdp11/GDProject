@@ -329,13 +329,17 @@ void AGDUnit::ApplyDamage()
 	AttackedEnemy->TakeDamage(ComputedDamage, FDamageEvent{}, GetController(), this);
 }
 
+bool AGDUnit::Miss()
+{
+	return FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
+}
+
 void AGDUnit::Attack()
 {
 	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation;
 
-	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
-	if (Miss)
+	if (Miss())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
 		AttackAnimation = MissAnimation;
@@ -350,6 +354,7 @@ void AGDUnit::Attack()
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
 			AttackAnimation = CriticalAttackAnimation;
 			ComputedDamage *= CriticalDamageMultiplier;
 		}

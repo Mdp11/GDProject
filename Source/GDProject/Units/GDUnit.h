@@ -129,6 +129,8 @@ protected:
 	virtual void PowerUp();
 
 	void ApplyDamage();
+	
+	virtual bool Miss();
 
 	virtual void Attack();
 
