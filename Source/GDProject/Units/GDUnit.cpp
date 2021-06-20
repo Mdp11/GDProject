@@ -351,20 +351,23 @@ void AGDUnit::Attack()
 	}
 	else
 	{
+		float CriticalSideBonus = 0;
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
 		if (AngleDiff == 0)
 		{
-			CriticalChanceAdjuster += 30.f;
+			CriticalSideBonus = 30;
 			EnemyDefence *= BackAttackModifier;
 			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
 			
 		} else if (AngleDiff == 90 || AngleDiff == 270)
 		{
-			CriticalChanceAdjuster += 20.f;
+			CriticalSideBonus = 20;
 			EnemyDefence *= SideAttackModifier;
             ComputedDamage /= (AttackedEnemy->GetDefence() * SideAttackModifier);
             UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
 		}
+		
+		CriticalChance += CriticalSideBonus;
 		
 		if (IsCriticalHit())
 		{
@@ -374,6 +377,7 @@ void AGDUnit::Attack()
 		{
 			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
 		}
+		CriticalChance-=CriticalSideBonus;
 	}
 	ComputedDamage /= EnemyDefence;
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
