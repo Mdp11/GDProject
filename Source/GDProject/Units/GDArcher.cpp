@@ -4,6 +4,7 @@
 #include "GDArcher.h"
 
 #include "Actors/GDArrow.h"
+#include "Actors/GDBow.h"
 #include "GDProject/Tiles/GDTile.h"
 
 AGDArcher::AGDArcher()
@@ -12,6 +13,7 @@ AGDArcher::AGDArcher()
 
 	AttackRange = 5;
 
+	BowAttachSocketName = "BowSocket";
 	ArrowAttachSocketName = "ArrowSocket";
 }
 
@@ -58,6 +60,21 @@ void AGDArcher::BeginPlay()
 	Super::BeginPlay();
 
 	AlternativeAttackAnimation = CriticalAttackAnimation = MissAnimation = BaseAttackAnimation;
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
+	Bow = GetWorld()->SpawnActor<AGDBow>(BowClass, SpawnParameters);
+	if(Bow)
+	{
+		Bow->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, BowAttachSocketName);
+		Bow->SetOwner(this);
+	}
+}
+
+AGDBow* AGDArcher::GetBow() const
+{
+	return Bow;
 }
 
 void AGDArcher::SpawnArrow()

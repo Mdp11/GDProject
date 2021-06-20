@@ -8,7 +8,7 @@
 
 #include "GDArrow.generated.h"
 
-class AGDUnit;
+class AGDArcher;
 
 UCLASS()
 class GDPROJECT_API AGDArrow : public AActor
@@ -26,7 +26,7 @@ protected:
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY()
-	AGDUnit* OwnerUnit;
+	AGDArcher* OwnerUnit;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void Fire(const FVector& Target);

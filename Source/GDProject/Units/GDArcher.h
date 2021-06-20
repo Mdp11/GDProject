@@ -6,6 +6,7 @@
 #include "GDUnit.h"
 #include "GDArcher.generated.h"
 
+class AGDBow;
 class AGDArrow;
 
 UCLASS()
@@ -22,10 +23,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInOverWatch;
 
-	UPROPERTY(EditDefaultsOnly, Category="Arrow")
+	UPROPERTY(EditDefaultsOnly, Category="Weapons")
+	TSubclassOf<AGDBow> BowClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Weapons")
 	TSubclassOf<AGDArrow> ArrowClass;
 
-	UPROPERTY(VisibleDefaultsOnly, Category="Arrow")
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapons")
+	FName BowAttachSocketName;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapons")
 	FName ArrowAttachSocketName;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
@@ -43,7 +50,13 @@ protected:
 
 	virtual void BeginPlay() override;
 
+public:
+	AGDBow* GetBow() const;
+
 private:
+	UPROPERTY()
+	AGDBow* Bow;
+
 	UPROPERTY()
 	AGDArrow* Arrow;
 

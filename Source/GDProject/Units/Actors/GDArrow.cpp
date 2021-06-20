@@ -4,7 +4,8 @@
 #include "GDArrow.h"
 
 #include "DrawDebugHelpers.h"
-#include "GDProject/Units/GDUnit.h"
+#include "GDProject/Units/GDArcher.h"
+#include "GDBow.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AGDArrow::AGDArrow()
@@ -32,12 +33,12 @@ void AGDArrow::Tick(float DeltaTime)
 
 void AGDArrow::FireInDirection(const FVector& TargetLocation)
 {
-	OwnerUnit = Cast<AGDUnit>(GetOwner());
-	StaticMeshComponent->IgnoreActorWhenMoving(GetOwner(), true);
+	OwnerUnit = Cast<AGDArcher>(GetOwner());
+	StaticMeshComponent->IgnoreActorWhenMoving(OwnerUnit, true);
+	StaticMeshComponent->IgnoreActorWhenMoving(Cast<AActor>(OwnerUnit->GetBow()), true);
 
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-	SetActorEnableCollision(true);
 	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation));
 
 	ProjectileMovementComponent = Cast<UProjectileMovementComponent>(
@@ -45,6 +46,8 @@ void AGDArrow::FireInDirection(const FVector& TargetLocation)
 	ProjectileMovementComponent->SetUpdatedComponent(StaticMeshComponent);
 	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector{4000.f, 0.f, 0.f});
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	
+	SetActorEnableCollision(true);
 }
 
 void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
