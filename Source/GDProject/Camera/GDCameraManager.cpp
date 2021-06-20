@@ -41,7 +41,8 @@ void AGDCameraManager::BeginPlay()
 	Cameras.Add(Camera0);
 	Cameras.Add(Camera1);
 	Cameras.Add(Camera2);
-	Cameras.Add(Camera3);	
+	Cameras.Add(Camera3);
+	CamerasOffset = 600;
 }
 
 // Called every frame
@@ -82,10 +83,12 @@ void AGDCameraManager::SetCamerasPositions()
 	FVector EndPositionX = TilesGrid.Last()[0]->GetActorLocation();
 	UE_LOG(LogTemp, Error, TEXT("EndPosX, %f"),EndPositionX.X);
 	UE_LOG(LogTemp, Error, TEXT("EndPosY, %f"),EndPositionY.Y);
-	FVector Camera0Pos(-600, EndPositionY.Y/2, CamerasHeight);
-	FVector Camera1Pos(EndPositionX.X/2,-600, CamerasHeight);
-	FVector Camera2Pos(EndPositionX.X+ 600, EndPositionY.Y/2, CamerasHeight);
-	FVector Camera3Pos(EndPositionX.X/2,EndPositionY.Y+600, CamerasHeight);
+	//CamerasOffset = round((600*EndPositionY.Y)/2090);
+	CamerasOffset = 600;
+	FVector Camera0Pos(-CamerasOffset, EndPositionY.Y/2, CamerasHeight);
+	FVector Camera1Pos(EndPositionX.X/2,-CamerasOffset, CamerasHeight);
+	FVector Camera2Pos(EndPositionX.X+ CamerasOffset, EndPositionY.Y/2, CamerasHeight);
+	FVector Camera3Pos(EndPositionX.X/2,EndPositionY.Y+CamerasOffset, CamerasHeight);
 	Camera0->SetActorLocation(Camera0Pos);
 	Camera1->SetActorLocation(Camera1Pos);
 	Camera2->SetActorLocation(Camera2Pos);
