@@ -139,7 +139,9 @@ protected:
 
 	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
 
-	virtual bool IsEnemyInAttackRange(AGDUnit* Enemy) const;
+	virtual bool IsTileInAttackRange(AGDTile* Tile) const;
+	
+	bool IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const;
 
 	virtual bool IsCriticalHit();
 

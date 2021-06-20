@@ -304,18 +304,21 @@ float AGDUnit::GetDefence() const
 
 bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
 {
-	return Enemy && IsEnemyInAttackRange(Enemy)
+	return Enemy && IsTileInAttackRange(Execute_GetTile(Enemy))
 		&& (bIgnoreActionPoints || CurrentActionPoints > 0);
 }
 
-bool AGDUnit::IsEnemyInAttackRange(AGDUnit* Enemy) const
+bool AGDUnit::IsTileInAttackRange(AGDTile* Tile) const
 {
-	AGDTile* EnemyTile = Execute_GetTile(Enemy);
+	return IsTileInAttackRangeFromTile(Tile, CurrentTile);
+}
 
-	return EnemyTile->GetCoordinates().X == CurrentTile->GetCoordinates().X && FMath::Abs(
-			EnemyTile->GetCoordinates().Y - CurrentTile->GetCoordinates().Y) <= AttackRange ||
-		EnemyTile->GetCoordinates().Y == CurrentTile->GetCoordinates().Y && FMath::Abs(
-			EnemyTile->GetCoordinates().X - CurrentTile->GetCoordinates().X) <= AttackRange;
+bool AGDUnit::IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const
+{
+	return SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
+			SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
+		SourceTile->GetCoordinates().Y == TargetTile->GetCoordinates().Y && FMath::Abs(
+			SourceTile->GetCoordinates().X - TargetTile->GetCoordinates().X) <= AttackRange;
 }
 
 bool AGDUnit::IsCriticalHit()
@@ -621,7 +624,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 		for (auto& Tile : TilesInAttackRange)
 		{
-			if (Tile->IsOccupiedByEnemy(this))
+			if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRange(Tile))
 			{
 				Tile->ApplyEnemyInfoDecal();
 				HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
@@ -637,7 +640,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 				for (auto& Tile : TilesInAttackRange)
 				{
-					if (Tile->IsOccupiedByEnemy(this))
+					if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRangeFromTile(Tile, ReachableTile))
 					{
 						Tile->ApplyEnemyInfoDecal();
 						HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
