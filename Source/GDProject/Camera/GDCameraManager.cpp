@@ -4,6 +4,7 @@
 #include "GDCameraManager.h"
 
 #include "Camera/CameraActor.h"
+#include "GDProject/Tiles/GDTile.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -36,6 +37,7 @@ void AGDCameraManager::BeginPlay()
         }
 	}
 	*/
+	SetCamerasPositions();
 	Cameras.Add(Camera0);
 	Cameras.Add(Camera1);
 	Cameras.Add(Camera2);
@@ -70,4 +72,23 @@ void AGDCameraManager::SetGridManager(AGDGrid* Gm)
 	GridManager = Gm;
 }
 
+void AGDCameraManager::SetCamerasPositions()
+{
+	int GridSize = GridManager->GetSize() - 1;
+	TArray<TArray<AGDTile*>> TilesGrid =  GridManager->GetTilesGrid();
+	UE_LOG(LogTemp, Error, TEXT("GridSize, %i"),GridSize);
+	FVector EndPositionY = TilesGrid[0].Last()->GetActorLocation();
+	UE_LOG(LogTemp, Error, TEXT("GridSize, %i"),GridSize);
+	FVector EndPositionX = TilesGrid.Last()[0]->GetActorLocation();
+	UE_LOG(LogTemp, Error, TEXT("EndPosX, %f"),EndPositionX.X);
+	UE_LOG(LogTemp, Error, TEXT("EndPosY, %f"),EndPositionY.Y);
+	FVector Camera0Pos(-600, EndPositionY.Y/2, CamerasHeight);
+	FVector Camera1Pos(EndPositionX.X/2,-600, CamerasHeight);
+	FVector Camera2Pos(EndPositionX.X+ 600, EndPositionY.Y/2, CamerasHeight);
+	FVector Camera3Pos(EndPositionX.X/2,EndPositionY.Y+600, CamerasHeight);
+	Camera0->SetActorLocation(Camera0Pos);
+	Camera1->SetActorLocation(Camera1Pos);
+	Camera2->SetActorLocation(Camera2Pos);
+	Camera3->SetActorLocation(Camera3Pos);
+}
 

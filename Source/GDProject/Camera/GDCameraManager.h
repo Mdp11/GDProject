@@ -35,6 +35,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	ACameraActor* Camera3;
 
+	UPROPERTY(EditAnywhere)
+	float CamerasOffset;
+
+	UPROPERTY(EditAnywhere)
+	float CamerasHeight = 1020;
+
 	UPROPERTY()
 	APlayerController* PlayerController;
 
@@ -52,4 +58,5 @@ public:
 	virtual void RotateCamera(int Direction);
 
 	virtual void SetGridManager(AGDGrid* Gm);
+	void SetCamerasPositions();
 };
