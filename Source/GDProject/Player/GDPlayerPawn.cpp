@@ -17,7 +17,7 @@ AGDPlayerPawn::AGDPlayerPawn()
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundActors);
-	UE_LOG(LogTemp, Error, TEXT("Founded CameraManager, %i"), FoundActors.Num())
+	UE_LOG(LogTemp, Warning, TEXT("Founded CameraManager, %i"), FoundActors.Num())
 	if (FoundActors.Num() > 0)
 	{
 		CameraManger = Cast<AGDCameraManager>(FoundActors[0]);
