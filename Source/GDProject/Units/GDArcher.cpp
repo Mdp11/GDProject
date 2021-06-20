@@ -55,6 +55,13 @@ void AGDArcher::Attack()
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
+void AGDArcher::Die()
+{
+	Super::Die();
+
+	Bow->SetLifeSpan(LifeSpanOnDeath);
+}
+
 void AGDArcher::BeginPlay()
 {
 	Super::BeginPlay();

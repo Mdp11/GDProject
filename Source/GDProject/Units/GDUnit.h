@@ -101,6 +101,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	float ComputedDamage;
 
+	UPROPERTY(EditDefaultsOnly)
+	float LifeSpanOnDeath;
+
 	int OwningPlayer;
 
 	virtual void BeginPlay() override;

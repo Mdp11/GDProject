@@ -43,6 +43,8 @@ AGDUnit::AGDUnit()
 
 	bMoveRequested = false;
 	bRotationRequested = false;
+
+	LifeSpanOnDeath = 5.f;
 }
 
 void AGDUnit::BeginPlay()
@@ -79,8 +81,7 @@ void AGDUnit::Die()
 
 	Execute_Deselect(this);
 
-	const float LifeSpan = 5.f;
-	SetLifeSpan(LifeSpan);
+	SetLifeSpan(LifeSpanOnDeath);
 
 	FTimerHandle TimerHandle_OnUnitDead;
 	FTimerDelegate TimerDelegate;
@@ -91,7 +92,7 @@ void AGDUnit::Die()
 			PlayerPawn->OnUnitDead(this, OwningPlayer);
 		}
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpan - 0.5f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpanOnDeath - 0.5f, false);
 }
 
 void AGDUnit::PerformMove(float DeltaTime)

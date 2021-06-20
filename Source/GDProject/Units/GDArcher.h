@@ -48,6 +48,8 @@ protected:
 
 	virtual void Attack() override;
 
+	virtual void Die() override;
+
 	virtual void BeginPlay() override;
 
 public:
