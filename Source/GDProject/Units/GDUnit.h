@@ -139,6 +139,8 @@ protected:
 
 	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
 
+	virtual bool IsEnemyInAttackRange(AGDUnit* Enemy) const;
+
 	virtual bool IsCriticalHit();
 
 	UFUNCTION(BlueprintCallable)

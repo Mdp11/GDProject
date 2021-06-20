@@ -304,15 +304,24 @@ float AGDUnit::GetDefence() const
 
 bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
 {
-	return Enemy && Execute_GetTile(Enemy)->GetDistanceFrom(CurrentTile) <= AttackRange
+	return Enemy && IsEnemyInAttackRange(Enemy)
 		&& (bIgnoreActionPoints || CurrentActionPoints > 0);
+}
+
+bool AGDUnit::IsEnemyInAttackRange(AGDUnit* Enemy) const
+{
+	AGDTile* EnemyTile = Execute_GetTile(Enemy);
+
+	return EnemyTile->GetCoordinates().X == CurrentTile->GetCoordinates().X && FMath::Abs(
+			EnemyTile->GetCoordinates().Y - CurrentTile->GetCoordinates().Y) <= AttackRange ||
+		EnemyTile->GetCoordinates().Y == CurrentTile->GetCoordinates().Y && FMath::Abs(
+			EnemyTile->GetCoordinates().X - CurrentTile->GetCoordinates().X) <= AttackRange;
 }
 
 bool AGDUnit::IsCriticalHit()
 {
 	const bool bCriticalHit = FMath::FRandRange(0.f, 100.f)
 		<= CriticalChance + CurrentTile->GetCriticalChanceModifier() + CriticalChanceAdjuster;
-
 	if (!bCriticalHit)
 	{
 		CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
@@ -663,7 +672,7 @@ void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
 			0, OutlineMaterialInstance);
 		MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
 		MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.5f);
-		
+
 		UMaterialInstanceDynamic* MaterialInstanceDynamic_Second = OutlineComponent->CreateDynamicMaterialInstance(
 			1, OutlineMaterialInstance);
 		MaterialInstanceDynamic_Second->SetVectorParameterValue(TEXT("Color"), OutlineColor);
