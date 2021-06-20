@@ -15,6 +15,7 @@ class GDPROJECT_API AGDArcher : public AGDUnit
 	GENERATED_BODY()
 
 	friend class UArrowNotify;
+	friend class UGDBowStretchNotify;
 
 public:
 	AGDArcher();
@@ -34,6 +35,9 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category="Weapons")
 	FName ArrowAttachSocketName;
+
+	UPROPERTY(VisibleDefaultsOnly, Category="Weapons")
+	FName CablesAttachSocketName;
 
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* MeleeAttackAnimation;

@@ -15,6 +15,7 @@ AGDArcher::AGDArcher()
 
 	BowAttachSocketName = "BowSocket";
 	ArrowAttachSocketName = "ArrowSocket";
+	CablesAttachSocketName = "CablesSocket";
 }
 
 bool AGDArcher::IsCriticalHit()
