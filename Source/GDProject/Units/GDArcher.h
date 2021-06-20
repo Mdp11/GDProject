@@ -23,7 +23,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInOverWatch;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Weapons")
 	TSubclassOf<AGDBow> BowClass;
 

@@ -14,10 +14,12 @@ void UGDBowStretchNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
 		AGDBow* Bow = Archer->GetBow();
 		if (bPull)
 		{
+			Bow->bBent = true;
 			Bow->AttachCablesTo(MeshComp, Archer->CablesAttachSocketName);
 		}
 		else
 		{
+			Bow->bBent = false;
 			Bow->AttachCablesTo(Bow->GetMesh(), Bow->GetIdleBowCablesSocketName());
 		}
 	}

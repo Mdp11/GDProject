@@ -13,6 +13,8 @@ UCLASS()
 class GDPROJECT_API AGDBow : public AActor
 {
 	GENERATED_BODY()
+	
+	friend class UGDBowStretchNotify;
 
 public:
 	AGDBow();
@@ -20,6 +22,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* SkeletalMeshComponent;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bBent;
 
 	UPROPERTY(VisibleAnywhere)
 	FName TopCableSocketName;
