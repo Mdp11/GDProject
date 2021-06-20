@@ -343,6 +343,7 @@ void AGDUnit::Attack()
 	const float AngleDiff = round(abs(AttackedEnemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
 
 	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
+	float EnemyDefence = AttackedEnemy->GetDefence();
 	if (Miss)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
@@ -351,17 +352,16 @@ void AGDUnit::Attack()
 	else
 	{
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
-		ComputedDamage /= AttackedEnemy->GetDefence();
-		
 		if (AngleDiff == 0)
 		{
-			CriticalChance += 30.f;
-			ComputedDamage /= (AttackedEnemy->GetDefence() * BackAttackModifier);
+			CriticalChanceAdjuster += 30.f;
+			EnemyDefence *= BackAttackModifier;
 			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
 			
 		} else if (AngleDiff == 90 || AngleDiff == 270)
 		{
-			CriticalChance += 20.f;
+			CriticalChanceAdjuster += 20.f;
+			EnemyDefence *= SideAttackModifier;
             ComputedDamage /= (AttackedEnemy->GetDefence() * SideAttackModifier);
             UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
 		}
@@ -375,7 +375,7 @@ void AGDUnit::Attack()
 			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
 		}
 	}
-
+	ComputedDamage /= EnemyDefence;
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
