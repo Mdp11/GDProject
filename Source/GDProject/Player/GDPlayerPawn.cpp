@@ -15,13 +15,22 @@ AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundActors);
-	UE_LOG(LogTemp, Warning, TEXT("Founded CameraManager, %i"), FoundActors.Num())
-	if (FoundActors.Num() > 0)
+	TArray<AActor*> FoundGridManagerActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
+	UE_LOG(LogTemp, Warning, TEXT("Founded GridManager, %i"), FoundGridManagerActors.Num())
+	if (FoundGridManagerActors.Num() > 0)
 	{
-		CameraManger = Cast<AGDCameraManager>(FoundActors[0]);
+		GridManger = Cast<AGDGrid>(FoundGridManagerActors[0]);
+		if (GridManger) UE_LOG(LogTemp, Error, TEXT("Founded GridManager"));
+	}
+	TArray<AActor*> FoundCameraManagerActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundCameraManagerActors);
+	UE_LOG(LogTemp, Warning, TEXT("Founded CameraManager, %i"), FoundCameraManagerActors.Num())
+	if (FoundCameraManagerActors.Num() > 0)
+	{
+		CameraManger = Cast<AGDCameraManager>(FoundCameraManagerActors[0]);
 		if (CameraManger) UE_LOG(LogTemp, Error, TEXT("Founded CameraManager"));
+		CameraManger->SetGridManager(GridManger);
 	}
 }
 
