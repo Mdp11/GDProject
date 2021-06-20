@@ -201,7 +201,7 @@ public:
 	virtual void Select_Implementation() override;
 
 	virtual void Deselect_Implementation() override;
-
+	
 	void HighlightActions(AGDTile* TargetTile);
 
 	void RequestAction(AGDTile* TargetTile);
@@ -239,7 +239,9 @@ private:
 
 	TArray<AGDTile*> MovementPath;
 
-	void HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance);
+	void HighlightMovementPath(AGDTile* TargetTile);
+
+	void HighlightAttackPath(AGDTile* TargetTile);
 
 	void HighlightMovementRange();
 

@@ -3,6 +3,8 @@
 
 #include "GDUnit.h"
 
+#include <algorithm>
+
 #include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
@@ -480,10 +482,10 @@ void AGDUnit::RemoveFromActiveUnits()
 	}
 }
 
-void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
+void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 {
 	TArray<AGDTile*> NewMovementPath = CurrentTile->GetGrid()->ComputePathBetweenTiles(
-		CurrentTile, TargetTile, StopAtDistance);
+		CurrentTile, TargetTile);
 	if (NewMovementPath.Num() > 1)
 	{
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
@@ -510,6 +512,36 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 	}
 }
 
+void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
+{
+	AGDTile* TileToReach = nullptr;
+
+	for (const auto& Tile : HighlightedTilesInShortRange)
+	{
+		if (!TileToReach)
+		{
+			if (IsTileInAttackRangeFromTile(Tile, TargetTile))
+			{
+				TileToReach = Tile;
+			}
+		}
+		else
+		{
+			if (IsTileInAttackRangeFromTile(Tile, TargetTile) && TargetTile->
+				GetDistanceFrom(Tile)
+				> TargetTile->GetDistanceFrom(TileToReach))
+			{
+				TileToReach = Tile;
+			}
+		}
+	}
+
+	if (TileToReach)
+	{
+		HighlightMovementPath(TileToReach);
+	}
+}
+
 void AGDUnit::HighlightActions(AGDTile* TargetTile)
 {
 	if (!bRotationRequested)
@@ -518,19 +550,19 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 
 		if (TargetTile && TargetTile->IsTraversable())
 		{
-			float StopAtDistance = 0;
+			// float StopAtDistance = 0;
 
 			if (TargetTile->IsOccupiedByEnemy(this))
 			{
 				HighlightedEnemyTile = TargetTile;
 				HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
+				HighlightAttackPath(TargetTile);
 
-				StopAtDistance = AttackRange;
+				//StopAtDistance = AttackRange;
 			}
-
-			if (IsTileInRangeOfAction(TargetTile))
+			else if (IsTileInRangeOfAction(TargetTile))
 			{
-				HighlightMovementPath(TargetTile, StopAtDistance);
+				HighlightMovementPath(TargetTile);
 			}
 		}
 	}
