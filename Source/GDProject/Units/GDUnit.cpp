@@ -317,19 +317,11 @@ bool AGDUnit::IsTileInAttackRange(AGDTile* Tile) const
 
 bool AGDUnit::IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const
 {
-	if(SourceTile->IsPathClearTowardsTile(TargetTile))
-	{
-	UE_LOG(LogTemp, Warning, TEXT("TRUE"));
-		
-	}
-	else
-		UE_LOG(LogTemp, Warning, TEXT("FALSE"));
-	
 	return (SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
 				SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
 			SourceTile->GetCoordinates().Y == TargetTile->GetCoordinates().Y && FMath::Abs(
 				SourceTile->GetCoordinates().X - TargetTile->GetCoordinates().X) <= AttackRange)
-			&& SourceTile->IsPathClearTowardsTile(TargetTile);
+		&& SourceTile->IsPathClearTowardsTile(TargetTile);
 }
 
 bool AGDUnit::IsCriticalHit()
@@ -531,21 +523,18 @@ void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
 
 	for (const auto& Tile : HighlightedTilesInShortRange)
 	{
-		if (!TileToReach)
+		if (TileToReach)
 		{
-			if (IsTileInAttackRangeFromTile(Tile, TargetTile))
+			if (IsTileInAttackRangeFromTile(Tile, TargetTile)
+				&& CurrentTile->GetDistanceFrom(Tile)
+				< CurrentTile->GetDistanceFrom(TileToReach))
 			{
 				TileToReach = Tile;
 			}
 		}
-		else
+		else if (IsTileInAttackRangeFromTile(Tile, TargetTile))
 		{
-			if (IsTileInAttackRangeFromTile(Tile, TargetTile)
-				&& TargetTile->GetDistanceFrom(Tile)
-				> TargetTile->GetDistanceFrom(TileToReach))
-			{
-				TileToReach = Tile;
-			}
+			TileToReach = Tile;
 		}
 	}
 
