@@ -402,6 +402,10 @@ void AGDUnit::RequestAttack(AGDUnit* Enemy, const bool bIgnoreActionPoints)
 
 		Attack();
 	}
+	else
+	{
+		OnActionFinished();
+	}
 }
 
 int AGDUnit::GetMovementRange() const
