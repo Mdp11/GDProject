@@ -317,10 +317,19 @@ bool AGDUnit::IsTileInAttackRange(AGDTile* Tile) const
 
 bool AGDUnit::IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const
 {
-	return SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
-			SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
-		SourceTile->GetCoordinates().Y == TargetTile->GetCoordinates().Y && FMath::Abs(
-			SourceTile->GetCoordinates().X - TargetTile->GetCoordinates().X) <= AttackRange;
+	if(SourceTile->IsPathClearTowardsTile(TargetTile))
+	{
+	UE_LOG(LogTemp, Warning, TEXT("TRUE"));
+		
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("FALSE"));
+	
+	return (SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
+				SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
+			SourceTile->GetCoordinates().Y == TargetTile->GetCoordinates().Y && FMath::Abs(
+				SourceTile->GetCoordinates().X - TargetTile->GetCoordinates().X) <= AttackRange)
+			&& SourceTile->IsPathClearTowardsTile(TargetTile);
 }
 
 bool AGDUnit::IsCriticalHit()
@@ -556,7 +565,7 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 		{
 			if (TargetTile->IsOccupiedByEnemy(this))
 			{
-				if(!IsTileInAttackRange(TargetTile))
+				if (!IsTileInAttackRange(TargetTile))
 				{
 					HighlightedEnemyTile = TargetTile;
 					HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);

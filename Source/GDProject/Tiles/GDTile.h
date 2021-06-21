@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bIsTraversable;
 
+	UPROPERTY(EditAnywhere)
+	bool bObstructVisual;
+
 	UObject* TileElement;
 
 	FIntPoint Coordinates;
@@ -117,6 +120,8 @@ public:
 	void ApplyEnemyInfoDecal() const;
 
 	void RemoveInfoDecal() const;
+
+	bool IsPathClearTowardsTile(AGDTile* Tile) const;
 
 	float GetAttackModifier() const
 	{
