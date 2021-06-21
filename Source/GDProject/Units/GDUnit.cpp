@@ -582,7 +582,7 @@ void AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
 
 void AGDUnit::RequestAction(AGDTile* TargetTile)
 {
-	if (TargetTile)
+	if (TargetTile && IsTileInRangeOfAction(TargetTile))
 	{
 		if (!TargetTile->IsOccupied())
 		{
