@@ -85,6 +85,13 @@ void AGDUnit::Die()
 
 	SetLifeSpan(LifeSpanOnDeath);
 
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors);
+	for(auto& Actor : AttachedActors)
+	{
+		Actor->SetLifeSpan(LifeSpanOnDeath);
+	}
+
 	FTimerHandle TimerHandle_OnUnitDead;
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([&]()

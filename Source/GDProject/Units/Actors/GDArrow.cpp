@@ -46,7 +46,7 @@ void AGDArrow::FireInDirection(const FVector& TargetLocation)
 	ProjectileMovementComponent->SetUpdatedComponent(StaticMeshComponent);
 	ProjectileMovementComponent->SetVelocityInLocalSpace(FVector{4000.f, 0.f, 0.f});
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
-	
+
 	SetActorEnableCollision(true);
 }
 
@@ -59,7 +59,7 @@ void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 	SetActorEnableCollision(false);
 
-	SetActorLocation(SweepResult.ImpactPoint - GetActorForwardVector() * 10.f, false, nullptr,
+	SetActorLocation(SweepResult.ImpactPoint + GetActorForwardVector() * 10.f, false, nullptr,
 	                 ETeleportType::TeleportPhysics);
 
 
@@ -67,19 +67,16 @@ void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 		OtherActor->FindComponentByClass(USkeletalMeshComponent::StaticClass())))
 	{
 		const FName BoneName = SkeletalMeshComponent->FindClosestBone(SweepResult.ImpactPoint);
-		UE_LOG(LogTemp, Warning, TEXT("Bone hit = %s"), *BoneName.ToString());
 		AttachToComponent(SkeletalMeshComponent, FAttachmentTransformRules::KeepWorldTransform, BoneName);
+		if (OwnerUnit)
+		{
+			OwnerUnit->ApplyDamage();
+		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attacco a actor"));
 		AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
 	}
 
-	if (OwnerUnit)
-	{
-		OwnerUnit->ApplyDamage();
-	}
-
-	SetLifeSpan(3.f);
+	SetLifeSpan(5.f);
 }
