@@ -704,16 +704,14 @@ void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
 		OutlineComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		OutlineComponent->SetCastShadow(false);
 
-		UMaterialInstanceDynamic* MaterialInstanceDynamic_First = OutlineComponent->CreateDynamicMaterialInstance(
-			0, OutlineMaterialInstance);
-		MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
-		MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.5f);
-
-		UMaterialInstanceDynamic* MaterialInstanceDynamic_Second = OutlineComponent->CreateDynamicMaterialInstance(
-			1, OutlineMaterialInstance);
-		MaterialInstanceDynamic_Second->SetVectorParameterValue(TEXT("Color"), OutlineColor);
-		MaterialInstanceDynamic_Second->SetScalarParameterValue(TEXT("Scale"), 1.5f);
-
+		for (int i = 0; i < OutlineComponent->GetNumMaterials(); ++i)
+		{
+			UMaterialInstanceDynamic* MaterialInstanceDynamic_First = OutlineComponent->CreateDynamicMaterialInstance(
+				i, OutlineMaterialInstance);
+			MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
+			MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.f);
+		}
+		
 		FinishAddComponent(OutlineComponent, true, GetMesh()->GetRelativeTransform());
 	}
 }
