@@ -527,8 +527,8 @@ void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
 		}
 		else
 		{
-			if (IsTileInAttackRangeFromTile(Tile, TargetTile) && TargetTile->
-				GetDistanceFrom(Tile)
+			if (IsTileInAttackRangeFromTile(Tile, TargetTile)
+				&& TargetTile->GetDistanceFrom(Tile)
 				> TargetTile->GetDistanceFrom(TileToReach))
 			{
 				TileToReach = Tile;
@@ -550,15 +550,14 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 
 		if (TargetTile && TargetTile->IsTraversable())
 		{
-			// float StopAtDistance = 0;
-
 			if (TargetTile->IsOccupiedByEnemy(this))
 			{
-				HighlightedEnemyTile = TargetTile;
-				HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
-				HighlightAttackPath(TargetTile);
-
-				//StopAtDistance = AttackRange;
+				if(!IsTileInAttackRange(TargetTile))
+				{
+					HighlightedEnemyTile = TargetTile;
+					HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
+					HighlightAttackPath(TargetTile);
+				}
 			}
 			else if (IsTileInRangeOfAction(TargetTile))
 			{
@@ -589,7 +588,7 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 		{
 			if (IsEnemy(TargetUnit))
 			{
-				if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+				if (IsTileInAttackRange(TargetTile))
 				{
 					RequestAttack(TargetUnit);
 				}
