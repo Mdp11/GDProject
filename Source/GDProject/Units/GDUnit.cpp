@@ -137,6 +137,22 @@ void AGDUnit::Die()
 	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpanOnDeath - 0.5f, false);
 }
 
+void AGDUnit::CheckForGuardingUnits()
+{
+	if (CurrentTile->HasGuardingUnits())
+	{
+		for (auto& Unit : CurrentTile->GetGuardingUnits())
+		{
+			if (IsEnemy(Unit) && Unit->IsTileInAttackRange(CurrentTile))
+			{
+				bMoveRequested = false;
+				bMoveInterrupted = true;
+				Unit->RequestAttack(this, true);
+			}
+		}
+	}
+}
+
 void AGDUnit::PerformMove(float DeltaTime)
 {
 	if (MovementPath.Num() > 0)
@@ -146,22 +162,10 @@ void AGDUnit::PerformMove(float DeltaTime)
 
 		if (GetActorLocation().Equals(NextTileLocation))
 		{
-			AGDTile* ReachedTile = MovementPath[0];
-			Execute_SetTile(this, ReachedTile);
+			Execute_SetTile(this, MovementPath[0]);
 			MovementPath.RemoveAt(0);
 
-			if (ReachedTile->HasGuardingUnits())
-			{
-				for (auto& Unit : ReachedTile->GetGuardingUnits())
-				{
-					if (IsEnemy(Unit) && Unit->IsTileInAttackRange(CurrentTile))
-					{
-						bMoveRequested = false;
-						bMoveInterrupted = true;
-						Unit->RequestAttack(this, true);
-					}
-				}
-			}
+			CheckForGuardingUnits();
 		}
 		else
 		{

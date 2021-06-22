@@ -123,6 +123,8 @@ protected:
 	virtual void RemoveSpecial();
 
 	virtual void Die();
+	
+	void CheckForGuardingUnits();
 
 	void PerformMove(float DeltaTime);
 
