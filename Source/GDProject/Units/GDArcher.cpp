@@ -24,11 +24,11 @@ void AGDArcher::HighlightOverWatchingTiles()
 	AGDGrid* Grid = CurrentTile->GetGrid();
 
 	const FIntPoint CurrentCoordinates = CurrentTile->GetCoordinates();
-	
-	for(int i = -AttackRange; i <= AttackRange; ++i)
+
+	for (int i = -AttackRange; i <= AttackRange; ++i)
 	{
 		AGDTile* Tile = Grid->GetTile({CurrentCoordinates.X + i, CurrentCoordinates.Y});
-		if(Tile)
+		if (Tile)
 		{
 			Tile->Highlight(EHighlightInfo::Enemy);
 			HighlightedOverWatchingTiles.Add(Tile);
@@ -36,7 +36,7 @@ void AGDArcher::HighlightOverWatchingTiles()
 
 		Tile = Grid->GetTile({CurrentCoordinates.X, CurrentCoordinates.Y + i});
 
-		if(Tile)
+		if (Tile)
 		{
 			Tile->Highlight(EHighlightInfo::Enemy);
 			HighlightedOverWatchingTiles.Add(Tile);
@@ -46,7 +46,7 @@ void AGDArcher::HighlightOverWatchingTiles()
 
 void AGDArcher::ResetHighlightedOverWatchingTiles()
 {
-	for(auto& Tile : HighlightedOverWatchingTiles)
+	for (auto& Tile : HighlightedOverWatchingTiles)
 	{
 		Tile->RemoveHighlight();
 	}
@@ -120,12 +120,12 @@ void AGDArcher::RemoveSpecial()
 {
 	bIsInOverWatch = false;
 
-	if(Arrow)
+	if (Arrow)
 	{
 		Arrow->SetLifeSpan(0.01f);
 		Arrow = nullptr;
 	}
-	
+
 	for (auto& Tile : OverWatchingTiles)
 	{
 		Tile->RemoveGuardingUnit(this);
@@ -140,7 +140,7 @@ void AGDArcher::UseSpecial()
 
 		OverWatchingTiles = HighlightedOverWatchingTiles;
 
-		for(auto& Tile : OverWatchingTiles)
+		for (auto& Tile : OverWatchingTiles)
 		{
 			Tile->AddGuardingUnit(this);
 		}
@@ -215,6 +215,6 @@ void AGDArcher::FireArrow()
 		TargetLocation.Z += FMath::RandRange(-10.f, 10.f);
 	}
 	Arrow->FireInDirection(TargetLocation);
-	
+
 	Arrow = nullptr;
 }

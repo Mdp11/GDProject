@@ -207,7 +207,6 @@ TSet<AGDTile*> AGDGrid::GetTilesAtDistance(AGDTile* StartTile, int Distance) con
 	return ValidTiles;
 }
 
-
 TArray<AGDTile*> AGDGrid::ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile)
 {
 	TArray<AGDTile*> Path{Tile};

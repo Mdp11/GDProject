@@ -13,7 +13,7 @@ UCLASS()
 class GDPROJECT_API AGDBow : public AActor
 {
 	GENERATED_BODY()
-	
+
 	friend class UGDBowStretchNotify;
 
 public:

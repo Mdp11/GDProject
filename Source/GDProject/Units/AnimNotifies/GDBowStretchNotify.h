@@ -15,5 +15,4 @@ class GDPROJECT_API UGDBowStretchNotify : public UAnimNotify
 	bool bPull;
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
-	
 };

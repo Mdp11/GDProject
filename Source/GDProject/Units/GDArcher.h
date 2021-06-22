@@ -23,7 +23,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsInOverWatch;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="Weapons")
 	TSubclassOf<AGDBow> BowClass;
 
@@ -46,7 +46,7 @@ protected:
 	UAnimMontage* OverWatchShootAnimation;
 
 	TSet<AGDTile*> OverWatchingTiles;
-	
+
 	TSet<AGDTile*> HighlightedOverWatchingTiles;
 
 	bool bCriticalHit;
@@ -70,9 +70,9 @@ protected:
 	virtual void ResetAllHighlightedTiles() override;
 
 	virtual void RemoveSpecial() override;
-	
+
 	virtual void UseSpecial() override;
-	
+
 	virtual void BeginPlay() override;
 
 public:
@@ -86,7 +86,7 @@ private:
 	AGDArrow* Arrow;
 
 	void SpawnArrow();
-	
+
 	void SpawnBow();
 
 	void FireArrow();

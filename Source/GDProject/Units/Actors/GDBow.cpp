@@ -21,14 +21,13 @@ AGDBow::AGDBow()
 
 	TopCable->SetupAttachment(RootComponent, TopCableSocketName);
 	BottomCable->SetupAttachment(RootComponent, BottomCableSocketName);
-	
 
 	TopCable->CableLength = 0.f;
 	TopCable->EndLocation = {0.f, 0.f, 0.f};
 	TopCable->NumSegments = 1.f;
 	TopCable->CableWidth = 0.5f;
 	TopCable->NumSides = 4.f;
-	
+
 	BottomCable->CableLength = 100.f;
 	BottomCable->EndLocation = {0.f, 0.f, 0.f};
 	BottomCable->NumSegments = 1.f;

@@ -23,13 +23,12 @@ public:
 	void CheckAnimations();
 
 protected:
-
 	UPROPERTY()
 	USkeletalMeshComponent* OutlineComponent;
 
 	UPROPERTY()
 	UMaterialInstance* OutlineMaterialInstance;
-	
+
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	UGDHealthComponent* HealthComponent;
 
@@ -123,7 +122,7 @@ protected:
 	virtual void RemoveSpecial();
 
 	virtual void Die();
-	
+
 	void CheckForGuardingUnits();
 
 	void PerformMove(float DeltaTime);
@@ -136,7 +135,7 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void PowerUp();
-	
+
 	virtual bool Miss();
 
 	virtual void Attack();
@@ -146,7 +145,7 @@ protected:
 	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
 
 	virtual bool IsTileInAttackRange(AGDTile* Tile) const;
-	
+
 	bool IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const;
 
 	virtual bool IsCriticalHit();
@@ -184,7 +183,7 @@ protected:
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
 		AddToActiveUnits();
-		
+
 		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
 
 		FTimerHandle TimerHandle_Animation;
@@ -207,7 +206,7 @@ public:
 	virtual void Select_Implementation() override;
 
 	virtual void Deselect_Implementation() override;
-	
+
 	void HighlightActions(AGDTile* TargetTile);
 
 	void RequestAction(AGDTile* TargetTile);
