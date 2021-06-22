@@ -105,14 +105,14 @@ void AGDArcher::FireArrow() const
 	else if (bCriticalHit)
 	{
 		TargetLocation = AttackedEnemy->GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace);
-		TargetLocation.Y += FMath::RandRange(-5.f, 5.f);
-		TargetLocation.Z += FMath::RandRange(-5.f, 5.f);
-	}
+		TargetLocation.Y += FMath::RandRange(-5.f, 0.f);
+		TargetLocation.Z += 15.f;
+	} 
 	else
 	{
 		TargetLocation = AttackedEnemy->GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace);
-		TargetLocation.Y += FMath::RandRange(-15.f, 15.f);
-		TargetLocation.Z += FMath::RandRange(-20.f, 20.f);
+		TargetLocation.Y += FMath::RandRange(-10.f, 0.f);
+		TargetLocation.Z += FMath::RandRange(-10.f, 10.f);
 	}
 	Arrow->FireInDirection(TargetLocation);
 }
