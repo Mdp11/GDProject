@@ -146,7 +146,10 @@ void AGDUnit::PerformMove(float DeltaTime)
 			{
 				for (auto& Unit : ReachedTile->GetGuardingUnits())
 				{
-					Unit->RequestAttack(this, true);
+					if(IsEnemy(Unit))
+					{
+						Unit->RequestAttack(this, true);
+					}
 				}
 			}
 		}
