@@ -57,9 +57,12 @@ void AGDWarrior::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, f
 	}
 	else
 	{
-		PlayAnimationAndDoAction(ImpactAnimation, [&]()
+		bMoveInterrupted
+		? PlayAnimationAndDoAction(ImpactAnimation, [&]()
 		{
-			OnActionFinished();
-		});
+			bMoveInterrupted = false;
+			bMoveRequested = true;
+		})
+		: PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
 	}
 }

@@ -44,6 +44,7 @@ AGDUnit::AGDUnit()
 	bIsDead = false;
 
 	bMoveRequested = false;
+	bMoveInterrupted = false;
 	bRotationRequested = false;
 
 	LifeSpanOnDeath = 5.f;
@@ -85,13 +86,20 @@ void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, floa
                               const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
+
 	if (!bIsDead && Health <= 0.f)
 	{
 		Die();
 	}
 	else
 	{
-		PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
+		bMoveInterrupted
+			? PlayAnimationAndDoAction(ImpactAnimation, [&]()
+			{
+				bMoveInterrupted = false;
+				bMoveRequested = true;
+			})
+			: PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
 	}
 }
 
@@ -146,8 +154,10 @@ void AGDUnit::PerformMove(float DeltaTime)
 			{
 				for (auto& Unit : ReachedTile->GetGuardingUnits())
 				{
-					if(IsEnemy(Unit))
+					if (IsEnemy(Unit))
 					{
+						bMoveRequested = false;
+						bMoveInterrupted = true;
 						Unit->RequestAttack(this, true);
 					}
 				}

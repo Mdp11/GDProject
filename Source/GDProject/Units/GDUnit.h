@@ -70,6 +70,9 @@ protected:
 	bool bMoveRequested;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bMoveInterrupted;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bRotationRequested;
 
 	UPROPERTY(BlueprintReadOnly)
