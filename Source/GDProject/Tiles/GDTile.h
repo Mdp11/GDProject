@@ -46,6 +46,8 @@ protected:
 	UPROPERTY()
 	AGDGrid* OwningGrid;
 
+	TSet<AGDUnit*> GuardingUnits;
+
 	bool bIsActive;
 
 	UPROPERTY(EditAnywhere)
@@ -147,4 +149,12 @@ public:
 	{
 		return CriticalChanceModifier;
 	}
+
+	TSet<AGDUnit*> GetGuardingUnits() const;
+
+	void AddGuardingUnit(AGDUnit* Unit);
+
+	void RemoveGuardingUnit(AGDUnit* Unit);
+
+	bool HasGuardingUnits() const;
 };

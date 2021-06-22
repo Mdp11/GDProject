@@ -264,6 +264,26 @@ bool AGDTile::IsPathClearTowardsTile(AGDTile* Tile) const
 	return false;
 }
 
+TSet<AGDUnit*> AGDTile::GetGuardingUnits() const
+{
+	return GuardingUnits;
+}
+
+void AGDTile::AddGuardingUnit(AGDUnit* Unit)
+{
+	GuardingUnits.Add(Unit);
+}
+
+void AGDTile::RemoveGuardingUnit(AGDUnit* Unit)
+{
+	GuardingUnits.Remove(Unit);
+}
+
+bool AGDTile::HasGuardingUnits() const
+{
+	return GuardingUnits.Num() > 0;
+}
+
 void AGDTile::ChangeInForest()
 {
 	AGDTile* ClassGetter = NewObject<AGDTileForest>(AGDTileForest::StaticClass());

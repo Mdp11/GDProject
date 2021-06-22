@@ -5,6 +5,7 @@
 
 #include "Actors/GDArrow.h"
 #include "Actors/GDBow.h"
+#include "GDProject/Tiles/GDGrid.h"
 #include "GDProject/Tiles/GDTile.h"
 
 AGDArcher::AGDArcher()
@@ -37,6 +38,8 @@ void AGDArcher::Attack()
 	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation = CurrentTile->GetDistanceFrom(IGDTileElement::Execute_GetTile(AttackedEnemy)) <= 1
 		                                ? MeleeAttackAnimation
+		                                : bIsInOverWatch
+		                                ? OverWatchShootAnimation
 		                                : BaseAttackAnimation;
 
 	if (!Miss())
@@ -56,21 +59,63 @@ void AGDArcher::Attack()
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
+void AGDArcher::GuardTilesInAttackRange()
+{
+	for (const auto& TileRow : CurrentTile->GetGrid()->GetTilesGrid())
+	{
+		for (const auto& Tile : TileRow)
+		{
+			if (IsTileInAttackRange(Tile))
+			{
+				GuardingTiles.Add(Tile);
+				Tile->AddGuardingUnit(this);
+			}
+		}
+	}
+}
+
+void AGDArcher::RemoveSpecial()
+{
+	bIsInOverWatch = false;
+
+	if(Arrow)
+	{
+		Arrow->SetLifeSpan(0.01f);
+		Arrow = nullptr;
+	}
+	
+	for (auto& Tile : GuardingTiles)
+	{
+		Tile->RemoveGuardingUnit(this);
+	}
+}
+
+void AGDArcher::UseSpecial()
+{
+	bIsInOverWatch = true;
+
+	GuardTilesInAttackRange();
+}
+
+void AGDArcher::SpawnBow()
+{
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	Bow = GetWorld()->SpawnActor<AGDBow>(BowClass, SpawnParameters);
+	if (Bow)
+	{
+		Bow->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		                       BowAttachSocketName);
+		Bow->SetOwner(this);
+	}
+}
+
 void AGDArcher::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AlternativeAttackAnimation = CriticalAttackAnimation = MissAnimation = BaseAttackAnimation;
-
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	
-	Bow = GetWorld()->SpawnActor<AGDBow>(BowClass, SpawnParameters);
-	if(Bow)
-	{
-		Bow->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, BowAttachSocketName);
-		Bow->SetOwner(this);
-	}
+	SpawnBow();
 }
 
 AGDBow* AGDArcher::GetBow() const
@@ -94,7 +139,7 @@ void AGDArcher::SpawnArrow()
 	}
 }
 
-void AGDArcher::FireArrow() const
+void AGDArcher::FireArrow()
 {
 	FVector TargetLocation;
 	if (bMiss)
@@ -107,7 +152,7 @@ void AGDArcher::FireArrow() const
 		TargetLocation = AttackedEnemy->GetMesh()->GetBoneLocation("Head", EBoneSpaces::WorldSpace);
 		TargetLocation.Y += FMath::RandRange(-5.f, 0.f);
 		TargetLocation.Z += 15.f;
-	} 
+	}
 	else
 	{
 		TargetLocation = AttackedEnemy->GetMesh()->GetBoneLocation("Spine1", EBoneSpaces::WorldSpace);
@@ -115,4 +160,6 @@ void AGDArcher::FireArrow() const
 		TargetLocation.Z += FMath::RandRange(-10.f, 10.f);
 	}
 	Arrow->FireInDirection(TargetLocation);
+	
+	Arrow = nullptr;
 }

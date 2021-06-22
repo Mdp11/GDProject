@@ -49,9 +49,34 @@ AGDUnit::AGDUnit()
 	LifeSpanOnDeath = 5.f;
 }
 
+void AGDUnit::CheckAnimations()
+{
+	if (!BaseAttackAnimation)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Base attack animation not set for actor %s"), *GetName());
+	}
+	else
+	{
+		if (!AlternativeAttackAnimation)
+		{
+			AlternativeAttackAnimation = BaseAttackAnimation;
+		}
+		if (!CriticalAttackAnimation)
+		{
+			CriticalAttackAnimation = BaseAttackAnimation;
+		}
+		if (!MissAnimation)
+		{
+			MissAnimation = BaseAttackAnimation;
+		}
+	}
+}
+
 void AGDUnit::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CheckAnimations();
 
 	ResetActionPoints();
 }
@@ -87,7 +112,7 @@ void AGDUnit::Die()
 
 	TArray<AActor*> AttachedActors;
 	GetAttachedActors(AttachedActors);
-	for(auto& Actor : AttachedActors)
+	for (auto& Actor : AttachedActors)
 	{
 		Actor->SetLifeSpan(LifeSpanOnDeath);
 	}
@@ -116,6 +141,14 @@ void AGDUnit::PerformMove(float DeltaTime)
 			AGDTile* ReachedTile = MovementPath[0];
 			Execute_SetTile(this, ReachedTile);
 			MovementPath.RemoveAt(0);
+
+			if (ReachedTile->HasGuardingUnits())
+			{
+				for (auto& Unit : ReachedTile->GetGuardingUnits())
+				{
+					Unit->RequestAttack(this, true);
+				}
+			}
 		}
 		else
 		{
@@ -718,7 +751,7 @@ void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
 			MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
 			MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.f);
 		}
-		
+
 		FinishAddComponent(OutlineComponent, true, GetMesh()->GetRelativeTransform());
 	}
 }

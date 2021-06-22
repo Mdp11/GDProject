@@ -20,6 +20,7 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 
 public:
 	AGDUnit();
+	void CheckAnimations();
 
 protected:
 

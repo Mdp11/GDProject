@@ -42,6 +42,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* MeleeAttackAnimation;
 
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* OverWatchShootAnimation;
+
+	TSet<AGDTile*> GuardingTiles;
+
 	bool bCriticalHit;
 
 	bool bMiss;
@@ -52,6 +57,12 @@ protected:
 
 	virtual void Attack() override;
 
+	void GuardTilesInAttackRange();
+
+	virtual void RemoveSpecial() override;
+	
+	virtual void UseSpecial() override;
+	
 	virtual void BeginPlay() override;
 
 public:
@@ -65,6 +76,8 @@ private:
 	AGDArrow* Arrow;
 
 	void SpawnArrow();
+	
+	void SpawnBow();
 
-	void FireArrow() const;
+	void FireArrow();
 };
