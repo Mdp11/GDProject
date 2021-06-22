@@ -92,9 +92,17 @@ void AGDArcher::RemoveSpecial()
 
 void AGDArcher::UseSpecial()
 {
-	bIsInOverWatch = true;
+	if (GetActionPoints() >= 1)
+	{
+		bIsInOverWatch = true;
 
-	GuardTilesInAttackRange();
+		GuardTilesInAttackRange();
+
+		DecreaseActionPointsBy(MaxActionPoints);
+
+		ResetAllHighlightedTiles();
+		OnActionFinished();
+	}
 }
 
 void AGDArcher::SpawnBow()
