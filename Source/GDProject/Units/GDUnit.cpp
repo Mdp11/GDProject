@@ -518,6 +518,13 @@ void AGDUnit::ResetHighlightedActionTiles()
 	for (const auto& Tile : MovementPath)
 	{
 		Tile->RemoveHighlight();
+		if (Tile->HasGuardingUnits())
+		{
+			for (auto& Unit : Tile->GetGuardingUnits())
+			{
+				Unit->RemoveOutline();
+			}
+		}
 	}
 }
 
@@ -564,7 +571,18 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 			MovementPath = MoveTemp(NewMovementPath);
 			for (const auto& Tile : MovementPath)
 			{
-				Tile->Highlight(EHighlightInfo::Default);
+				if (Tile->HasGuardingUnits())
+				{
+					Tile->Highlight(EHighlightInfo::Enemy);
+					for (auto& Unit : Tile->GetGuardingUnits())
+					{
+						Unit->AddOutline(FLinearColor::Red);
+					}
+				}
+				else
+				{
+					Tile->Highlight(EHighlightInfo::Default);
+				}
 			}
 		}
 		else

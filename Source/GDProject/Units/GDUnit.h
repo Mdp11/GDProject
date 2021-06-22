@@ -174,7 +174,7 @@ protected:
 
 	void ResetHighlightedActionTiles();
 
-	void ResetAllHighlightedTiles();
+	virtual void ResetAllHighlightedTiles();
 
 	void AddToActiveUnits();
 

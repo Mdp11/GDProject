@@ -19,6 +19,41 @@ AGDArcher::AGDArcher()
 	CablesAttachSocketName = "CablesSocket";
 }
 
+void AGDArcher::HighlightOverWatchingTiles()
+{
+	AGDGrid* Grid = CurrentTile->GetGrid();
+
+	const FIntPoint CurrentCoordinates = CurrentTile->GetCoordinates();
+	
+	for(int i = -AttackRange; i <= AttackRange; ++i)
+	{
+		AGDTile* Tile = Grid->GetTile({CurrentCoordinates.X + i, CurrentCoordinates.Y});
+		if(Tile)
+		{
+			Tile->Highlight(EHighlightInfo::Enemy);
+			HighlightedOverWatchingTiles.Add(Tile);
+		}
+
+		Tile = Grid->GetTile({CurrentCoordinates.X, CurrentCoordinates.Y + i});
+
+		if(Tile)
+		{
+			Tile->Highlight(EHighlightInfo::Enemy);
+			HighlightedOverWatchingTiles.Add(Tile);
+		}
+	}
+}
+
+void AGDArcher::ResetHighlightedOverWatchingTiles()
+{
+	for(auto& Tile : HighlightedOverWatchingTiles)
+	{
+		Tile->RemoveHighlight();
+	}
+
+	HighlightedOverWatchingTiles.Empty();
+}
+
 bool AGDArcher::IsCriticalHit()
 {
 	bCriticalHit = Super::IsCriticalHit();
@@ -67,11 +102,18 @@ void AGDArcher::GuardTilesInAttackRange()
 		{
 			if (IsTileInAttackRange(Tile))
 			{
-				GuardingTiles.Add(Tile);
+				OverWatchingTiles.Add(Tile);
 				Tile->AddGuardingUnit(this);
 			}
 		}
 	}
+}
+
+void AGDArcher::ResetAllHighlightedTiles()
+{
+	Super::ResetAllHighlightedTiles();
+
+	ResetHighlightedOverWatchingTiles();
 }
 
 void AGDArcher::RemoveSpecial()
@@ -84,7 +126,7 @@ void AGDArcher::RemoveSpecial()
 		Arrow = nullptr;
 	}
 	
-	for (auto& Tile : GuardingTiles)
+	for (auto& Tile : OverWatchingTiles)
 	{
 		Tile->RemoveGuardingUnit(this);
 	}
@@ -96,7 +138,12 @@ void AGDArcher::UseSpecial()
 	{
 		bIsInOverWatch = true;
 
-		GuardTilesInAttackRange();
+		OverWatchingTiles = HighlightedOverWatchingTiles;
+
+		for(auto& Tile : OverWatchingTiles)
+		{
+			Tile->AddGuardingUnit(this);
+		}
 
 		DecreaseActionPointsBy(MaxActionPoints);
 

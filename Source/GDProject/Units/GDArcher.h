@@ -45,11 +45,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* OverWatchShootAnimation;
 
-	TSet<AGDTile*> GuardingTiles;
+	TSet<AGDTile*> OverWatchingTiles;
+	
+	TSet<AGDTile*> HighlightedOverWatchingTiles;
 
 	bool bCriticalHit;
 
 	bool bMiss;
+
+	UFUNCTION(BlueprintCallable)
+	void HighlightOverWatchingTiles();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetHighlightedOverWatchingTiles();
 
 	virtual bool IsCriticalHit() override;
 
@@ -58,6 +66,8 @@ protected:
 	virtual void Attack() override;
 
 	void GuardTilesInAttackRange();
+
+	virtual void ResetAllHighlightedTiles() override;
 
 	virtual void RemoveSpecial() override;
 	
