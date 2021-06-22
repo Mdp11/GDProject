@@ -154,7 +154,7 @@ void AGDUnit::PerformMove(float DeltaTime)
 			{
 				for (auto& Unit : ReachedTile->GetGuardingUnits())
 				{
-					if (IsEnemy(Unit))
+					if (IsEnemy(Unit) && Unit->IsTileInAttackRange(CurrentTile))
 					{
 						bMoveRequested = false;
 						bMoveInterrupted = true;
