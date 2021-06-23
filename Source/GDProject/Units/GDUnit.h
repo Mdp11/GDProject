@@ -16,7 +16,7 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 {
 	GENERATED_BODY()
 
-	friend class UHitNotify;
+	friend class UGDHitNotify;
 
 public:
 	AGDUnit();

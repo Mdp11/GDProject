@@ -132,6 +132,17 @@ void AGDArcher::RemoveSpecial()
 	}
 }
 
+void AGDArcher::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
+                                const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (bIsInOverWatch)
+	{
+		bIsInOverWatch = false;
+	}
+
+	Super::OnHealthChanged(HealthComp, Health, HealthDelta, DamageType, InstigatedBy, DamageCauser);
+}
+
 void AGDArcher::UseSpecial()
 {
 	if (GetActionPoints() >= 1)
@@ -193,6 +204,15 @@ void AGDArcher::SpawnArrow()
 		                         ArrowAttachSocketName);
 	}
 }
+
+// void AGDArcher::DropArrow() const
+// {
+// 	if (Arrow)
+// 	{
+// 		Arrow->Drop();
+// 		Bow->AttachCablesTo(Bow->GetMesh(), Bow->GetIdleBowCablesSocketName());
+// 	}
+// }
 
 void AGDArcher::FireArrow()
 {

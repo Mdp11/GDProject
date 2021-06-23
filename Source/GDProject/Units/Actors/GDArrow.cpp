@@ -5,7 +5,6 @@
 
 #include "DrawDebugHelpers.h"
 #include "GDProject/Units/GDArcher.h"
-#include "GDBow.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AGDArrow::AGDArrow()
@@ -49,6 +48,16 @@ void AGDArrow::FireInDirection(const FVector& TargetLocation)
 
 	SetActorEnableCollision(true);
 }
+
+// void AGDArrow::Drop()
+// {
+// 	StaticMeshComponent->OnComponentBeginOverlap.RemoveAll(this);
+// 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+//     SetActorEnableCollision(true);
+//     StaticMeshComponent->SetEnableGravity(true);
+//     StaticMeshComponent->SetSimulatePhysics(true);
+//     SetLifeSpan(5.f);
+// }
 
 void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,

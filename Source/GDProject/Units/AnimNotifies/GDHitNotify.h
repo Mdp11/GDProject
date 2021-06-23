@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "ArrowNotify.generated.h"
+#include "GDHitNotify.generated.h"
 
 UCLASS()
-class GDPROJECT_API UArrowNotify : public UAnimNotify
+class GDPROJECT_API UGDHitNotify : public UAnimNotify
 {
 	GENERATED_BODY()
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Attack")
-	bool bDrawArrow;
+	bool bApplyDamage;
 
 	UPROPERTY(EditAnywhere, Category="Attack")
-	bool bFireArrow;
+	bool bMiss;
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 };

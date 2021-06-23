@@ -11,7 +11,7 @@ class GDPROJECT_API AGDWarrior : public AGDUnit
 {
 	GENERATED_BODY()
 
-	friend class UHitNotify;
+	friend class UGDHitNotify;
 
 public:
 	AGDWarrior();

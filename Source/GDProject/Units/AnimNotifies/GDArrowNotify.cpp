@@ -1,12 +1,12 @@
 // © 2021 Alessandro Arena, Mattia De Prisco, Nunzio Lopardo All Rights Reserved
 
 
-#include "ArrowNotify.h"
+#include "GDArrowNotify.h"
 
 #include "GDProject/Units/GDArcher.h"
 #include "GDProject/Units/Actors/GDArrow.h"
 
-void UArrowNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UGDArrowNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	AGDArcher* Archer = Cast<AGDArcher>(MeshComp->GetOwner());
 	if (Archer)

@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GDUnit.h"
+#include "Actors/GDBow.h"
 #include "GDArcher.generated.h"
 
-class AGDBow;
 class AGDArrow;
 
 UCLASS()
@@ -14,8 +14,9 @@ class GDPROJECT_API AGDArcher : public AGDUnit
 {
 	GENERATED_BODY()
 
-	friend class UArrowNotify;
+	friend class UGDArrowNotify;
 	friend class UGDBowStretchNotify;
+	friend class UGDHitNotify;
 
 public:
 	AGDArcher();
@@ -71,6 +72,10 @@ protected:
 
 	virtual void RemoveSpecial() override;
 
+	virtual void OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
+	                             const UDamageType* DamageType, AController* InstigatedBy,
+	                             AActor* DamageCauser) override;
+
 	virtual void UseSpecial() override;
 
 	virtual void BeginPlay() override;
@@ -86,6 +91,8 @@ private:
 	AGDArrow* Arrow;
 
 	void SpawnArrow();
+
+	// void DropArrow() const;
 
 	void SpawnBow();
 
