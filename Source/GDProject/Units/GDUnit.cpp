@@ -571,17 +571,25 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 			MovementPath = MoveTemp(NewMovementPath);
 			for (const auto& Tile : MovementPath)
 			{
+				Tile->Highlight(EHighlightInfo::Default);
+
 				if (Tile->HasGuardingUnits())
 				{
-					Tile->Highlight(EHighlightInfo::Enemy);
+					bool bInRangeOfAnyGuardingUnit = false;
+
 					for (auto& Unit : Tile->GetGuardingUnits())
 					{
-						Unit->AddOutline(FLinearColor::Red);
+						if (Unit->IsTileInAttackRange(Tile))
+						{
+							Unit->AddOutline(FLinearColor::Red);
+							bInRangeOfAnyGuardingUnit = true;
+						}
 					}
-				}
-				else
-				{
-					Tile->Highlight(EHighlightInfo::Default);
+
+					if (bInRangeOfAnyGuardingUnit)
+					{
+						Tile->Highlight(EHighlightInfo::Enemy);
+					}
 				}
 			}
 		}
