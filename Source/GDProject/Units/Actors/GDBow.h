@@ -52,4 +52,6 @@ public:
 	USkeletalMeshComponent* GetMesh() const;
 
 	FName GetIdleBowCablesSocketName() const;
+	
+	void SetBent(bool Bent);
 };

@@ -38,7 +38,7 @@ public:
 
 	virtual void FireInDirection(const FVector& TargetLocation);
 
-	// void Drop();
+	void Drop();
 
 	UFUNCTION()
 	void OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,

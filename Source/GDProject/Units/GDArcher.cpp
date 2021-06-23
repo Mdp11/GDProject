@@ -77,6 +77,11 @@ void AGDArcher::Attack()
 		                                ? OverWatchShootAnimation
 		                                : BaseAttackAnimation;
 
+	if (AttackAnimation == MeleeAttackAnimation && bIsInOverWatch)
+	{
+		RemoveSpecial();
+	}
+
 	if (!Miss())
 	{
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
@@ -120,11 +125,7 @@ void AGDArcher::RemoveSpecial()
 {
 	bIsInOverWatch = false;
 
-	if (Arrow)
-	{
-		Arrow->SetLifeSpan(0.01f);
-		Arrow = nullptr;
-	}
+	DropArrow();
 
 	for (auto& Tile : OverWatchingTiles)
 	{
@@ -137,7 +138,7 @@ void AGDArcher::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, fl
 {
 	if (bIsInOverWatch)
 	{
-		bIsInOverWatch = false;
+		RemoveSpecial();
 	}
 
 	Super::OnHealthChanged(HealthComp, Health, HealthDelta, DamageType, InstigatedBy, DamageCauser);
@@ -205,14 +206,16 @@ void AGDArcher::SpawnArrow()
 	}
 }
 
-// void AGDArcher::DropArrow() const
-// {
-// 	if (Arrow)
-// 	{
-// 		Arrow->Drop();
-// 		Bow->AttachCablesTo(Bow->GetMesh(), Bow->GetIdleBowCablesSocketName());
-// 	}
-// }
+void AGDArcher::DropArrow()
+{
+	if (Arrow)
+	{
+		Arrow->Drop();
+		Arrow = nullptr;
+		Bow->SetBent(false);
+		Bow->AttachCablesTo(Bow->GetMesh(), Bow->GetIdleBowCablesSocketName());
+	}
+}
 
 void AGDArcher::FireArrow()
 {

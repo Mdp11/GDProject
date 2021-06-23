@@ -5,6 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "GDProject/Units/GDArcher.h"
+#include "GDProject/Units/AnimNotifies/GDHitNotify.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AGDArrow::AGDArrow()
@@ -49,15 +50,16 @@ void AGDArrow::FireInDirection(const FVector& TargetLocation)
 	SetActorEnableCollision(true);
 }
 
-// void AGDArrow::Drop()
-// {
-// 	StaticMeshComponent->OnComponentBeginOverlap.RemoveAll(this);
-// 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-//     SetActorEnableCollision(true);
-//     StaticMeshComponent->SetEnableGravity(true);
-//     StaticMeshComponent->SetSimulatePhysics(true);
-//     SetLifeSpan(5.f);
-// }
+void AGDArrow::Drop()
+{
+	StaticMeshComponent->OnComponentBeginOverlap.RemoveAll(this);
+	StaticMeshComponent->SetCollisionProfileName("BlockAllDynamic");
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+    SetActorEnableCollision(true);
+    StaticMeshComponent->SetEnableGravity(true);
+    StaticMeshComponent->SetSimulatePhysics(true);
+    SetLifeSpan(5.f);
+}
 
 void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
@@ -87,5 +89,5 @@ void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 		AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
 	}
 
-	SetLifeSpan(5.f);
+	SetLifeSpan(3.f);
 }

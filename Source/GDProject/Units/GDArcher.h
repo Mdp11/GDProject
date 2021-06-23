@@ -92,7 +92,7 @@ private:
 
 	void SpawnArrow();
 
-	// void DropArrow() const;
+	void DropArrow();
 
 	void SpawnBow();
 

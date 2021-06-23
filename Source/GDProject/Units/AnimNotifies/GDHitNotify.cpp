@@ -13,10 +13,6 @@ void UGDHitNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* A
 
 	if (AttackingUnit)
 	{
-		// if (AGDArcher* Archer = Cast<AGDArcher>(AttackingUnit))
-		// {
-		// 	Archer->DropArrow();
-		// }
 		if (bMiss)
 		{
 			AGDWarrior* Warrior = Cast<AGDWarrior>(AttackingUnit->AttackedEnemy);
@@ -25,19 +21,21 @@ void UGDHitNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* A
 				Warrior->RequestAttack(AttackingUnit, true);
 			}
 		}
-		else if (bApplyDamage)
-		{
-			AttackingUnit->ApplyDamage();
-		}
 		else
 		{
-			// if (AGDArcher* EnemyArcher = Cast<AGDArcher>(AttackingUnit->AttackedEnemy))
-			// {
-			// 	EnemyArcher->bIsInOverWatch = false;
-			// 	EnemyArcher->DropArrow();
-			// }
+			if (AGDArcher* EnemyArcher = Cast<AGDArcher>(AttackingUnit->AttackedEnemy))
+			{
+				if (EnemyArcher->bIsInOverWatch)
+				{
+					EnemyArcher->RemoveSpecial();
+				}
+			}
 
-			if (AttackingUnit->AttackedEnemy)
+			if (bApplyDamage)
+			{
+				AttackingUnit->ApplyDamage();
+			}
+			else if (AttackingUnit->AttackedEnemy)
 			{
 				UAnimMontage* ImpactAnimMontage = AttackingUnit->AttackedEnemy->ImpactAnimation;
 

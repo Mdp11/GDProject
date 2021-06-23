@@ -56,3 +56,8 @@ FName AGDBow::GetIdleBowCablesSocketName() const
 {
 	return IdleBowCablesSocket;
 }
+
+void AGDBow::SetBent(const bool Bent)
+{
+	bBent = Bent;
+}
