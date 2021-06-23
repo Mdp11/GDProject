@@ -79,7 +79,7 @@ void AGDArcher::Attack()
 
 	if (AttackAnimation == MeleeAttackAnimation && bIsInOverWatch)
 	{
-		RemoveSpecial();
+		DropArrow();
 	}
 
 	if (!Miss())
