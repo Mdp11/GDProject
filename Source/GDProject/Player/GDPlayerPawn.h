@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "GDProject/Camera/GDCameraManager.h"
 #include "GDProject/Interfaces/GDTileElement.h"
+#include "GDProject/Tiles/GDGrid.h"
 
 #include "GDPlayerPawn.generated.h"
 
@@ -20,6 +22,12 @@ public:
 	AGDPlayerPawn();
 
 protected:
+	UPROPERTY(EditAnywhere)
+	AGDCameraManager* CameraManger;
+
+	UPROPERTY(EditAnywhere)
+	AGDGrid* GridManger;
+	
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;
 
@@ -69,6 +77,10 @@ private:
 	void HighlightHoveringTile() const;
 
 	void TriggerClick();
+
+	void RotateCameraLeft();
+
+	void RotateCameraRight();
 
 	void SelectTileElement();
 

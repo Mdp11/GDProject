@@ -51,6 +51,12 @@ protected:
 	float Defence;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float SideAttackModifier;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float BackAttackModifier;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float HitChance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")

@@ -35,6 +35,9 @@ AGDUnit::AGDUnit()
 	AttackRange = 5;
 	HitChance = 90.f;
 
+	SideAttackModifier = 0.2f;
+	BackAttackModifier = 0.5f;
+
 	CriticalChance = 10.f;
 	CriticalChanceAdjuster = 0.f;
 	CriticalDamageMultiplier = 2.f;
@@ -225,8 +228,7 @@ void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange,
-	                                 FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
 		SetActorRotation(NewRotation);
@@ -419,24 +421,42 @@ void AGDUnit::Attack()
 	}
 	else
 	{
+		const float AngleDiff = round(abs(AttackedEnemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
+		float EnemyDefence = AttackedEnemy->GetDefence();
+		float CriticalSideBonus = 0;
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
-
-		if (!IsCriticalHit())
+		if (AngleDiff == 0)
 		{
-			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
+			CriticalSideBonus = 30;
+			EnemyDefence *= BackAttackModifier;
+			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
 		}
-		else
+		else if (AngleDiff == 90 || AngleDiff == 270)
+		{
+			CriticalSideBonus = 20;
+			EnemyDefence *= SideAttackModifier;
+			UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
+		}
+
+		CriticalChance += CriticalSideBonus;
+
+		if (IsCriticalHit())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
 			AttackAnimation = CriticalAttackAnimation;
 			ComputedDamage *= CriticalDamageMultiplier;
 		}
-
-		ComputedDamage /= AttackedEnemy->GetDefence();
+		else
+		{
+			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
+		}
+		CriticalChance -= CriticalSideBonus;
+		ComputedDamage /= EnemyDefence;
 	}
 
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
+
 
 void AGDUnit::OnActionBegin()
 {
