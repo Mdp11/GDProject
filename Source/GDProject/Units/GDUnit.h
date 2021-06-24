@@ -48,7 +48,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category= "Combat")
 	float Defence;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float SideAttackModifier;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float BackAttackModifier;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float HitChance;
 
@@ -131,7 +137,7 @@ protected:
 	void ApplyDamage();
 
 	virtual void Attack();
-
+	
 	virtual void RequestMove();
 
 	float GetDefence() const;

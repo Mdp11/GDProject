@@ -28,6 +28,9 @@ AGDUnit::AGDUnit()
 	AttackRange = 5;
 	HitChance = 90.f;
 
+	SideAttackModifier = 0.2f; 
+	BackAttackModifier = 0.5f;
+
 	CriticalChance = 10.f;
 	CriticalChanceAdjuster = 0.f;
 	CriticalDamageMultiplier = 2.f;
@@ -161,8 +164,9 @@ void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange,
-	                                 FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
+
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
 		SetActorRotation(NewRotation);
@@ -336,8 +340,7 @@ void AGDUnit::Attack()
 {
 	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation;
-
-	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
+	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();	
 	if (Miss)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
@@ -345,23 +348,39 @@ void AGDUnit::Attack()
 	}
 	else
 	{
+		const float AngleDiff = round(abs(AttackedEnemy->GetActorRotation().Yaw - GetActorRotation().Yaw));
+		float EnemyDefence = AttackedEnemy->GetDefence();
+		float CriticalSideBonus = 0;
 		ComputedDamage = BaseDamage + CurrentTile->GetAttackModifier();
-
-		if (!IsCriticalHit())
+		if (AngleDiff == 0)
 		{
-			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
+			CriticalSideBonus = 30;
+			EnemyDefence *= BackAttackModifier;
+			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
+			
+		} else if (AngleDiff == 90 || AngleDiff == 270)
+		{
+			CriticalSideBonus = 20;
+			EnemyDefence *= SideAttackModifier;
+            UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
 		}
-		else
+		
+		CriticalChance += CriticalSideBonus;
+		
+		if (IsCriticalHit())
 		{
 			AttackAnimation = CriticalAttackAnimation;
 			ComputedDamage *= CriticalDamageMultiplier;
+		} else
+		{
+			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
 		}
-
-		ComputedDamage /= AttackedEnemy->GetDefence();
+		CriticalChance-=CriticalSideBonus;
+		ComputedDamage /= EnemyDefence;
 	}
-
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
+
 
 void AGDUnit::OnActionBegin()
 {
