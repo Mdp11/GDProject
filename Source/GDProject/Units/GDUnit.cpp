@@ -363,7 +363,7 @@ void AGDUnit::Attack()
 		{
 			CriticalSideBonus = 20;
 			EnemyDefence *= SideAttackModifier;
-            ComputedDamage /= (AttackedEnemy->GetDefence() * SideAttackModifier);
+            ComputedDamage /= (EnemyDefence * SideAttackModifier);
             UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
 		}
 		
