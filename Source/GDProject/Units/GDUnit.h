@@ -15,9 +15,9 @@ UENUM(BlueprintType)
 enum class EDirection : uint8
 {
 	North UMETA(DisplayName = "North"),
-	West UMETA(DisplayName = "East"),
+	West UMETA(DisplayName = "West"),
 	South UMETA(DisplayName = "South"),
-	East UMETA(DisplayName = "West"),
+	East UMETA(DisplayName = "East"),
 };
 
 UCLASS(Abstract, Blueprintable)
@@ -65,10 +65,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float BackAttackModifier;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float HitChance;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float CriticalChance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")

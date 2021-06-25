@@ -576,7 +576,6 @@ void AGDUnit::SetDirection(const EDirection NewDirection)
 	{
 	case EDirection::West:
 		break;
-
 	case EDirection::North:
 		NewRotator.Yaw = 90.0f;
 		break;

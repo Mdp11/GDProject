@@ -281,7 +281,7 @@ TArray<AGDTile*> AGDTile::GetTilesInDirection(const EDirection Direction, const 
 		break;
 
 	case EDirection::East:
-		Tile = OwningGrid->GetTile({Coordinates.X + 1, Coordinates.Y});
+		Tile = OwningGrid->GetTile({Coordinates.X - 1, Coordinates.Y});
 		break;
 
 	case EDirection::South:
@@ -289,7 +289,7 @@ TArray<AGDTile*> AGDTile::GetTilesInDirection(const EDirection Direction, const 
 		break;
 
 	case EDirection::West:
-		Tile = OwningGrid->GetTile({Coordinates.X - 1, Coordinates.Y});
+		Tile = OwningGrid->GetTile({Coordinates.X + 1, Coordinates.Y});
 		break;
 	}
 

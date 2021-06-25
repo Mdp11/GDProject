@@ -21,13 +21,15 @@ AGDArcher::AGDArcher()
 
 void AGDArcher::HighlightOverWatchingTiles()
 {
-	EDirection OppositeDirection = GetOppositeDirection(LookDirection);
+	const EDirection OppositeDirection = GetOppositeDirection(LookDirection);
 
-	for (int i = static_cast<int>(EDirection::North); i <= static_cast<int>(EDirection::West); ++i)
+	TArray<EDirection> Directions {EDirection::North, EDirection::East, EDirection::South, EDirection::West};
+
+	for(const auto& Direction : Directions)
 	{
-		if (i == static_cast<int>(OppositeDirection)) continue;
+		if (Direction == OppositeDirection) continue;
 
-		auto TilesInDirection = CurrentTile->GetTilesInDirection(static_cast<EDirection>(i), AttackRange);
+		auto TilesInDirection = CurrentTile->GetTilesInDirection(Direction, AttackRange);
 		if (TilesInDirection.Num() > 0)
 		{
 			TilesInDirection.RemoveAt(0);
