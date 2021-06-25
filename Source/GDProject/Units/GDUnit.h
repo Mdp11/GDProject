@@ -11,6 +11,15 @@
 
 class UGDHealthComponent;
 
+UENUM(BlueprintType)
+enum class EDirection : uint8
+{
+	North UMETA(DisplayName = "North"),
+	West UMETA(DisplayName = "East"),
+	South UMETA(DisplayName = "South"),
+	East UMETA(DisplayName = "West"),
+};
+
 UCLASS(Abstract, Blueprintable)
 class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 {
@@ -113,6 +122,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpanOnDeath;
 
+	EDirection LookDirection;
+
 	int OwningPlayer;
 
 	virtual void BeginPlay() override;
@@ -184,6 +195,11 @@ protected:
 	void AddToActiveUnits();
 
 	void RemoveFromActiveUnits();
+
+	UFUNCTION(BlueprintCallable)
+	void SetDirection(const EDirection NewDirection);
+
+	EDirection GetOppositeDirection(const EDirection Direction);
 
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)

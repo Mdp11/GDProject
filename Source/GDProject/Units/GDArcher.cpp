@@ -21,25 +21,21 @@ AGDArcher::AGDArcher()
 
 void AGDArcher::HighlightOverWatchingTiles()
 {
-	AGDGrid* Grid = CurrentTile->GetGrid();
+	EDirection OppositeDirection = GetOppositeDirection(LookDirection);
 
-	const FIntPoint CurrentCoordinates = CurrentTile->GetCoordinates();
-
-	for (int i = -AttackRange; i <= AttackRange; ++i)
+	for (int i = static_cast<int>(EDirection::North); i <= static_cast<int>(EDirection::West); ++i)
 	{
-		AGDTile* Tile = Grid->GetTile({CurrentCoordinates.X + i, CurrentCoordinates.Y});
-		if (Tile)
-		{
-			Tile->Highlight(EHighlightInfo::Enemy);
-			HighlightedOverWatchingTiles.Add(Tile);
-		}
+		if (i == static_cast<int>(OppositeDirection)) continue;
 
-		Tile = Grid->GetTile({CurrentCoordinates.X, CurrentCoordinates.Y + i});
-
-		if (Tile)
+		auto TilesInDirection = CurrentTile->GetTilesInDirection(static_cast<EDirection>(i), AttackRange);
+		if (TilesInDirection.Num() > 0)
 		{
-			Tile->Highlight(EHighlightInfo::Enemy);
-			HighlightedOverWatchingTiles.Add(Tile);
+			TilesInDirection.RemoveAt(0);
+			for (auto& Tile : TilesInDirection)
+			{
+				Tile->Highlight(EHighlightInfo::Enemy);
+				HighlightedOverWatchingTiles.Add(Tile);
+			}
 		}
 	}
 }

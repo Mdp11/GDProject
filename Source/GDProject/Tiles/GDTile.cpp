@@ -264,6 +264,44 @@ bool AGDTile::IsPathClearTowardsTile(AGDTile* Tile) const
 	return false;
 }
 
+TArray<AGDTile*> AGDTile::GetTilesInDirection(const EDirection Direction, const int Num) const
+{
+	if (Num == 0)
+	{
+		return {};
+	}
+	
+	TArray<AGDTile*> Tiles;
+	AGDTile* Tile = nullptr;
+
+	switch (Direction)
+	{
+	case EDirection::North:
+		Tile = OwningGrid->GetTile({Coordinates.X, Coordinates.Y + 1});
+		break;
+
+	case EDirection::East:
+		Tile = OwningGrid->GetTile({Coordinates.X + 1, Coordinates.Y});
+		break;
+
+	case EDirection::South:
+		Tile = OwningGrid->GetTile({Coordinates.X, Coordinates.Y - 1});
+		break;
+
+	case EDirection::West:
+		Tile = OwningGrid->GetTile({Coordinates.X - 1, Coordinates.Y});
+		break;
+	}
+
+	if (Tile)
+	{
+		Tiles.Add(Tile);
+		Tiles.Append(Tile->GetTilesInDirection(Direction, Num - 1));
+	}
+
+	return Tiles;
+}
+
 TSet<AGDUnit*> AGDTile::GetGuardingUnits() const
 {
 	return GuardingUnits;

@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDTile.generated.h"
 
 class AGDGrid;
 class AGDUnit;
+enum class EDirection : uint8;
 
 enum class EHighlightInfo
 {
@@ -124,6 +127,8 @@ public:
 	void RemoveInfoDecal() const;
 
 	bool IsPathClearTowardsTile(AGDTile* Tile) const;
+
+	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
 
 	float GetAttackModifier() const
 	{

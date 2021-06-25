@@ -231,23 +231,20 @@ void AGDUnit::Rotate()
 
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::West);
 	}
 	else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
 	{
-		NewRotation.Yaw = 90.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::North);
 	}
 	else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 &&
 		GetActorRotation().Yaw > -180))
 	{
-		NewRotation.Yaw = 180.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::East);
 	}
 	else
 	{
-		NewRotation.Yaw = -90.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::South);
 	}
 	OnActionFinished();
 }
@@ -571,6 +568,30 @@ void AGDUnit::RemoveFromActiveUnits()
 	}
 }
 
+void AGDUnit::SetDirection(const EDirection NewDirection)
+{
+	FRotator NewRotator{0.f, 0.f, 0.f};
+
+	switch (NewDirection)
+	{
+	case EDirection::West:
+		break;
+
+	case EDirection::North:
+		NewRotator.Yaw = 90.0f;
+		break;
+	case EDirection::East:
+		NewRotator.Yaw = 180.0f;
+		break;
+	case EDirection::South:
+		NewRotator.Yaw = -90.0f;
+		break;
+	}
+
+	LookDirection = NewDirection;
+	SetActorRotation(NewRotator);
+}
+
 void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 {
 	TArray<AGDTile*> NewMovementPath = CurrentTile->GetGrid()->ComputePathBetweenTiles(
@@ -826,6 +847,26 @@ void AGDUnit::RemoveOutline()
 		OutlineComponent->DestroyComponent();
 		OutlineComponent = nullptr;
 	}
+}
+
+EDirection AGDUnit::GetOppositeDirection(const EDirection Direction)
+{
+	switch (Direction)
+	{
+	case EDirection::North:
+		return EDirection::South;
+
+	case EDirection::East:
+		return EDirection::West;
+
+	case EDirection::South:
+		return EDirection::North;
+
+	case EDirection::West:
+		return EDirection::East;
+	}
+
+	return EDirection::North;	// Dummy return to suppress warning
 }
 
 void AGDUnit::OnActionFinished()
