@@ -3,12 +3,15 @@
 
 #include "GDUnit.h"
 
+#include <algorithm>
+
 #include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Tiles/GDGrid.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Components/CapsuleComponent.h"
 
 
 AGDUnit::AGDUnit()
@@ -18,7 +21,11 @@ AGDUnit::AGDUnit()
 	HealthComponent = CreateDefaultSubobject<UGDHealthComponent>(TEXT("HealthComp"));
 	HealthComponent->OnHealthChanged.AddDynamic(this, &AGDUnit::OnHealthChanged);
 
-	GetMesh()->SetRenderCustomDepth(true);
+	// GetMesh()->SetRenderCustomDepth(true);
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> OutlineMaterialFinder(
+		TEXT("MaterialInstanceConstant'/Game/Materials/MI_Outline.MI_Outline'"));
+	OutlineMaterialInstance = OutlineMaterialFinder.Object;
 
 	MaxActionPoints = 2;
 
@@ -28,7 +35,7 @@ AGDUnit::AGDUnit()
 	AttackRange = 5;
 	HitChance = 90.f;
 
-	SideAttackModifier = 0.2f; 
+	SideAttackModifier = 0.2f;
 	BackAttackModifier = 0.5f;
 
 	CriticalChance = 10.f;
@@ -40,27 +47,62 @@ AGDUnit::AGDUnit()
 	bIsDead = false;
 
 	bMoveRequested = false;
+	bMoveInterrupted = false;
 	bRotationRequested = false;
+
+	LifeSpanOnDeath = 5.f;
+}
+
+void AGDUnit::CheckAnimations()
+{
+	if (!BaseAttackAnimation)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Base attack animation not set for actor %s"), *GetName());
+	}
+	else
+	{
+		if (!AlternativeAttackAnimation)
+		{
+			AlternativeAttackAnimation = BaseAttackAnimation;
+		}
+		if (!CriticalAttackAnimation)
+		{
+			CriticalAttackAnimation = BaseAttackAnimation;
+		}
+		if (!MissAnimation)
+		{
+			MissAnimation = BaseAttackAnimation;
+		}
+	}
 }
 
 void AGDUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CurrentActionPoints = MaxActionPoints;
+	CheckAnimations();
+
+	ResetActionPoints();
 }
 
 void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
                               const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s received %f damage and now has %f!"), *GetName(), HealthDelta, Health);
+
 	if (!bIsDead && Health <= 0.f)
 	{
 		Die();
 	}
 	else
 	{
-		PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
+		bMoveInterrupted
+			? PlayAnimationAndDoAction(ImpactAnimation, [&]()
+			{
+				bMoveInterrupted = false;
+				bMoveRequested = true;
+			})
+			: PlayAnimationAndDoAction(ImpactAnimation, [&]() { OnActionFinished(); });
 	}
 }
 
@@ -74,11 +116,17 @@ void AGDUnit::Die()
 	bIsDead = true;
 
 	CurrentTile->SetTileElement(nullptr);
-	
+
 	Execute_Deselect(this);
 
-	const float LifeSpan = 5.f;
-	SetLifeSpan(LifeSpan);
+	SetLifeSpan(LifeSpanOnDeath);
+
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors);
+	for (auto& Actor : AttachedActors)
+	{
+		Actor->SetLifeSpan(LifeSpanOnDeath);
+	}
 
 	FTimerHandle TimerHandle_OnUnitDead;
 	FTimerDelegate TimerDelegate;
@@ -89,7 +137,23 @@ void AGDUnit::Die()
 			PlayerPawn->OnUnitDead(this, OwningPlayer);
 		}
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpan - 0.5f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpanOnDeath - 0.5f, false);
+}
+
+void AGDUnit::CheckForGuardingUnits()
+{
+	if (CurrentTile->HasGuardingUnits())
+	{
+		for (auto& Unit : CurrentTile->GetGuardingUnits())
+		{
+			if (IsEnemy(Unit) && Unit->IsTileInAttackRange(CurrentTile))
+			{
+				bMoveRequested = false;
+				bMoveInterrupted = true;
+				Unit->RequestAttack(this, true);
+			}
+		}
+	}
 }
 
 void AGDUnit::PerformMove(float DeltaTime)
@@ -101,9 +165,10 @@ void AGDUnit::PerformMove(float DeltaTime)
 
 		if (GetActorLocation().Equals(NextTileLocation))
 		{
-			AGDTile* ReachedTile = MovementPath[0];
-			Execute_SetTile(this, ReachedTile);
+			Execute_SetTile(this, MovementPath[0]);
 			MovementPath.RemoveAt(0);
+
+			CheckForGuardingUnits();
 		}
 		else
 		{
@@ -135,7 +200,6 @@ void AGDUnit::StopMove()
 		bRotationRequested = true;
 	}
 
-	UpdateTransparency();
 	OnActionFinished();
 }
 
@@ -165,27 +229,22 @@ void AGDUnit::Rotate()
 	bRotationRequested = false;
 	FRotator NewRotation(0, 0, 0);
 
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString::Printf(TEXT("My Rotation is: %s"), *GetActorRotation().ToString()));
-
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::West);
 	}
 	else if (GetActorRotation().Yaw > 45 && GetActorRotation().Yaw <= 135)
 	{
-		NewRotation.Yaw = 90.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::North);
 	}
 	else if ((GetActorRotation().Yaw > 135 && GetActorRotation().Yaw < 180) || (GetActorRotation().Yaw < -135 &&
 		GetActorRotation().Yaw > -180))
 	{
-		NewRotation.Yaw = 180.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::East);
 	}
 	else
 	{
-		NewRotation.Yaw = -90.0f;
-		SetActorRotation(NewRotation);
+		SetDirection(EDirection::South);
 	}
 	OnActionFinished();
 }
@@ -207,11 +266,11 @@ bool AGDUnit::IsOwnedByPlayer(const int Player) const
 
 void AGDUnit::OnTurnBegin()
 {
-	CurrentActionPoints = MaxActionPoints;
+	ResetActionPoints();
 	RemoveSpecial();
 }
 
-void AGDUnit::OnTurnEnd()
+void AGDUnit::OnTurnEnd() const
 {
 }
 
@@ -269,12 +328,14 @@ bool AGDUnit::CanMove_Implementation()
 
 void AGDUnit::Select_Implementation()
 {
+	AddOutline(FLinearColor::Green);
 	HighlightMovementRange();
 	HighlightEnemiesInAttackRange();
 }
 
 void AGDUnit::Deselect_Implementation()
 {
+	RemoveOutline();
 	ResetAllHighlightedTiles();
 }
 
@@ -301,15 +362,28 @@ float AGDUnit::GetDefence() const
 
 bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
 {
-	return Enemy && Execute_GetTile(Enemy)->GetDistanceFrom(CurrentTile) <= AttackRange
+	return Enemy && IsTileInAttackRange(Execute_GetTile(Enemy))
 		&& (bIgnoreActionPoints || CurrentActionPoints > 0);
+}
+
+bool AGDUnit::IsTileInAttackRange(AGDTile* Tile) const
+{
+	return IsTileInAttackRangeFromTile(Tile, CurrentTile);
+}
+
+bool AGDUnit::IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const
+{
+	return (SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
+				SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
+			SourceTile->GetCoordinates().Y == TargetTile->GetCoordinates().Y && FMath::Abs(
+				SourceTile->GetCoordinates().X - TargetTile->GetCoordinates().X) <= AttackRange)
+		&& SourceTile->IsPathClearTowardsTile(TargetTile);
 }
 
 bool AGDUnit::IsCriticalHit()
 {
 	const bool bCriticalHit = FMath::FRandRange(0.f, 100.f)
 		<= CriticalChance + CurrentTile->GetCriticalChanceModifier() + CriticalChanceAdjuster;
-
 	if (!bCriticalHit)
 	{
 		CriticalChanceAdjuster += CriticalChance + CurrentTile->GetCriticalChanceModifier();
@@ -322,26 +396,22 @@ bool AGDUnit::IsCriticalHit()
 	return bCriticalHit;
 }
 
-void AGDUnit::UpdateTransparency() const
-{
-	if (CurrentActionPoints == 0 && InactiveMaterial)
-	{
-		GetMesh()->SetMaterial(0, InactiveMaterial);
-		GetMesh()->SetCastShadow(false);
-	}
-}
-
 void AGDUnit::ApplyDamage()
 {
 	AttackedEnemy->TakeDamage(ComputedDamage, FDamageEvent{}, GetController(), this);
+}
+
+bool AGDUnit::Miss()
+{
+	return FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();
 }
 
 void AGDUnit::Attack()
 {
 	ComputedDamage = 0.f;
 	UAnimMontage* AttackAnimation;
-	const bool Miss = FMath::FRandRange(0.f, 100.f) > HitChance + CurrentTile->GetHitChanceModifier();	
-	if (Miss)
+
+	if (Miss())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Missed!"));
 		AttackAnimation = MissAnimation;
@@ -357,27 +427,30 @@ void AGDUnit::Attack()
 			CriticalSideBonus = 30;
 			EnemyDefence *= BackAttackModifier;
 			UE_LOG(LogTemp, Warning, TEXT("Attack from back!"));
-			
-		} else if (AngleDiff == 90 || AngleDiff == 270)
+		}
+		else if (AngleDiff == 90 || AngleDiff == 270)
 		{
 			CriticalSideBonus = 20;
 			EnemyDefence *= SideAttackModifier;
-            UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
+			UE_LOG(LogTemp, Warning, TEXT("Attack from side!"));
 		}
-		
+
 		CriticalChance += CriticalSideBonus;
-		
+
 		if (IsCriticalHit())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Critical hit!"));
 			AttackAnimation = CriticalAttackAnimation;
 			ComputedDamage *= CriticalDamageMultiplier;
-		} else
+		}
+		else
 		{
 			AttackAnimation = FMath::RandBool() ? BaseAttackAnimation : AlternativeAttackAnimation;
 		}
-		CriticalChance-=CriticalSideBonus;
+		CriticalChance -= CriticalSideBonus;
 		ComputedDamage /= EnemyDefence;
 	}
+
 	PlayAnimationAndDoAction(AttackAnimation, [&]() { OnActionFinished(); });
 }
 
@@ -403,8 +476,10 @@ void AGDUnit::RequestAttack(AGDUnit* Enemy, const bool bIgnoreActionPoints)
 		}
 
 		Attack();
-
-		UpdateTransparency();
+	}
+	else
+	{
+		OnActionFinished();
 	}
 }
 
@@ -426,11 +501,6 @@ int AGDUnit::GetAttackRange() const
 void AGDUnit::ResetActionPoints()
 {
 	CurrentActionPoints = MaxActionPoints;
-	if (ActiveMaterial)
-	{
-		GetMesh()->SetMaterial(0, ActiveMaterial);
-		GetMesh()->SetCastShadow(true);
-	}
 }
 
 void AGDUnit::ResetHighlightedTilesInRange()
@@ -465,6 +535,13 @@ void AGDUnit::ResetHighlightedActionTiles()
 	for (const auto& Tile : MovementPath)
 	{
 		Tile->RemoveHighlight();
+		if (Tile->HasGuardingUnits())
+		{
+			for (auto& Unit : Tile->GetGuardingUnits())
+			{
+				Unit->RemoveOutline();
+			}
+		}
 	}
 }
 
@@ -491,10 +568,33 @@ void AGDUnit::RemoveFromActiveUnits()
 	}
 }
 
-void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
+void AGDUnit::SetDirection(const EDirection NewDirection)
+{
+	FRotator NewRotator{0.f, 0.f, 0.f};
+
+	switch (NewDirection)
+	{
+	case EDirection::West:
+		break;
+	case EDirection::North:
+		NewRotator.Yaw = 90.0f;
+		break;
+	case EDirection::East:
+		NewRotator.Yaw = 180.0f;
+		break;
+	case EDirection::South:
+		NewRotator.Yaw = -90.0f;
+		break;
+	}
+
+	LookDirection = NewDirection;
+	SetActorRotation(NewRotator);
+}
+
+void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 {
 	TArray<AGDTile*> NewMovementPath = CurrentTile->GetGrid()->ComputePathBetweenTiles(
-		CurrentTile, TargetTile, StopAtDistance);
+		CurrentTile, TargetTile);
 	if (NewMovementPath.Num() > 1)
 	{
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
@@ -512,12 +612,58 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance)
 			for (const auto& Tile : MovementPath)
 			{
 				Tile->Highlight(EHighlightInfo::Default);
+
+				if (Tile->HasGuardingUnits())
+				{
+					bool bInRangeOfAnyGuardingUnit = false;
+
+					for (auto& Unit : Tile->GetGuardingUnits())
+					{
+						if (Unit->IsTileInAttackRange(Tile))
+						{
+							Unit->AddOutline(FLinearColor::Red);
+							bInRangeOfAnyGuardingUnit = true;
+						}
+					}
+
+					if (bInRangeOfAnyGuardingUnit)
+					{
+						Tile->Highlight(EHighlightInfo::Enemy);
+					}
+				}
 			}
 		}
 		else
 		{
 			MovementPath.Empty();
 		}
+	}
+}
+
+void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
+{
+	AGDTile* TileToReach = nullptr;
+
+	for (const auto& Tile : HighlightedTilesInShortRange)
+	{
+		if (TileToReach)
+		{
+			if (IsTileInAttackRangeFromTile(Tile, TargetTile)
+				&& CurrentTile->GetDistanceFrom(Tile)
+				< CurrentTile->GetDistanceFrom(TileToReach))
+			{
+				TileToReach = Tile;
+			}
+		}
+		else if (IsTileInAttackRangeFromTile(Tile, TargetTile))
+		{
+			TileToReach = Tile;
+		}
+	}
+
+	if (TileToReach)
+	{
+		HighlightMovementPath(TileToReach);
 	}
 }
 
@@ -529,19 +675,18 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 
 		if (TargetTile && TargetTile->IsTraversable())
 		{
-			float StopAtDistance = 0;
-
 			if (TargetTile->IsOccupiedByEnemy(this))
 			{
-				HighlightedEnemyTile = TargetTile;
-				HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
-
-				StopAtDistance = AttackRange;
+				if (!IsTileInAttackRange(TargetTile))
+				{
+					HighlightedEnemyTile = TargetTile;
+					HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
+					HighlightAttackPath(TargetTile);
+				}
 			}
-
-			if (IsTileInRangeOfAction(TargetTile))
+			else if (IsTileInRangeOfAction(TargetTile))
 			{
-				HighlightMovementPath(TargetTile, StopAtDistance);
+				HighlightMovementPath(TargetTile);
 			}
 		}
 	}
@@ -558,7 +703,7 @@ void AGDUnit::RequestMoveAndAttack(AGDUnit* Enemy)
 
 void AGDUnit::RequestAction(AGDTile* TargetTile)
 {
-	if (TargetTile)
+	if (TargetTile && IsTileInRangeOfAction(TargetTile))
 	{
 		if (!TargetTile->IsOccupied())
 		{
@@ -568,7 +713,7 @@ void AGDUnit::RequestAction(AGDTile* TargetTile)
 		{
 			if (IsEnemy(TargetUnit))
 			{
-				if (CurrentTile->GetDistanceFrom(TargetTile) <= AttackRange)
+				if (IsTileInAttackRange(TargetTile))
 				{
 					RequestAttack(TargetUnit);
 				}
@@ -635,7 +780,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 		for (auto& Tile : TilesInAttackRange)
 		{
-			if (Tile->IsOccupiedByEnemy(this))
+			if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRange(Tile))
 			{
 				Tile->ApplyEnemyInfoDecal();
 				HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
@@ -651,7 +796,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 
 				for (auto& Tile : TilesInAttackRange)
 				{
-					if (Tile->IsOccupiedByEnemy(this))
+					if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRangeFromTile(Tile, ReachableTile))
 					{
 						Tile->ApplyEnemyInfoDecal();
 						HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
@@ -666,6 +811,61 @@ bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
 {
 	return HighlightedTilesInShortRange.Contains(Tile) || HighlightedTilesInLongRange.Contains(Tile) ||
 		HighlightedEnemyTilesInRange.Contains(Tile);
+}
+
+void AGDUnit::AddOutline(const FLinearColor& OutlineColor)
+{
+	if (!OutlineComponent)
+	{
+		OutlineComponent = Cast<USkeletalMeshComponent>(
+			AddComponentByClass(USkeletalMeshComponent::StaticClass(), true, GetMesh()->GetRelativeTransform(), true));
+		OutlineComponent->SetupAttachment(GetCapsuleComponent());
+
+		OutlineComponent->SetSkeletalMesh(GetMesh()->SkeletalMesh, false);
+		OutlineComponent->SetMasterPoseComponent(GetMesh());
+
+		OutlineComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		OutlineComponent->SetCastShadow(false);
+
+		for (int i = 0; i < OutlineComponent->GetNumMaterials(); ++i)
+		{
+			UMaterialInstanceDynamic* MaterialInstanceDynamic_First = OutlineComponent->CreateDynamicMaterialInstance(
+				i, OutlineMaterialInstance);
+			MaterialInstanceDynamic_First->SetVectorParameterValue(TEXT("Color"), OutlineColor);
+			MaterialInstanceDynamic_First->SetScalarParameterValue(TEXT("Scale"), 1.f);
+		}
+
+		FinishAddComponent(OutlineComponent, true, GetMesh()->GetRelativeTransform());
+	}
+}
+
+void AGDUnit::RemoveOutline()
+{
+	if (OutlineComponent)
+	{
+		OutlineComponent->DestroyComponent();
+		OutlineComponent = nullptr;
+	}
+}
+
+EDirection AGDUnit::GetOppositeDirection(const EDirection Direction)
+{
+	switch (Direction)
+	{
+	case EDirection::North:
+		return EDirection::South;
+
+	case EDirection::East:
+		return EDirection::West;
+
+	case EDirection::South:
+		return EDirection::North;
+
+	case EDirection::West:
+		return EDirection::East;
+	}
+
+	return EDirection::North;	// Dummy return to suppress warning
 }
 
 void AGDUnit::OnActionFinished()

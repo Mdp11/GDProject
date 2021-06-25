@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDTile.generated.h"
 
 class AGDGrid;
 class AGDUnit;
+enum class EDirection : uint8;
 
 enum class EHighlightInfo
 {
@@ -46,10 +49,15 @@ protected:
 	UPROPERTY()
 	AGDGrid* OwningGrid;
 
+	TSet<AGDUnit*> GuardingUnits;
+
 	bool bIsActive;
 
 	UPROPERTY(EditAnywhere)
 	bool bIsTraversable;
+
+	UPROPERTY(EditAnywhere)
+	bool bObstructVisual;
 
 	UObject* TileElement;
 
@@ -118,6 +126,10 @@ public:
 
 	void RemoveInfoDecal() const;
 
+	bool IsPathClearTowardsTile(AGDTile* Tile) const;
+
+	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
+
 	float GetAttackModifier() const
 	{
 		return AttackModifier;
@@ -142,4 +154,12 @@ public:
 	{
 		return CriticalChanceModifier;
 	}
+
+	TSet<AGDUnit*> GetGuardingUnits() const;
+
+	void AddGuardingUnit(AGDUnit* Unit);
+
+	void RemoveGuardingUnit(AGDUnit* Unit);
+
+	bool HasGuardingUnits() const;
 };

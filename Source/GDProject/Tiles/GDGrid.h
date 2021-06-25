@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDGrid.generated.h"
@@ -76,7 +78,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Material")
 	class UMaterial* EnemyDecalMaterial;
 
-	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, int StopAtDistance = 0);
+	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile);
 
 	TSet<AGDTile*> GetTilesAtDistance(AGDTile* StartTile, int Distance) const;
 

@@ -114,7 +114,7 @@ const TArray<TArray<AGDTile*>>& AGDGrid::GetTilesGrid() const
 #define G_SCORE Key
 #define F_SCORE Value
 
-TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, int StopAtDistance)
+TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile)
 {
 	//Map having tiles as keys and g/h values in pair
 	TMap<AGDTile*, TPair<float, float>> Grid;
@@ -141,7 +141,7 @@ TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* T
 		});
 		AGDTile* CurrentTile = OpenTiles.Pop();
 
-		if (CurrentTile == TargetTile || CurrentTile->GetDistanceFrom(TargetTile) <= StopAtDistance)
+		if (CurrentTile == TargetTile)
 		{
 			return ReconstructPath(CameFrom, CurrentTile);
 		}
@@ -206,7 +206,6 @@ TSet<AGDTile*> AGDGrid::GetTilesAtDistance(AGDTile* StartTile, int Distance) con
 
 	return ValidTiles;
 }
-
 
 TArray<AGDTile*> AGDGrid::ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile)
 {

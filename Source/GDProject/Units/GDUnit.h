@@ -11,25 +11,35 @@
 
 class UGDHealthComponent;
 
+UENUM(BlueprintType)
+enum class EDirection : uint8
+{
+	North UMETA(DisplayName = "North"),
+	West UMETA(DisplayName = "West"),
+	South UMETA(DisplayName = "South"),
+	East UMETA(DisplayName = "East"),
+};
+
 UCLASS(Abstract, Blueprintable)
 class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 {
 	GENERATED_BODY()
 
-	friend class UHitNotify;
+	friend class UGDHitNotify;
 
 public:
 	AGDUnit();
+	void CheckAnimations();
 
 protected:
+	UPROPERTY()
+	USkeletalMeshComponent* OutlineComponent;
+
+	UPROPERTY()
+	UMaterialInstance* OutlineMaterialInstance;
+
 	UPROPERTY(VisibleAnywhere, Category = "Health")
 	UGDHealthComponent* HealthComponent;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Material")
-	UMaterial* ActiveMaterial;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Material")
-	UMaterial* InactiveMaterial;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
 	int MaxActionPoints;
@@ -48,17 +58,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category= "Combat")
 	float Defence;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float SideAttackModifier;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float BackAttackModifier;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float HitChance;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(EditAnywhere, Category = "Combat")
 	float CriticalChance;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
@@ -72,6 +82,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bMoveRequested;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bMoveInterrupted;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bRotationRequested;
@@ -106,6 +119,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	float ComputedDamage;
 
+	UPROPERTY(EditDefaultsOnly)
+	float LifeSpanOnDeath;
+
+	EDirection LookDirection;
+
 	int OwningPlayer;
 
 	virtual void BeginPlay() override;
@@ -122,6 +140,8 @@ protected:
 
 	virtual void Die();
 
+	void CheckForGuardingUnits();
+
 	void PerformMove(float DeltaTime);
 
 	void StopMove();
@@ -133,16 +153,17 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void PowerUp();
 
-	void UpdateTransparency() const;
-	void ApplyDamage();
+	virtual bool Miss();
 
 	virtual void Attack();
-	
+
 	virtual void RequestMove();
 
-	float GetDefence() const;
-
 	virtual bool CanAttackUnit(AGDUnit* Enemy, bool bIgnoreActionPoints) const;
+
+	virtual bool IsTileInAttackRange(AGDTile* Tile) const;
+
+	bool IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const;
 
 	virtual bool IsCriticalHit();
 
@@ -169,17 +190,22 @@ protected:
 
 	void ResetHighlightedActionTiles();
 
-	void ResetAllHighlightedTiles();
+	virtual void ResetAllHighlightedTiles();
 
 	void AddToActiveUnits();
 
 	void RemoveFromActiveUnits();
 
+	UFUNCTION(BlueprintCallable)
+	void SetDirection(const EDirection NewDirection);
+
+	EDirection GetOppositeDirection(const EDirection Direction);
+
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
 		AddToActiveUnits();
-		
+
 		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
 
 		FTimerHandle TimerHandle_Animation;
@@ -220,7 +246,11 @@ public:
 
 	void OnTurnBegin();
 
-	void OnTurnEnd();
+	void OnTurnEnd() const;
+
+	void ApplyDamage();
+
+	float GetDefence() const;
 
 private:
 	float CriticalChanceAdjuster;
@@ -236,11 +266,17 @@ private:
 
 	TArray<AGDTile*> MovementPath;
 
-	void HighlightMovementPath(AGDTile* TargetTile, float StopAtDistance);
+	void HighlightMovementPath(AGDTile* TargetTile);
+
+	void HighlightAttackPath(AGDTile* TargetTile);
 
 	void HighlightMovementRange();
 
 	void HighlightEnemiesInAttackRange();
 
 	bool IsTileInRangeOfAction(AGDTile* Tile) const;
+
+	void AddOutline(const FLinearColor& OutlineColor);
+
+	void RemoveOutline();
 };
