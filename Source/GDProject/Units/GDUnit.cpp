@@ -46,6 +46,9 @@ AGDUnit::AGDUnit()
 
 	bIsDead = false;
 
+	WalkingSpeed = 250.f;
+	RunningSpeed = 600.f;
+
 	bMoveRequested = false;
 	bMoveInterrupted = false;
 	bRotationRequested = false;
@@ -175,7 +178,7 @@ void AGDUnit::PerformMove(float DeltaTime)
 			SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), NextTileLocation));
 			SetActorLocation(
 				UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), NextTileLocation, DeltaTime,
-				                                       bIsWalking ? 250.f : 600.f));
+				                                       bIsWalking ? WalkingSpeed : RunningSpeed));
 		}
 	}
 	else

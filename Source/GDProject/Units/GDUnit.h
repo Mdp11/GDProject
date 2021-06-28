@@ -110,6 +110,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* PowerUpAnimation;
 
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float WalkingSpeed;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float RunningSpeed;
+
 	UPROPERTY()
 	AGDUnit* TargetToAttackAfterMove;
 
