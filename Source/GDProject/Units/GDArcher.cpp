@@ -61,7 +61,7 @@ bool AGDArcher::IsCriticalHit()
 
 bool AGDArcher::Miss()
 {
-	bMiss = Super::Miss();
+	bMiss = !bIsInOverWatch && Super::Miss();
 
 	return bMiss;
 }
