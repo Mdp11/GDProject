@@ -21,7 +21,7 @@ UGDHealthPotion::UGDHealthPotion()
 		TEXT("Texture2D'/Game/Textures/Items/T_HealthPotion.T_HealthPotion'"));
 	Thumbnail = TextureFinder.Object;
 
-	const FStringAssetReference HealEffectPath(TEXT("/Game/FX/Particles/P_HealEffect.P_HealEffect"));
+	const FStringAssetReference HealEffectPath(TEXT("/Game/InfinityBladeEffects/Effects/FX_Archive/P_HealthOrb_Pickup.P_HealthOrb_Pickup"));
 	HealEffect = Cast<UParticleSystem>(HealEffectPath.TryLoad());
 
 	HealValue = 30.f;

@@ -57,7 +57,7 @@ AGDUnit::AGDUnit()
 
 	LifeSpanOnDeath = 5.f;
 
-	const FStringAssetReference DeathEffectPath(TEXT("/Game/FX/Particles/P_ky_magicCircle1.P_ky_magicCircle1"));
+	const FStringAssetReference DeathEffectPath(TEXT("/Game/FXVarietyPack/Particles/P_ky_magicCircle1.P_ky_magicCircle1"));
 	DeathEffect = Cast<UParticleSystem>(DeathEffectPath.TryLoad());
 }
 
