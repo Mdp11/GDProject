@@ -28,6 +28,10 @@ public:
 
 	virtual void HighlightAffectedTiles(class AGDTile* TargetTile);
 
+	virtual void OnSelect();
+	
+	virtual void OnDeselect();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Item")
 	class UTexture2D* Thumbnail;

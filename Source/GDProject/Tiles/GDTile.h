@@ -6,6 +6,8 @@
 
 #include "Chaos/AABB.h"
 #include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
+#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDTile.generated.h"
@@ -129,6 +131,8 @@ public:
 	bool IsPathClearTowardsTile(AGDTile* Tile) const;
 
 	void HighlightWithMaterial(UMaterial* Material) const;
+
+	TSet<AGDTile*> GetTilesAround(const int SideLenght);
 
 	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
 

@@ -276,6 +276,10 @@ public:
 
 	bool HasFullHealth() const;
 
+	void AddOutline(const FLinearColor& OutlineColor);
+
+	void RemoveOutline();
+
 private:
 	float CriticalChanceAdjuster;
 
@@ -299,8 +303,4 @@ private:
 	void HighlightEnemiesInAttackRange();
 
 	bool IsTileInRangeOfAction(AGDTile* Tile) const;
-
-	void AddOutline(const FLinearColor& OutlineColor);
-
-	void RemoveOutline();
 };

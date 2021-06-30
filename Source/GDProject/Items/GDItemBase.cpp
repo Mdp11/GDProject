@@ -43,6 +43,14 @@ void UGDItemBase::HighlightAffectedTiles(class AGDTile* TargetTile)
 	}
 }
 
+void UGDItemBase::OnSelect()
+{
+}
+
+void UGDItemBase::OnDeselect()
+{
+}
+
 bool UGDItemBase::CanBeUsed(AGDTile* TargetTile)
 {
 	bool bCanBeUsed = false;

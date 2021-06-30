@@ -303,10 +303,12 @@ void AGDPlayerPawn::OnItemSelected(UGDItemBase* Item)
 	}
 
 	SelectedItem = Item;
+	SelectedItem->OnSelect();
 }
 
 void AGDPlayerPawn::OnItemDeselected()
 {
+	SelectedItem->OnDeselect();
 	SelectedItem = nullptr;
 
 	if (SelectedTileElement)
