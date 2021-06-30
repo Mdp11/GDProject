@@ -26,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool RequestUse(class AGDTile* TargetTile);
 
-	virtual void HighlightAffectedTiles(class AGDTile* TargetTile);
+	virtual void HighlightAffectedTiles(class AGDTile* TargetTile, bool NonUsable);
 
 	virtual void OnSelect();
 	

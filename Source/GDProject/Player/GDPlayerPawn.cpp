@@ -137,7 +137,8 @@ void AGDPlayerPawn::HighlightHoveringTile() const
 	{
 		if (SelectedItem)
 		{
-			SelectedItem->HighlightAffectedTiles(HoveringTile);
+			const bool bNonUsable = !(ActiveUnits.Num() == 0);
+			SelectedItem->HighlightAffectedTiles(HoveringTile, bNonUsable);
 		}
 		else
 		{

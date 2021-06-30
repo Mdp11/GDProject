@@ -31,9 +31,9 @@ bool UGDItemBase::RequestUse(AGDTile* TargetTile)
 	return false;
 }
 
-void UGDItemBase::HighlightAffectedTiles(class AGDTile* TargetTile)
+void UGDItemBase::HighlightAffectedTiles(class AGDTile* TargetTile, bool NonUsable)
 {
-	if(CanBeUsed(TargetTile))
+	if(!NonUsable && CanBeUsed(TargetTile))
 	{
 		TargetTile->HighlightWithMaterial(UsableMaterial);
 	}
