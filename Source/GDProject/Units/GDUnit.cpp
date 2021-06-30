@@ -389,6 +389,11 @@ float AGDUnit::GetDefence() const
 	return Defence + CurrentTile->GetDefenceModifier();
 }
 
+bool AGDUnit::HasFullHealth() const
+{
+	return HealthComponent->HasFullHealth();
+}
+
 bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
 {
 	return Enemy && IsTileInAttackRange(Execute_GetTile(Enemy))

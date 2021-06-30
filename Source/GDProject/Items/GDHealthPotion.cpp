@@ -35,3 +35,14 @@ void UGDHealthPotion::Use(AGDTile* TargetTile)
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HealEffect, TargetUnit->GetActorLocation());
 	}
 }
+
+bool UGDHealthPotion::CanBeUsed(AGDTile* TargetTile)
+{
+	bool bCanBeUsed = Super::CanBeUsed(TargetTile);
+	if (bCanBeUsed)
+	{
+		AGDUnit* TargetUnit = Cast<AGDUnit>(TargetTile->GetTileElement());
+		bCanBeUsed = !TargetUnit->HasFullHealth();
+	}
+	return bCanBeUsed;
+}

@@ -23,4 +23,6 @@ protected:
 
 	UPROPERTY()
 	UParticleSystem* HealEffect;
+
+	virtual bool CanBeUsed(AGDTile* TargetTile) override;
 };

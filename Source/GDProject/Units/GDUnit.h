@@ -274,6 +274,8 @@ public:
 
 	float GetDefence() const;
 
+	bool HasFullHealth() const;
+
 private:
 	float CriticalChanceAdjuster;
 

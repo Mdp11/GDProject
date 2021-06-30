@@ -8,6 +8,11 @@ UGDHealthComponent::UGDHealthComponent()
 	DefaultHealth = 50.f;
 }
 
+bool UGDHealthComponent::HasFullHealth() const
+{
+	return CurrentHealth == DefaultHealth;
+}
+
 void UGDHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
