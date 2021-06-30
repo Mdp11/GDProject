@@ -252,6 +252,10 @@ void AGDPlayerPawn::DeselectTileElement(const bool bReset)
 	if (SelectedItem)
 	{
 		OnItemDeselected();
+		if(HoveringTile)
+		{
+			HoveringTile->RemoveHighlight();
+		}
 	}
 	else
 	{
