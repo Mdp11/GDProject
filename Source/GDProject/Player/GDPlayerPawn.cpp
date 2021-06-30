@@ -184,7 +184,7 @@ void AGDPlayerPawn::TriggerClick()
 {
 	if (SelectedItem)
 	{
-		if (SelectedItem->RequestUse(HoveringTile))
+		if (ActiveUnits.Num() == 0 && SelectedItem->RequestUse(HoveringTile))
 		{
 			Inventory->RemoveBattleItem(SelectedItem);
 			OnItemDeselected();
