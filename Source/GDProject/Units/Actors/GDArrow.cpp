@@ -89,5 +89,5 @@ void AGDArrow::OnComponentHit(UPrimitiveComponent* OverlappedComponent, AActor* 
 		AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
 	}
 
-	SetLifeSpan(3.f);
+	SetLifeSpan(5.f);
 }

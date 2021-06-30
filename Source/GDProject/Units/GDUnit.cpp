@@ -5,13 +5,14 @@
 
 #include <algorithm>
 
-#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Tiles/GDGrid.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 AGDUnit::AGDUnit()
@@ -45,12 +46,19 @@ AGDUnit::AGDUnit()
 	Defence = 1;
 
 	bIsDead = false;
+	bWarp = false;
+
+	WalkingSpeed = 250.f;
+	RunningSpeed = 600.f;
 
 	bMoveRequested = false;
 	bMoveInterrupted = false;
 	bRotationRequested = false;
 
 	LifeSpanOnDeath = 5.f;
+
+	const FStringAssetReference DeathEffectPath(TEXT("/Game/FX/Particles/P_ky_magicCircle1.P_ky_magicCircle1"));
+	DeathEffect = Cast<UParticleSystem>(DeathEffectPath.TryLoad());
 }
 
 void AGDUnit::CheckAnimations()
@@ -113,20 +121,23 @@ void AGDUnit::RemoveSpecial()
 void AGDUnit::Die()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s died!"), *GetName());
-	bIsDead = true;
 
-	CurrentTile->SetTileElement(nullptr);
-
-	Execute_Deselect(this);
-
-	SetLifeSpan(LifeSpanOnDeath);
-
-	TArray<AActor*> AttachedActors;
-	GetAttachedActors(AttachedActors);
-	for (auto& Actor : AttachedActors)
+	PlayAnimationAndDoAction(FMath::RandBool() ? DeathAnimation : AlternativeDeathAnimation, [&]()
 	{
-		Actor->SetLifeSpan(LifeSpanOnDeath);
-	}
+		if (DeathEffect)
+		{
+			DeathParticleSystemComponent = UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(), DeathEffect, GetMesh()->GetSocketLocation("Spine"));
+		}
+
+		FTimerHandle TimerHandle_OnUnitDead;
+		GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, this, &AGDUnit::PlayDeathEffects, 0.5f, false);
+	});
+}
+
+void AGDUnit::PlayDeathEffects()
+{
+	bIsDead = true;
 
 	FTimerHandle TimerHandle_OnUnitDead;
 	FTimerDelegate TimerDelegate;
@@ -134,10 +145,20 @@ void AGDUnit::Die()
 	{
 		if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 		{
+			if (DeathParticleSystemComponent)
+			{
+				DeathParticleSystemComponent->Deactivate();
+			}
+			CurrentTile->SetTileElement(nullptr);
+			Execute_Deselect(this);
 			PlayerPawn->OnUnitDead(this, OwningPlayer);
+
+			OnActionFinished();
+
+			Destroy();
 		}
 	});
-	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, LifeSpanOnDeath - 0.5f, false);
+	GetWorldTimerManager().SetTimer(TimerHandle_OnUnitDead, TimerDelegate, 1.f, false);
 }
 
 void AGDUnit::CheckForGuardingUnits()
@@ -175,7 +196,7 @@ void AGDUnit::PerformMove(float DeltaTime)
 			SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), NextTileLocation));
 			SetActorLocation(
 				UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), NextTileLocation, DeltaTime,
-				                                       bIsWalking ? 250.f : 600.f));
+				                                       bIsWalking ? WalkingSpeed : RunningSpeed));
 		}
 	}
 	else
@@ -293,6 +314,14 @@ void AGDUnit::Tick(float DeltaTime)
 	if (bRotationRequested)
 	{
 		PerformRotation(DeltaTime);
+	}
+	if (bIsDead)
+	{
+		FVector Destination = GetActorLocation();
+		Destination.Z -= 100.f;
+		SetActorLocation(
+			UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), Destination, DeltaTime,
+			                                       30.f));
 	}
 }
 
@@ -865,7 +894,7 @@ EDirection AGDUnit::GetOppositeDirection(const EDirection Direction)
 		return EDirection::East;
 	}
 
-	return EDirection::North;	// Dummy return to suppress warning
+	return EDirection::North; // Dummy return to suppress warning
 }
 
 void AGDUnit::OnActionFinished()

@@ -80,6 +80,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsDead;
 
+	bool bWarp;
+
 	UPROPERTY(BlueprintReadOnly)
 	bool bMoveRequested;
 
@@ -110,6 +112,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Animation")
 	UAnimMontage* PowerUpAnimation;
 
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* DeathAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Animation")
+	UAnimMontage* AlternativeDeathAnimation;
+
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float WalkingSpeed;
+
+	UPROPERTY(EditDefaultsOnly, Category="Movement")
+	float RunningSpeed;
+
+	UPROPERTY()
+	UParticleSystem* DeathEffect;
+
+	UPROPERTY()
+	UParticleSystemComponent* DeathParticleSystemComponent;
+
 	UPROPERTY()
 	AGDUnit* TargetToAttackAfterMove;
 
@@ -139,6 +159,8 @@ protected:
 	virtual void RemoveSpecial();
 
 	virtual void Die();
+
+	void PlayDeathEffects();
 
 	void CheckForGuardingUnits();
 
