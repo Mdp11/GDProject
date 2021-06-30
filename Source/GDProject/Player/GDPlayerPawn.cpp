@@ -9,7 +9,16 @@
 #include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
+#include "GDProject/Items/GDItemBase.h"
+#include "GDProject/Components/GDInventoryComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+
+void AGDPlayerPawn::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	HandleTilesHovering();
+}
 
 AGDPlayerPawn::AGDPlayerPawn()
 {
@@ -32,13 +41,8 @@ AGDPlayerPawn::AGDPlayerPawn()
 	// 	if (CameraManger) UE_LOG(LogTemp, Error, TEXT("Founded CameraManager"));
 	// 	CameraManger->SetGridManager(GridManger);
 	// }
-}
 
-void AGDPlayerPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	HandleTilesHovering();
+	Inventory = CreateDefaultSubobject<UGDInventoryComponent>(TEXT("Inventory"));
 }
 
 void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -46,8 +50,10 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("TriggerClick", EInputEvent::IE_Pressed, this, &AGDPlayerPawn::TriggerClick);
-	PlayerInputComponent->BindAction("RemoveSelection", EInputEvent::IE_Pressed, this,
-	                                 &AGDPlayerPawn::DeselectTileElement);
+
+	DECLARE_DELEGATE_OneParam(FDelegate_RemoveSelection, bool);
+	PlayerInputComponent->BindAction<FDelegate_RemoveSelection>("RemoveSelection", EInputEvent::IE_Pressed, this,
+	                                                            &AGDPlayerPawn::DeselectTileElement, true);
 	// PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
 	// PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
 }
@@ -169,24 +175,35 @@ void AGDPlayerPawn::RequestUnitAction() const
 
 void AGDPlayerPawn::TriggerClick()
 {
-	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
-	if (SelectedUnit && SelectedUnit->IsUnitRotating())
+	if (SelectedItem)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
-		SelectedUnit->Rotate();
-	}
-	else if (ActiveUnits.Num() == 0)
-	{
-		if (!SelectedTileElement)
+		if (SelectedItem->RequestUse(HoveringTile))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Selecting tile element"));
-			SelectTileElement();
+			Inventory->RemoveBattleItem(SelectedItem);
+			OnItemDeselected();
 		}
-		else
+	}
+	else
+	{
+		AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
+		if (SelectedUnit && SelectedUnit->IsUnitRotating())
 		{
-			if (IGDTileElement::Execute_GetTile(SelectedTileElement) != HoveringTile)
+			UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
+			SelectedUnit->Rotate();
+		}
+		else if (ActiveUnits.Num() == 0)
+		{
+			if (!SelectedTileElement)
 			{
-				RequestUnitAction();
+				UE_LOG(LogTemp, Warning, TEXT("Selecting tile element"));
+				SelectTileElement();
+			}
+			else
+			{
+				if (IGDTileElement::Execute_GetTile(SelectedTileElement) != HoveringTile)
+				{
+					RequestUnitAction();
+				}
 			}
 		}
 	}
@@ -223,29 +240,38 @@ void AGDPlayerPawn::SelectTileElement()
 	}
 }
 
-void AGDPlayerPawn::DeselectTileElement()
+void AGDPlayerPawn::DeselectTileElement(const bool bReset)
 {
-	AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
-	if (SelectedUnit && SelectedUnit->IsUnitRotating())
+	if (SelectedItem)
 	{
-		if (SelectedUnit->IsUnitRotating())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DESELECTION STOP ROTATION"));
-			SelectedUnit->Rotate();
-		}
+		OnItemDeselected();
 	}
-
-	if (ActiveUnits.Num() == 0 && SelectedTileElement)
+	else
 	{
-		IGDTileElement::Execute_Deselect(SelectedTileElement);
-		IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();
-
-		if (UnitActionsWidget)
+		AGDUnit* SelectedUnit = Cast<AGDUnit>(SelectedTileElement);
+		if (SelectedUnit && SelectedUnit->IsUnitRotating())
 		{
-			UnitActionsWidget->RemoveFromViewport();
+			if (SelectedUnit->IsUnitRotating())
+			{
+				SelectedUnit->Rotate();
+			}
 		}
 
-		SelectedTileElement = nullptr;
+		if (ActiveUnits.Num() == 0 && SelectedTileElement)
+		{
+			IGDTileElement::Execute_Deselect(SelectedTileElement);
+			IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();
+
+			if (UnitActionsWidget)
+			{
+				UnitActionsWidget->RemoveFromViewport();
+			}
+
+			if (bReset)
+			{
+				SelectedTileElement = nullptr;
+			}
+		}
 	}
 }
 
@@ -259,6 +285,27 @@ void AGDPlayerPawn::OnUnitDead(AGDUnit* Unit, const int OwningPlayer)
 	if (AGDProjectGameModeBase* GM = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
 	{
 		GM->OnUnitDead(Unit, OwningPlayer);
+	}
+}
+
+void AGDPlayerPawn::OnItemSelected(UGDItemBase* Item)
+{
+	if (SelectedTileElement)
+	{
+		DeselectTileElement(false);
+	}
+
+	SelectedItem = Item;
+}
+
+void AGDPlayerPawn::OnItemDeselected()
+{
+	SelectedItem = nullptr;
+
+	if (SelectedTileElement)
+	{
+		HoveringTile = IGDTileElement::Execute_GetTile(SelectedTileElement);
+		SelectTileElement();
 	}
 }
 

@@ -25,6 +25,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	AGDCameraManager* CameraManger;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UGDInventoryComponent* Inventory;
+
 	UPROPERTY(EditAnywhere)
 	AGDGrid* GridManger;
 	
@@ -45,6 +48,9 @@ protected:
 	UPROPERTY()
 	TSet<AGDUnit*> ActiveUnits;
 
+	UPROPERTY()
+	class UGDItemBase* SelectedItem;
+
 	virtual void BeginPlay() override;
 
 public:
@@ -61,9 +67,14 @@ public:
 	void RemoveActiveUnit(AGDUnit* Unit);
 
 	UFUNCTION(BlueprintCallable)
-	void DeselectTileElement();
+	void DeselectTileElement(bool bReset = true);
 	
 	void OnUnitDead(AGDUnit* Unit, int OwningPlayer);
+
+	UFUNCTION(BlueprintCallable)
+	void OnItemSelected(class UGDItemBase* Item);
+	
+	void OnItemDeselected();
 
 private:
 	void HandleTilesHovering();
