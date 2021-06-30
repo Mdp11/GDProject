@@ -24,7 +24,7 @@ public:
 	UGDItemBase();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void RequestUse(class AGDTile* TargetTile);
+	virtual bool RequestUse(class AGDTile* TargetTile);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Item")

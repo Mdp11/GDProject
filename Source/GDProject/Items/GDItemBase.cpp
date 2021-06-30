@@ -15,12 +15,14 @@ UGDItemBase::UGDItemBase()
 	UseConditions = EUseConditions::Anywhere;
 }
 
-void UGDItemBase::RequestUse(AGDTile* TargetTile)
+bool UGDItemBase::RequestUse(AGDTile* TargetTile)
 {
 	if (CanBeUsed(TargetTile))
 	{
 		Use(TargetTile);
+		return true;
 	}
+	return false;
 }
 
 bool UGDItemBase::CanBeUsed(AGDTile* TargetTile)
