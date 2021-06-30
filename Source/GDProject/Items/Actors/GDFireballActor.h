@@ -30,6 +30,9 @@ protected:
 	FVector TargetLocation;
 
 	UPROPERTY()
+	class AGDPlayerPawn* PlayerPawn;
+
+	UPROPERTY()
 	TSet<class AGDUnit*> UnitsToDamage;
 	
 	virtual void BeginPlay() override;

@@ -3,6 +3,7 @@
 
 #include "GDFireballActor.h"
 
+#include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Units/GDUnit.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -43,6 +44,12 @@ void AGDFireballActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (PlayerPawn)
+	{
+		PlayerPawn->AddActiveEntity(this);
+	}
+
 	SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation));
 }
 
@@ -57,6 +64,10 @@ void AGDFireballActor::Tick(float DeltaTime)
 		for (AGDUnit* Unit : UnitsToDamage)
 		{
 			Unit->TakeDamage(Damage, FDamageEvent{}, nullptr, nullptr);
+		}
+		if (PlayerPawn)
+		{
+			PlayerPawn->RemoveActiveEntity(this);
 		}
 		Destroy();
 	}

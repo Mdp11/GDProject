@@ -67,14 +67,14 @@ void AGDPlayerPawn::OnTurnEnd()
 	DeselectTileElement();
 }
 
-void AGDPlayerPawn::AddActiveUnit(AGDUnit* Unit)
+void AGDPlayerPawn::AddActiveEntity(UObject* Entity)
 {
-	ActiveUnits.Add(Unit);
+	ActiveEntities.Add(Entity);
 }
 
-void AGDPlayerPawn::RemoveActiveUnit(AGDUnit* Unit)
+void AGDPlayerPawn::RemoveActiveEntity(UObject* Entity)
 {
-	ActiveUnits.Remove(Unit);
+	ActiveEntities.Remove(Entity);
 }
 
 int AGDPlayerPawn::GetCurrentPlayerTurn() const
@@ -96,7 +96,7 @@ void AGDPlayerPawn::HandleTilesHovering()
 	{
 		UpdateHoveringTile(TargetTile);
 
-		if (SelectedTileElement && ActiveUnits.Num() == 0)
+		if (SelectedTileElement && ActiveEntities.Num() == 0)
 		{
 			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 			{
@@ -137,7 +137,7 @@ void AGDPlayerPawn::HighlightHoveringTile() const
 	{
 		if (SelectedItem)
 		{
-			const bool bNonUsable = !(ActiveUnits.Num() == 0);
+			const bool bNonUsable = !(ActiveEntities.Num() == 0);
 			SelectedItem->HighlightAffectedTiles(HoveringTile, bNonUsable);
 		}
 		else
@@ -185,7 +185,7 @@ void AGDPlayerPawn::TriggerClick()
 {
 	if (SelectedItem)
 	{
-		if (ActiveUnits.Num() == 0 && SelectedItem->RequestUse(HoveringTile))
+		if (ActiveEntities.Num() == 0 && SelectedItem->RequestUse(HoveringTile))
 		{
 			Inventory->RemoveBattleItem(SelectedItem);
 			OnItemDeselected();
@@ -199,7 +199,7 @@ void AGDPlayerPawn::TriggerClick()
 			UE_LOG(LogTemp, Warning, TEXT("Trying to stop rotation"));
 			SelectedUnit->Rotate();
 		}
-		else if (ActiveUnits.Num() == 0)
+		else if (ActiveEntities.Num() == 0)
 		{
 			if (!SelectedTileElement)
 			{
@@ -269,7 +269,7 @@ void AGDPlayerPawn::DeselectTileElement(const bool bReset)
 			}
 		}
 
-		if (ActiveUnits.Num() == 0 && SelectedTileElement)
+		if (ActiveEntities.Num() == 0 && SelectedTileElement)
 		{
 			IGDTileElement::Execute_Deselect(SelectedTileElement);
 			IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();

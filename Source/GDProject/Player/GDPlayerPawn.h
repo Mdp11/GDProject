@@ -46,7 +46,7 @@ protected:
 	UUserWidget* UnitActionsWidget;
 
 	UPROPERTY()
-	TSet<AGDUnit*> ActiveUnits;
+	TSet<UObject*> ActiveEntities;
 
 	UPROPERTY()
 	class UGDItemBase* SelectedItem;
@@ -62,9 +62,9 @@ public:
 
 	void OnTurnEnd();
 
-	void AddActiveUnit(AGDUnit* Unit);
+	void AddActiveEntity(UObject* Entity);
 
-	void RemoveActiveUnit(AGDUnit* Unit);
+	void RemoveActiveEntity(UObject* Entity);
 
 	UFUNCTION(BlueprintCallable)
 	void DeselectTileElement(bool bReset = true);

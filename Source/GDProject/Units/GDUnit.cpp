@@ -590,7 +590,7 @@ void AGDUnit::AddToActiveUnits()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
-		PlayerPawn->AddActiveUnit(this);
+		PlayerPawn->AddActiveEntity(this);
 	}
 }
 
@@ -598,7 +598,7 @@ void AGDUnit::RemoveFromActiveUnits()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
-		PlayerPawn->RemoveActiveUnit(this);
+		PlayerPawn->RemoveActiveEntity(this);
 	}
 }
 
