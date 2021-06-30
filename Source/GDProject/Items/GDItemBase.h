@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool RequestUse(class AGDTile* TargetTile);
 
+	virtual void HighlightAffectedTiles(class AGDTile* TargetTile);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Item")
 	class UTexture2D* Thumbnail;
@@ -37,6 +39,12 @@ protected:
 	FText Description;
 
 	EUseConditions UseConditions;
+
+	UPROPERTY()
+	class UMaterial* UsableMaterial;
+
+	UPROPERTY()
+	class UMaterial* NonUsableMaterial;
 
 	virtual bool CanBeUsed(class AGDTile* TargetTile);
 

@@ -264,13 +264,19 @@ bool AGDTile::IsPathClearTowardsTile(AGDTile* Tile) const
 	return false;
 }
 
+void AGDTile::HighlightWithMaterial(UMaterial* Material) const
+{
+	SelectionDecalComponent->SetMaterial(0, Material);
+	SelectionDecalComponent->SetHiddenInGame(false);
+}
+
 TArray<AGDTile*> AGDTile::GetTilesInDirection(const EDirection Direction, const int Num) const
 {
 	if (Num == 0)
 	{
 		return {};
 	}
-	
+
 	TArray<AGDTile*> Tiles;
 	AGDTile* Tile = nullptr;
 

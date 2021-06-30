@@ -128,6 +128,8 @@ public:
 
 	bool IsPathClearTowardsTile(AGDTile* Tile) const;
 
+	void HighlightWithMaterial(UMaterial* Material) const;
+
 	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
 
 	float GetAttackModifier() const

@@ -13,6 +13,12 @@ UGDItemBase::UGDItemBase()
 	Description = FText::FromString("Description");
 
 	UseConditions = EUseConditions::Anywhere;
+
+	const FStringAssetReference UsableMaterialPath(TEXT("/Game/Materials/M_Item_Usable_Decal.M_Item_Usable_Decal"));
+	UsableMaterial = Cast<UMaterial>(UsableMaterialPath.TryLoad());
+
+	const FStringAssetReference NonUsableMaterialPath(TEXT("/Game/Materials/M_Item_Non_Usable_Decal.M_Item_Non_Usable_Decal"));
+	NonUsableMaterial = Cast<UMaterial>(NonUsableMaterialPath.TryLoad());
 }
 
 bool UGDItemBase::RequestUse(AGDTile* TargetTile)
@@ -23,6 +29,18 @@ bool UGDItemBase::RequestUse(AGDTile* TargetTile)
 		return true;
 	}
 	return false;
+}
+
+void UGDItemBase::HighlightAffectedTiles(class AGDTile* TargetTile)
+{
+	if(CanBeUsed(TargetTile))
+	{
+		TargetTile->HighlightWithMaterial(UsableMaterial);
+	}
+	else
+	{
+		TargetTile->HighlightWithMaterial(NonUsableMaterial);
+	}
 }
 
 bool UGDItemBase::CanBeUsed(AGDTile* TargetTile)
