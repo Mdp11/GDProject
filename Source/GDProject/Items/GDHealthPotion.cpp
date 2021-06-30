@@ -13,7 +13,7 @@ UGDHealthPotion::UGDHealthPotion()
 {
 	Name = FText::FromString("Health potion");
 
-	Description = FText::FromString("A potion that can be used to restore the 25% health of an ally");
+	Description = FText::FromString("A potion that restores 30 health points");
 
 	UseConditions = EUseConditions::AlliesOnly;
 
@@ -23,6 +23,8 @@ UGDHealthPotion::UGDHealthPotion()
 
 	const FStringAssetReference HealEffectPath(TEXT("/Game/FX/Particles/P_HealEffect.P_HealEffect"));
 	HealEffect = Cast<UParticleSystem>(HealEffectPath.TryLoad());
+
+	HealValue = 30.f;
 }
 
 void UGDHealthPotion::Use(AGDTile* TargetTile)
