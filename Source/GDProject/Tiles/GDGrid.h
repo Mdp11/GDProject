@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDGrid.generated.h"

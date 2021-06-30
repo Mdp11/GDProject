@@ -275,24 +275,24 @@ TSet<AGDTile*> AGDTile::GetTilesAround(const int N)
 	TSet<AGDTile*> Tiles;
 	Tiles.Add(this);
 
-	for(int i = -N; i <= N; ++i)
+	for (int i = -N; i <= N; ++i)
 	{
-		if(AGDTile * Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y}))
-		{
-			Tiles.Add(Tile);
-		}
-		
-		if(AGDTile * Tile = OwningGrid->GetTile({Coordinates.X, Coordinates.Y + i}))
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y}))
 		{
 			Tiles.Add(Tile);
 		}
 
-		if(AGDTile * Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y + i}))
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X, Coordinates.Y + i}))
 		{
 			Tiles.Add(Tile);
 		}
 
-		if(AGDTile * Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y - i}))
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y + i}))
+		{
+			Tiles.Add(Tile);
+		}
+
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y - i}))
 		{
 			Tiles.Add(Tile);
 		}

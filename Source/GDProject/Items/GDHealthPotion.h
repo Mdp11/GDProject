@@ -17,7 +17,6 @@ public:
 	virtual void Use(AGDTile* TargetTile) override;
 
 protected:
-
 	UPROPERTY(EditDefaultsOnly)
 	float HealValue;
 

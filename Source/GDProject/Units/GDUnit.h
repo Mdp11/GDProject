@@ -221,8 +221,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetDirection(const EDirection NewDirection);
 
-	EDirection GetOppositeDirection(const EDirection Direction);
-
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
@@ -304,3 +302,5 @@ private:
 
 	bool IsTileInRangeOfAction(AGDTile* Tile) const;
 };
+
+EDirection GetOppositeDirection(const EDirection Direction);

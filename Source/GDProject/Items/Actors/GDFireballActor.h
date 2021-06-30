@@ -10,16 +10,15 @@ UCLASS()
 class GDPROJECT_API AGDFireballActor : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AGDFireballActor();
 
 	void Initialize(const FVector& Target, const TSet<class AGDUnit*>& Units);
 protected:
-
 	UPROPERTY()
 	USceneComponent* SceneComponent;
-	
+
 	UPROPERTY()
 	UParticleSystemComponent* FireballEffect;
 
@@ -34,12 +33,11 @@ protected:
 
 	UPROPERTY()
 	TSet<class AGDUnit*> UnitsToDamage;
-	
+
 	virtual void BeginPlay() override;
 
 	float Damage;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
-
 };

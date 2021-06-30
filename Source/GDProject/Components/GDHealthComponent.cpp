@@ -30,12 +30,13 @@ void UGDHealthComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, con
                                          AController* InstigatedBy, AActor* DamageCauser)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, DefaultHealth);
-	if(Damage > 0.f)
+	if (Damage > 0.f)
 	{
 		OnHealthChanged.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s was healed by %f hp and now has %f!"), *GetOwner()->GetName(), Damage, CurrentHealth);
+		UE_LOG(LogTemp, Warning, TEXT("%s was healed by %f hp and now has %f!"), *GetOwner()->GetName(), Damage,
+		       CurrentHealth);
 	}
 }

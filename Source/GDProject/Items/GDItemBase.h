@@ -29,7 +29,7 @@ public:
 	virtual void HighlightAffectedTiles(class AGDTile* TargetTile, bool NonUsable);
 
 	virtual void OnSelect();
-	
+
 	virtual void OnDeselect();
 
 protected:

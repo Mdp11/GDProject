@@ -3,11 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDTile.generated.h"
@@ -132,7 +127,7 @@ public:
 
 	void HighlightWithMaterial(UMaterial* Material) const;
 
-	TSet<AGDTile*> GetTilesAround(const int SideLenght);
+	TSet<AGDTile*> GetTilesAround(const int SideLength);
 
 	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
 

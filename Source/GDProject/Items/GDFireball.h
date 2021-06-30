@@ -26,7 +26,7 @@ protected:
 	TSet<AGDTile*> TargetTiles;
 
 	void ResetTargetTiles();
-	
+
 	virtual void HighlightAffectedTiles(AGDTile* TargetTile, bool NonUsable) override;
 
 	virtual void OnDeselect() override;

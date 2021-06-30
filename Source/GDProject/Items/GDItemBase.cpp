@@ -17,7 +17,8 @@ UGDItemBase::UGDItemBase()
 	const FStringAssetReference UsableMaterialPath(TEXT("/Game/Materials/M_Item_Usable_Decal.M_Item_Usable_Decal"));
 	UsableMaterial = Cast<UMaterial>(UsableMaterialPath.TryLoad());
 
-	const FStringAssetReference NonUsableMaterialPath(TEXT("/Game/Materials/M_Item_Non_Usable_Decal.M_Item_Non_Usable_Decal"));
+	const FStringAssetReference NonUsableMaterialPath(
+		TEXT("/Game/Materials/M_Item_Non_Usable_Decal.M_Item_Non_Usable_Decal"));
 	NonUsableMaterial = Cast<UMaterial>(NonUsableMaterialPath.TryLoad());
 }
 
@@ -33,7 +34,7 @@ bool UGDItemBase::RequestUse(AGDTile* TargetTile)
 
 void UGDItemBase::HighlightAffectedTiles(class AGDTile* TargetTile, bool NonUsable)
 {
-	if(!NonUsable && CanBeUsed(TargetTile))
+	if (!NonUsable && CanBeUsed(TargetTile))
 	{
 		TargetTile->HighlightWithMaterial(UsableMaterial);
 	}

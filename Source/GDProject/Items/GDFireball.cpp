@@ -6,7 +6,6 @@
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 #include "Kismet/GameplayStatics.h"
-#include "Particles/ParticleSystem.h"
 
 UGDFireball::UGDFireball()
 {
