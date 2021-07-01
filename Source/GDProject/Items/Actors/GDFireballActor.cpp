@@ -57,7 +57,7 @@ void AGDFireballActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GetActorLocation().Equals(TargetLocation))
+	if (GetActorLocation().Equals(TargetLocation, 50.f))
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, TargetLocation, FRotator::ZeroRotator,
 		                                         FVector{2.5f});
