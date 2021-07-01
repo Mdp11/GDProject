@@ -70,7 +70,7 @@ void AGDPlayerPawn::OnTurnEnd()
 void AGDPlayerPawn::AddActiveEntity(UObject* Entity)
 {
 	ActiveEntities.Add(Entity);
-	
+
 	if (ActiveEntities.Num() - 1 == 0)
 	{
 		HoveringTile = nullptr;
@@ -108,7 +108,7 @@ void AGDPlayerPawn::HandleTilesHovering()
 	{
 		UpdateHoveringTile(TargetTile);
 
-		if (SelectedTileElement && ActiveEntities.Num() == 0)
+		if (!SelectedItem && SelectedTileElement && ActiveEntities.Num() == 0)
 		{
 			if (AGDUnit* Unit = Cast<AGDUnit>(SelectedTileElement))
 			{
@@ -145,31 +145,28 @@ void AGDPlayerPawn::BeginPlay()
 
 void AGDPlayerPawn::HighlightHoveringTile() const
 {
-	if (HoveringTile)
+	if (SelectedItem)
 	{
-		if (SelectedItem)
-		{
-			const bool bNonUsable = !(ActiveEntities.Num() == 0);
-			SelectedItem->HighlightAffectedTiles(HoveringTile, bNonUsable);
-		}
-		else
-		{
-			EHighlightInfo HighlightInfo = EHighlightInfo::Default;
+		const bool bNonUsable = !(ActiveEntities.Num() == 0);
+		SelectedItem->HighlightAffectedTiles(HoveringTile, bNonUsable);
+	}
+	else if (HoveringTile)
+	{
+		EHighlightInfo HighlightInfo = EHighlightInfo::Default;
 
-			AGDUnit* HoveringUnit = Cast<AGDUnit>(HoveringTile->GetTileElement());
-			if (HoveringUnit)
+		AGDUnit* HoveringUnit = Cast<AGDUnit>(HoveringTile->GetTileElement());
+		if (HoveringUnit)
+		{
+			if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
 			{
-				if (HoveringUnit->IsOwnedByPlayer(GetCurrentPlayerTurn()))
-				{
-					HighlightInfo = EHighlightInfo::Ally;
-				}
-				else
-				{
-					HighlightInfo = EHighlightInfo::Enemy;
-				}
+				HighlightInfo = EHighlightInfo::Ally;
 			}
-			HoveringTile->Highlight(HighlightInfo);
+			else
+			{
+				HighlightInfo = EHighlightInfo::Enemy;
+			}
 		}
+		HoveringTile->Highlight(HighlightInfo);
 	}
 }
 
@@ -195,7 +192,7 @@ void AGDPlayerPawn::RequestUnitAction() const
 
 void AGDPlayerPawn::TriggerClick()
 {
-	if (SelectedItem)
+	if (SelectedItem && HoveringTile)
 	{
 		if (ActiveEntities.Num() == 0 && SelectedItem->RequestUse(HoveringTile))
 		{
@@ -314,7 +311,7 @@ void AGDPlayerPawn::OnUnitDead(AGDUnit* Unit, const int OwningPlayer)
 
 void AGDPlayerPawn::OnItemSelected(UGDItemBase* Item)
 {
-	if (SelectedTileElement)
+	if (!SelectedItem && SelectedTileElement)
 	{
 		DeselectTileElement(false);
 	}
