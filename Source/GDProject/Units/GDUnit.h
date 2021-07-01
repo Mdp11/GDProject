@@ -214,9 +214,9 @@ protected:
 
 	virtual void ResetAllHighlightedTiles();
 
-	void AddToActiveUnits();
+	void AddToActiveEntities();
 
-	void RemoveFromActiveUnits();
+	void RemoveFromActiveEntities();
 
 	UFUNCTION(BlueprintCallable)
 	void SetDirection(const EDirection NewDirection);
@@ -224,7 +224,7 @@ protected:
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
-		AddToActiveUnits();
+		AddToActiveEntities();
 
 		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
 

@@ -221,8 +221,6 @@ void AGDUnit::StopMove()
 	{
 		bRotationRequested = true;
 	}
-
-	OnActionFinished();
 }
 
 void AGDUnit::PerformRotation(float DeltaTime)
@@ -491,7 +489,7 @@ void AGDUnit::Attack()
 
 void AGDUnit::OnActionBegin()
 {
-	AddToActiveUnits();
+	AddToActiveEntities();
 	ResetAllHighlightedTiles();
 }
 
@@ -586,7 +584,7 @@ void AGDUnit::ResetAllHighlightedTiles()
 	ResetHighlightedActionTiles();
 }
 
-void AGDUnit::AddToActiveUnits()
+void AGDUnit::AddToActiveEntities()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
@@ -594,7 +592,7 @@ void AGDUnit::AddToActiveUnits()
 	}
 }
 
-void AGDUnit::RemoveFromActiveUnits()
+void AGDUnit::RemoveFromActiveEntities()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
@@ -904,6 +902,6 @@ EDirection GetOppositeDirection(const EDirection Direction)
 
 void AGDUnit::OnActionFinished()
 {
-	RemoveFromActiveUnits();
+	RemoveFromActiveEntities();
 	TargetToAttackAfterMove = nullptr;
 }

@@ -70,11 +70,23 @@ void AGDPlayerPawn::OnTurnEnd()
 void AGDPlayerPawn::AddActiveEntity(UObject* Entity)
 {
 	ActiveEntities.Add(Entity);
+	
+	if (ActiveEntities.Num() - 1 == 0)
+	{
+		HoveringTile = nullptr;
+		HandleTilesHovering();
+	}
 }
 
 void AGDPlayerPawn::RemoveActiveEntity(UObject* Entity)
 {
 	ActiveEntities.Remove(Entity);
+
+	if (ActiveEntities.Num() == 0)
+	{
+		HoveringTile = nullptr;
+		HandleTilesHovering();
+	}
 }
 
 int AGDPlayerPawn::GetCurrentPlayerTurn() const
