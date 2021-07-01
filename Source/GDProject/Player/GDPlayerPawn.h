@@ -44,7 +44,7 @@ protected:
 	UPROPERTY()
 	UUserWidget* UnitActionsWidget;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TSet<UObject*> ActiveEntities;
 
 	UPROPERTY()
