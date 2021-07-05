@@ -281,7 +281,10 @@ void AGDPlayerPawn::DeselectTileElement(const bool bReset)
 		if (ActiveEntities.Num() == 0 && SelectedTileElement)
 		{
 			IGDTileElement::Execute_Deselect(SelectedTileElement);
-			IGDTileElement::Execute_GetTile(SelectedTileElement)->Deselect();
+			if (AGDTile* SelectedTile = IGDTileElement::Execute_GetTile(SelectedTileElement))
+			{
+				SelectedTile->Deselect();
+			}
 
 			if (UnitActionsWidget)
 			{
