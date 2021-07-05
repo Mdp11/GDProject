@@ -626,7 +626,7 @@ void AGDUnit::SetDirection(const EDirection NewDirection)
 void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 {
 	TArray<AGDTile*> NewMovementPath = CurrentTile->GetGrid()->ComputePathBetweenTiles(
-		CurrentTile, TargetTile);
+		CurrentTile, TargetTile, this);
 	if (NewMovementPath.Num() > 1)
 	{
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
@@ -778,7 +778,7 @@ void AGDUnit::HighlightMovementRange()
 		{
 			if (Tile->IsTraversable() && !Tile->IsOccupied())
 			{
-				const int PathLength = Grid->ComputePathBetweenTiles(CurrentTile, Tile).Num() - 1;
+				const int PathLength = Grid->ComputePathBetweenTiles(CurrentTile, Tile, this).Num() - 1;
 				if (PathLength > 0 && PathLength <= GetMovementRange() * GetActionPoints())
 				{
 					const bool bShortDistance = PathLength <= GetMovementRange() ? true : false;
