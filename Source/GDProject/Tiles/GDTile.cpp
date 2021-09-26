@@ -264,13 +264,50 @@ bool AGDTile::IsPathClearTowardsTile(AGDTile* Tile) const
 	return false;
 }
 
+void AGDTile::HighlightWithMaterial(UMaterial* Material) const
+{
+	SelectionDecalComponent->SetMaterial(0, Material);
+	SelectionDecalComponent->SetHiddenInGame(false);
+}
+
+TSet<AGDTile*> AGDTile::GetTilesAround(const int N)
+{
+	TSet<AGDTile*> Tiles;
+	Tiles.Add(this);
+
+	for (int i = -N; i <= N; ++i)
+	{
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y}))
+		{
+			Tiles.Add(Tile);
+		}
+
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X, Coordinates.Y + i}))
+		{
+			Tiles.Add(Tile);
+		}
+
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y + i}))
+		{
+			Tiles.Add(Tile);
+		}
+
+		if (AGDTile* Tile = OwningGrid->GetTile({Coordinates.X + i, Coordinates.Y - i}))
+		{
+			Tiles.Add(Tile);
+		}
+	}
+
+	return Tiles;
+}
+
 TArray<AGDTile*> AGDTile::GetTilesInDirection(const EDirection Direction, const int Num) const
 {
 	if (Num == 0)
 	{
 		return {};
 	}
-	
+
 	TArray<AGDTile*> Tiles;
 	AGDTile* Tile = nullptr;
 

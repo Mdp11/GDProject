@@ -57,7 +57,8 @@ AGDUnit::AGDUnit()
 
 	LifeSpanOnDeath = 5.f;
 
-	const FStringAssetReference DeathEffectPath(TEXT("/Game/FX/Particles/P_ky_magicCircle1.P_ky_magicCircle1"));
+	const FStringAssetReference DeathEffectPath(
+		TEXT("/Game/FXVarietyPack/Particles/P_ky_magicCircle1.P_ky_magicCircle1"));
 	DeathEffect = Cast<UParticleSystem>(DeathEffectPath.TryLoad());
 }
 
@@ -220,8 +221,6 @@ void AGDUnit::StopMove()
 	{
 		bRotationRequested = true;
 	}
-
-	OnActionFinished();
 }
 
 void AGDUnit::PerformRotation(float DeltaTime)
@@ -248,7 +247,6 @@ void AGDUnit::PerformRotation(float DeltaTime)
 void AGDUnit::Rotate()
 {
 	bRotationRequested = false;
-	FRotator NewRotation(0, 0, 0);
 
 	if (GetActorRotation().Yaw > -45 && GetActorRotation().Yaw <= 45)
 	{
@@ -389,6 +387,11 @@ float AGDUnit::GetDefence() const
 	return Defence + CurrentTile->GetDefenceModifier();
 }
 
+bool AGDUnit::HasFullHealth() const
+{
+	return HealthComponent->HasFullHealth();
+}
+
 bool AGDUnit::CanAttackUnit(AGDUnit* Enemy, const bool bIgnoreActionPoints) const
 {
 	return Enemy && IsTileInAttackRange(Execute_GetTile(Enemy))
@@ -486,7 +489,7 @@ void AGDUnit::Attack()
 
 void AGDUnit::OnActionBegin()
 {
-	AddToActiveUnits();
+	AddToActiveEntities();
 	ResetAllHighlightedTiles();
 }
 
@@ -581,19 +584,19 @@ void AGDUnit::ResetAllHighlightedTiles()
 	ResetHighlightedActionTiles();
 }
 
-void AGDUnit::AddToActiveUnits()
+void AGDUnit::AddToActiveEntities()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
-		PlayerPawn->AddActiveUnit(this);
+		PlayerPawn->AddActiveEntity(this);
 	}
 }
 
-void AGDUnit::RemoveFromActiveUnits()
+void AGDUnit::RemoveFromActiveEntities()
 {
 	if (AGDPlayerPawn* PlayerPawn = Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn()))
 	{
-		PlayerPawn->RemoveActiveUnit(this);
+		PlayerPawn->RemoveActiveEntity(this);
 	}
 }
 
@@ -877,7 +880,7 @@ void AGDUnit::RemoveOutline()
 	}
 }
 
-EDirection AGDUnit::GetOppositeDirection(const EDirection Direction)
+EDirection GetOppositeDirection(const EDirection Direction)
 {
 	switch (Direction)
 	{
@@ -899,6 +902,6 @@ EDirection AGDUnit::GetOppositeDirection(const EDirection Direction)
 
 void AGDUnit::OnActionFinished()
 {
-	RemoveFromActiveUnits();
+	RemoveFromActiveEntities();
 	TargetToAttackAfterMove = nullptr;
 }

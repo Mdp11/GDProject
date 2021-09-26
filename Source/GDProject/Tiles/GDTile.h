@@ -3,9 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
-#include "Chaos/AABB.h"
-#include "Chaos/AABB.h"
 #include "GameFramework/Actor.h"
 
 #include "GDTile.generated.h"
@@ -127,6 +124,10 @@ public:
 	void RemoveInfoDecal() const;
 
 	bool IsPathClearTowardsTile(AGDTile* Tile) const;
+
+	void HighlightWithMaterial(UMaterial* Material) const;
+
+	TSet<AGDTile*> GetTilesAround(const int SideLength);
 
 	TArray<AGDTile*> GetTilesInDirection(const EDirection Direction, int Num) const;
 

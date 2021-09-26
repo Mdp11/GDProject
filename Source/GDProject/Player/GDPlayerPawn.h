@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "GDProject/Camera/GDCameraManager.h"
-#include "GDProject/Interfaces/GDTileElement.h"
 #include "GDProject/Tiles/GDGrid.h"
 
 #include "GDPlayerPawn.generated.h"
@@ -25,9 +24,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	AGDCameraManager* CameraManger;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UGDInventoryComponent* Inventory;
+
 	UPROPERTY(EditAnywhere)
 	AGDGrid* GridManger;
-	
+
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;
 
@@ -42,8 +44,11 @@ protected:
 	UPROPERTY()
 	UUserWidget* UnitActionsWidget;
 
+	UPROPERTY(BlueprintReadOnly)
+	TSet<UObject*> ActiveEntities;
+
 	UPROPERTY()
-	TSet<AGDUnit*> ActiveUnits;
+	class UGDItemBase* SelectedItem;
 
 	virtual void BeginPlay() override;
 
@@ -56,14 +61,19 @@ public:
 
 	void OnTurnEnd();
 
-	void AddActiveUnit(AGDUnit* Unit);
+	void AddActiveEntity(UObject* Entity);
 
-	void RemoveActiveUnit(AGDUnit* Unit);
+	void RemoveActiveEntity(UObject* Entity);
 
 	UFUNCTION(BlueprintCallable)
-	void DeselectTileElement();
-	
+	void DeselectTileElement(bool bReset = true);
+
 	void OnUnitDead(AGDUnit* Unit, int OwningPlayer);
+
+	UFUNCTION(BlueprintCallable)
+	void OnItemSelected(class UGDItemBase* Item);
+
+	void OnItemDeselected();
 
 private:
 	void HandleTilesHovering();

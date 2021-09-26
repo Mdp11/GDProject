@@ -214,19 +214,17 @@ protected:
 
 	virtual void ResetAllHighlightedTiles();
 
-	void AddToActiveUnits();
+	void AddToActiveEntities();
 
-	void RemoveFromActiveUnits();
+	void RemoveFromActiveEntities();
 
 	UFUNCTION(BlueprintCallable)
 	void SetDirection(const EDirection NewDirection);
 
-	EDirection GetOppositeDirection(const EDirection Direction);
-
 	template <typename Function>
 	void PlayAnimationAndDoAction(UAnimMontage* Animation, Function Action)
 	{
-		AddToActiveUnits();
+		AddToActiveEntities();
 
 		const float AnimationDuration = PlayAnimMontage(Animation) + 0.1f;
 
@@ -274,6 +272,12 @@ public:
 
 	float GetDefence() const;
 
+	bool HasFullHealth() const;
+
+	void AddOutline(const FLinearColor& OutlineColor);
+
+	void RemoveOutline();
+
 private:
 	float CriticalChanceAdjuster;
 
@@ -297,8 +301,6 @@ private:
 	void HighlightEnemiesInAttackRange();
 
 	bool IsTileInRangeOfAction(AGDTile* Tile) const;
-
-	void AddOutline(const FLinearColor& OutlineColor);
-
-	void RemoveOutline();
 };
+
+EDirection GetOppositeDirection(const EDirection Direction);
