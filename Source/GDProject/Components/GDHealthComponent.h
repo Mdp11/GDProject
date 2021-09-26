@@ -19,6 +19,8 @@ class GDPROJECT_API UGDHealthComponent : public UActorComponent
 public:
 	UGDHealthComponent();
 
+	bool HasFullHealth() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Health")
 	float DefaultHealth;
@@ -31,7 +33,6 @@ protected:
 
 private:
 	float CurrentHealth;
-
 
 public:
 	FOnHealthChangedSignature OnHealthChanged;
