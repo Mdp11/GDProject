@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraActor.h"
 #include "GDProject/GDProjectGameModeBase.h"
+#include "GDProject/Components/GDCameraComponent.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 #include "GDProject/Items/GDItemBase.h"
@@ -24,24 +25,8 @@ AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-	// TArray<AActor*> FoundGridManagerActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
-	// UE_LOG(LogTemp, Warning, TEXT("Founded GridManager, %i"), FoundGridManagerActors.Num())
-	// if (FoundGridManagerActors.Num() > 0)
-	// {
-	// 	GridManger = Cast<AGDGrid>(FoundGridManagerActors[0]);
-	// 	if (GridManger) UE_LOG(LogTemp, Error, TEXT("Founded GridManager"));
-	// }
-	// TArray<AActor*> FoundCameraManagerActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundCameraManagerActors);
-	// UE_LOG(LogTemp, Warning, TEXT("Founded CameraManager, %i"), FoundCameraManagerActors.Num())
-	// if (FoundCameraManagerActors.Num() > 0)
-	// {
-	// 	CameraManger = Cast<AGDCameraManager>(FoundCameraManagerActors[0]);
-	// 	if (CameraManger) UE_LOG(LogTemp, Error, TEXT("Founded CameraManager"));
-	// 	CameraManger->SetGridManager(GridManger);
-	// }
-
+	//Camera component setup
+	CameraManager = CreateDefaultSubobject<UGDCameraComponent>(TEXT("CameraManager"));
 	Inventory = CreateDefaultSubobject<UGDInventoryComponent>(TEXT("Inventory"));
 }
 
@@ -54,8 +39,8 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	DECLARE_DELEGATE_OneParam(FDelegate_RemoveSelection, bool);
 	PlayerInputComponent->BindAction<FDelegate_RemoveSelection>("RemoveSelection", EInputEvent::IE_Pressed, this,
 	                                                            &AGDPlayerPawn::DeselectTileElement, true);
-	// PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
-	// PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
+	PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
+	PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
 }
 
 void AGDPlayerPawn::OnTurnBegin()
@@ -136,6 +121,27 @@ AGDTile* AGDPlayerPawn::GetTileUnderMouse() const
 void AGDPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	TArray<AActor*> FoundGridManagerActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
+	if (FoundGridManagerActors.Num() > 0)
+	{
+		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
+		if (GridManager) UE_LOG(LogTemp, Warning, TEXT("Founded GridManager"));
+	}
+	//Founding all cameras in the scene
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraActor::StaticClass(), FoundActors);
+	UE_LOG(LogTemp, Warning, TEXT("Number of Camera Fouded, %i"), FoundActors.Num());
+	if (FoundActors.Num() > 0 && CameraManager) {
+		UE_LOG(LogTemp, Warning, TEXT("Adding camera to CameraManager component"));
+		CameraManager->Camera = Cast<ACameraActor>(FoundActors[0]);
+	}
+	CameraManager->SetGridManager(GridManager);
+	if (GridManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("grid size, %i"),GridManager->GetSize());
+		UE_LOG(LogTemp, Warning, TEXT("Tiles grid info, %i"),GridManager->GetTilesGrid().Num());
+	}
 
 	if (UnitActionsWidgetClass)
 	{
@@ -229,13 +235,13 @@ void AGDPlayerPawn::TriggerClick()
 void AGDPlayerPawn::RotateCameraLeft()
 {
 	UE_LOG(LogTemp, Error, TEXT("Rotating Left"));
-	if (CameraManger) CameraManger->RotateCamera(1);
+	if (CameraManager) CameraManager->RotateCamera(1);
 }
 
 void AGDPlayerPawn::RotateCameraRight()
 {
 	UE_LOG(LogTemp, Error, TEXT("Rotating Right"));
-	if (CameraManger) CameraManger->RotateCamera(-1);
+	if (CameraManager) CameraManager->RotateCamera(-1);
 }
 
 void AGDPlayerPawn::SelectTileElement()
