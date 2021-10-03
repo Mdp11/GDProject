@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "GDProject/Camera/GDCameraManager.h"
 #include "GDProject/Tiles/GDGrid.h"
 
 #include "GDPlayerPawn.generated.h"
