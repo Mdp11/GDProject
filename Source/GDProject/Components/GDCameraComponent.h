@@ -19,9 +19,6 @@ public:
 	UGDCameraComponent();
 
 	UPROPERTY(EditAnywhere)
-	TArray<ACameraActor*> Cameras;
-
-	UPROPERTY(EditAnywhere)
 	ACameraActor* Camera;
 
 	UPROPERTY(EditAnywhere)
@@ -61,5 +58,8 @@ public:
 
 	virtual void SetGridManager(AGDGrid* Gm);
 
+	FRotator TargetRotation;
+	FVector TargetLocation;
+	
 	// void SetCamerasPositions();
 };

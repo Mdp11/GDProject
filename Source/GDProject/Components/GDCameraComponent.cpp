@@ -25,6 +25,8 @@ void UGDCameraComponent::BeginPlay()
 	//This value indicate the distance between the camera and the grid
 	CamerasOffset = 600;
 	//SetCamerasPositions();
+
+	//TODO: Spawn camera here and remove get actor from player pawn
 }
 
 // void UGDCameraComponent::SetCamerasPositions()
@@ -62,6 +64,18 @@ void UGDCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	// if(!Camera->GetActorLocation().Equals(TargetLocation, 0.1))
+	// {
+	// 	FVector StepLocation = FMath::VInterpTo(Camera->GetActorLocation(), TargetLocation, 1.f, 0.1f);
+	// 	Camera->SetActorLocation(StepLocation);
+	// }
+	//
+	// if(!Camera->GetActorRotation().Equals(TargetRotation, 0.1))
+	// {
+	// 	FRotator StepRotation = FMath::RInterpTo(Camera->GetActorRotation(), TargetRotation, 1.f, 0.1f);
+	// 	Camera->SetActorRotation(StepRotation);
+	// }
+	
 	// ...
 }
 
@@ -75,8 +89,19 @@ void UGDCameraComponent::RotateCamera(int Direction)
 		FVector Camera3Pos(EndPositionX.X + CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
 		FVector Camera2Pos(EndPositionX.X / 2, EndPositionY.Y + CamerasOffset, CamerasHeight);
 		FVector Camera1Pos(-CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
+
+		// FRotator Camera0Rot, Camera1Rot, Camera2Rot, Camera3Rot = Camera->GetActorRotation();
+		// Camera1Rot.Yaw += 90.f;
+		// Camera2Rot.Yaw += 180.f;
+		// Camera3Rot.Yaw -= 90.f;
+
+		// TArray<TPair<FVector, FRotator>> CameraPosition;
+		
 		FRotator CameraRotation;
 		UE_LOG(LogTemp, Display, TEXT("Direction, %i"), Direction);
+		// CameraRotation = Camera->GetActorRotation();
+		// CameraRotation.Yaw = CameraRotation.Yaw + 90;
+		// Camera->SetActorRotation(CameraRotation);
 		if (Direction > 0)
 		{
 			CameraRotation = FRotator(Camera->GetActorRotation().Pitch,
@@ -96,15 +121,23 @@ void UGDCameraComponent::RotateCamera(int Direction)
 		switch (ActualCameraIndex)
 		{
 		case 0:
+			// TargetLocation = Camera0Pos;
+			// TargetRotation = CameraRotation;
 			Camera->SetActorLocationAndRotation(Camera0Pos, CameraRotation);
 			break;
 		case 1:
+			// TargetLocation = Camera1Pos;
+			// TargetRotation = CameraRotation;
 			Camera->SetActorLocationAndRotation(Camera1Pos, CameraRotation);
 			break;
 		case 2:
+			// TargetLocation = Camera2Pos;
+			// TargetRotation = CameraRotation;
 			Camera->SetActorLocationAndRotation(Camera2Pos, CameraRotation);
 			break;
 		case 3:
+			// TargetLocation = Camera3Pos;
+			// TargetRotation = CameraRotation;
 			Camera->SetActorLocationAndRotation(Camera3Pos, CameraRotation);
 			break;
 		}
