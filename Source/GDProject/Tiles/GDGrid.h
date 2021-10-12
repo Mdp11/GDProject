@@ -20,6 +20,8 @@ public:
 	AGDGrid();
 
 private:
+	TArray<TArray<int>> TileScheme;
+	
 	TArray<TArray<AGDTile*>> Tiles;
 
 	static TArray<AGDTile*> ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile);
@@ -34,12 +36,24 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Size")
 	int32 Height;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float Lowland_Percentage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float Forest_Percentage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float River_Percentage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float BlockSpacing;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDTile> BaseTileClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDTile> LowlandTileClass;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDTile> ForestTileClass;
 
@@ -53,9 +67,17 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	void BuildMap(const TArray<TArray<int>>& TileScheme);
+	void GenerateGrid();
+
+	int32 ComputeTileType(TPair<int, int> Tile);
+
+	TArray<int> SurroundCheck(TPair<int, int> Tile);
+	
+	void BuildMap();
 
 	void CleanMap();
+
+	void ShufflePositions(TArray<TPair<int, int>>& Undefined_Tiles);
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Material")
