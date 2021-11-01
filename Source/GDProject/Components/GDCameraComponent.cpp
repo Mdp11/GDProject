@@ -23,10 +23,14 @@ void UGDCameraComponent::BeginPlay()
 	Super::BeginPlay();
 	PlayerController = UGameplayStatics::GetPlayerController(this, 0);
 	//This value indicate the distance between the camera and the grid
-	CamerasOffset = 600;
+	CamerasOffset = 680;
 	//SetCamerasPositions();
-
-	//TODO: Spawn camera here and remove get actor from player pawn
+	const FVector CameraPos(-CamerasOffset,1050.000000,CamerasHeight);
+	const FRotator CameraRot(-43,0,0);
+	TargetLocation = CameraPos;
+	TargetRotation = CameraRot;
+	Camera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), CameraPos, CameraRot);
+	PlayerController->SetViewTarget(Camera);
 }
 
 // void UGDCameraComponent::SetCamerasPositions()
@@ -64,19 +68,18 @@ void UGDCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// if(!Camera->GetActorLocation().Equals(TargetLocation, 0.1))
-	// {
-	// 	FVector StepLocation = FMath::VInterpTo(Camera->GetActorLocation(), TargetLocation, 1.f, 0.1f);
-	// 	Camera->SetActorLocation(StepLocation);
-	// }
-	//
-	// if(!Camera->GetActorRotation().Equals(TargetRotation, 0.1))
-	// {
-	// 	FRotator StepRotation = FMath::RInterpTo(Camera->GetActorRotation(), TargetRotation, 1.f, 0.1f);
-	// 	Camera->SetActorRotation(StepRotation);
-	// }
+	if(!Camera->GetActorLocation().Equals(TargetLocation, 0.1))
+	{
+		FVector StepLocation = FMath::VInterpTo(Camera->GetActorLocation(), TargetLocation, 1.f, 0.95f);
+		Camera->SetActorLocation(StepLocation);
+	}
 	
-	// ...
+	if(!Camera->GetActorRotation().Equals(TargetRotation, 0.1))
+	{
+		FRotator StepRotation = FMath::RInterpTo(Camera->GetActorRotation(), TargetRotation, 1.f, 0.95f);
+		Camera->SetActorRotation(StepRotation);
+	}
+
 }
 
 void UGDCameraComponent::RotateCamera(int Direction)
@@ -85,35 +88,29 @@ void UGDCameraComponent::RotateCamera(int Direction)
 	{
 		UE_LOG(LogTemp, Display, TEXT("EndPosX, %f"), EndPositionX.X);
 		UE_LOG(LogTemp, Display, TEXT("EndPosY, %f"), EndPositionY.Y);
-		FVector Camera0Pos(EndPositionX.X / 2, -CamerasOffset, CamerasHeight);
-		FVector Camera3Pos(EndPositionX.X + CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-		FVector Camera2Pos(EndPositionX.X / 2, EndPositionY.Y + CamerasOffset, CamerasHeight);
-		FVector Camera1Pos(-CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-
+		FVector Camera0Pos(-CamerasOffset,1050,1030);
+		FVector Camera1Pos(1050, -CamerasOffset, 1030);
+		FVector Camera2Pos((1050*2)+CamerasOffset, 1050, 1030);
+		FVector Camera3Pos(1050, (1050*2)+CamerasOffset, 1030);
+		
+		// FVector Camera1Pos(-CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
+		// FVector Camera3Pos(EndPositionX.X + CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
+		// FVector Camera2Pos(EndPositionX.X / 2, EndPositionY.Y + CamerasOffset, CamerasHeight);
+		// FVector Camera0Pos(EndPositionX.X / 2, -CamerasOffset, CamerasHeight);
 		// FRotator Camera0Rot, Camera1Rot, Camera2Rot, Camera3Rot = Camera->GetActorRotation();
-		// Camera1Rot.Yaw += 90.f;
-		// Camera2Rot.Yaw += 180.f;
-		// Camera3Rot.Yaw -= 90.f;
+		// Camera1Rot.Yaw -= 90.f;
+		// Camera2Rot.Yaw -= 180.f;
+		// Camera3Rot.Yaw += 90.f;
 
-		// TArray<TPair<FVector, FRotator>> CameraPosition;
+		FRotator Camera0Rot(-43,0,0);
+		FRotator Camera1Rot(-43,+90,0);
+		FRotator Camera2Rot(-43,+180,0);
+		FRotator Camera3Rot(-43,-90,0);
+		
+		TArray<TPair<FVector, FRotator>> CameraPosition;		
 		
 		FRotator CameraRotation;
 		UE_LOG(LogTemp, Display, TEXT("Direction, %i"), Direction);
-		// CameraRotation = Camera->GetActorRotation();
-		// CameraRotation.Yaw = CameraRotation.Yaw + 90;
-		// Camera->SetActorRotation(CameraRotation);
-		if (Direction > 0)
-		{
-			CameraRotation = FRotator(Camera->GetActorRotation().Pitch,
-			                          Camera->GetActorRotation().Yaw - 90,
-			                          Camera->GetActorRotation().Roll);
-		}
-		else
-		{
-			CameraRotation = FRotator(Camera->GetActorRotation().Pitch,
-			                          Camera->GetActorRotation().Yaw + 90,
-			                          Camera->GetActorRotation().Roll);
-		}
 		ActualCameraIndex += Direction;
 		if (ActualCameraIndex < 0) ActualCameraIndex = 3;
 		if (ActualCameraIndex > 3) ActualCameraIndex = 0;
@@ -121,24 +118,24 @@ void UGDCameraComponent::RotateCamera(int Direction)
 		switch (ActualCameraIndex)
 		{
 		case 0:
-			// TargetLocation = Camera0Pos;
-			// TargetRotation = CameraRotation;
-			Camera->SetActorLocationAndRotation(Camera0Pos, CameraRotation);
+			TargetLocation = Camera0Pos;
+			TargetRotation = Camera0Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 1:
-			// TargetLocation = Camera1Pos;
-			// TargetRotation = CameraRotation;
-			Camera->SetActorLocationAndRotation(Camera1Pos, CameraRotation);
+			TargetLocation = Camera1Pos;
+			TargetRotation = Camera1Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 2:
-			// TargetLocation = Camera2Pos;
-			// TargetRotation = CameraRotation;
-			Camera->SetActorLocationAndRotation(Camera2Pos, CameraRotation);
+			TargetLocation = Camera2Pos;
+			TargetRotation = Camera2Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 3:
-			// TargetLocation = Camera3Pos;
-			// TargetRotation = CameraRotation;
-			Camera->SetActorLocationAndRotation(Camera3Pos, CameraRotation);
+			TargetLocation = Camera3Pos;
+			TargetRotation = Camera3Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		}
 	}

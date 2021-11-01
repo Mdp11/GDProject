@@ -22,10 +22,10 @@ public:
 	ACameraActor* Camera;
 
 	UPROPERTY(EditAnywhere)
-	float CamerasOffset;
+	float CamerasOffset = 1;
 
 	UPROPERTY(EditAnywhere)
-	float CamerasHeight = 1020;
+	float CamerasHeight = 1030;
 
 	UPROPERTY(EditAnywhere)
 	AGDGrid* GridManager;

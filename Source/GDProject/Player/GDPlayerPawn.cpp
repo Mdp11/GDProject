@@ -127,22 +127,8 @@ void AGDPlayerPawn::BeginPlay()
 	{
 		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
 		if (GridManager) UE_LOG(LogTemp, Warning, TEXT("Founded GridManager"));
+		CameraManager->SetGridManager(GridManager);
 	}
-	//Founding all cameras in the scene
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraActor::StaticClass(), FoundActors);
-	UE_LOG(LogTemp, Warning, TEXT("Number of Camera Fouded, %i"), FoundActors.Num());
-	if (FoundActors.Num() > 0 && CameraManager) {
-		UE_LOG(LogTemp, Warning, TEXT("Adding camera to CameraManager component"));
-		CameraManager->Camera = Cast<ACameraActor>(FoundActors[0]);
-	}
-	CameraManager->SetGridManager(GridManager);
-	if (GridManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("grid size, %i"),GridManager->GetSize());
-		UE_LOG(LogTemp, Warning, TEXT("Tiles grid info, %i"),GridManager->GetTilesGrid().Num());
-	}
-
 	if (UnitActionsWidgetClass)
 	{
 		UnitActionsWidget = CreateWidget(GetWorld(), UnitActionsWidgetClass);
