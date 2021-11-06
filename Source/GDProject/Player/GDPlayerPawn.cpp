@@ -121,14 +121,7 @@ AGDTile* AGDPlayerPawn::GetTileUnderMouse() const
 void AGDPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	TArray<AActor*> FoundGridManagerActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
-	if (FoundGridManagerActors.Num() > 0)
-	{
-		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
-		if (GridManager) UE_LOG(LogTemp, Warning, TEXT("Founded GridManager"));
-		CameraManager->SetGridManager(GridManager);
-	}
+
 	if (UnitActionsWidgetClass)
 	{
 		UnitActionsWidget = CreateWidget(GetWorld(), UnitActionsWidgetClass);

@@ -21,8 +21,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	ACameraActor* Camera;
 
+	//This value indicate the distance between the camera and the grid
 	UPROPERTY(EditAnywhere)
-	float CamerasOffset = 1;
+	float CamerasOffset = 680;
 
 	UPROPERTY(EditAnywhere)
 	float CamerasHeight = 1030;
@@ -31,11 +32,35 @@ public:
 	AGDGrid* GridManager;
 	//EndPositionY and EndPositionX are the position of the last tiles on the respective axes
 	UPROPERTY(EditAnywhere)
-	FVector EndPositionY;
+	float EndPositionY;
 
 	UPROPERTY(EditAnywhere)
-	FVector EndPositionX;
+	float EndPositionX;
+	
+	UPROPERTY(EditAnywhere)
+	FVector Camera0Pos;
 
+	UPROPERTY(EditAnywhere)
+	FVector Camera1Pos;
+
+	UPROPERTY(EditAnywhere)
+	FVector Camera2Pos;
+
+	UPROPERTY(EditAnywhere)
+	FVector Camera3Pos;
+
+	UPROPERTY(EditAnywhere)
+	FRotator Camera0Rot;
+	
+	UPROPERTY(EditAnywhere)
+	FRotator Camera1Rot;
+	
+	UPROPERTY(EditAnywhere)
+	FRotator Camera2Rot;
+	
+	UPROPERTY(EditAnywhere)
+	FRotator Camera3Rot;
+	
 	UPROPERTY(EditAnywhere)
 	int32 GridSize;
 
@@ -56,10 +81,8 @@ public:
 
 	virtual void RotateCamera(int Direction);
 
-	virtual void SetGridManager(AGDGrid* Gm);
-
 	FRotator TargetRotation;
+	
 	FVector TargetLocation;
 	
-	// void SetCamerasPositions();
 };
