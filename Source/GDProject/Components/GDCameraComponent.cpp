@@ -4,6 +4,7 @@
 #include "GDCameraComponent.h"
 
 #include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,40 +22,51 @@ UGDCameraComponent::UGDCameraComponent()
 void UGDCameraComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	//This value indicate the distance between the camera and the grid
-	CamerasOffset = 600;
-	//SetCamerasPositions();
-}
+	TArray<AActor*> FoundGridManagerActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
+	if (FoundGridManagerActors.Num() > 0)
+	{
+		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
+		if (GridManager)
+		{
+			TArray<TArray<AGDTile*>> TilesGrid;
+			UE_LOG(LogTemp, Display, TEXT("grid size, %i"), GridManager->GetSize());
+			GridSize = GridManager->GetSize() - 1;
+			TilesGrid = GridManager->GetTilesGrid();
+			EndPositionY = TilesGrid[0].Last()->GetActorLocation().Y;
+			EndPositionX = TilesGrid.Last()[0]->GetActorLocation().X;
+		}
+	}
 
-// void UGDCameraComponent::SetCamerasPositions()
-// {
-// 	TArray<TArray<AGDTile*>> TilesGrid;
-// 	int32 GridSize;
-// 	if (GridManager)
-// 	{
-// 		UE_LOG(LogTemp, Warning, TEXT("grid size, %i"), GridManager->GetSize());
-// 		GridSize = GridManager->GetSize() - 1;
-// 		TilesGrid = GridManager->GetTilesGrid();
-// 	}
-// 	UE_LOG(LogTemp, Warning, TEXT("grid size, %i"), TilesGrid.Num());
-//
-// 	if (TilesGrid.Num() > 0)
-// 	{
-// 		UE_LOG(LogTemp, Error, TEXT("GridSize, %i"), GridSize);
-// 		FVector EndPositionY = TilesGrid[0].Last()->GetActorLocation();
-// 		FVector EndPositionX = TilesGrid.Last()[0]->GetActorLocation();
-// 		UE_LOG(LogTemp, Error, TEXT("EndPosX, %f"), EndPositionX.X);
-// 		UE_LOG(LogTemp, Error, TEXT("EndPosY, %f"), EndPositionY.Y);
-// 		//CamerasOffset = round((600*EndPositionY.Y)/2090);
-// 		CamerasOffset = 600;
-// 		FVector Camera0Pos(-CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-// 		FVector Camera1Pos(EndPositionX.X / 2, -CamerasOffset, CamerasHeight);
-// 		FVector Camera2Pos(EndPositionX.X + CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-// 		FVector Camera3Pos(EndPositionX.X / 2, EndPositionY.Y + CamerasOffset, CamerasHeight);
-// 		Camera->SetActorLocation(Camera0Pos);
-// 	}
-// }
+	//Setting camera positions base on grid size
+	Camera0Pos.Set(-CamerasOffset,EndPositionY / 2,CamerasHeight);
+	Camera1Pos.Set(EndPositionX/2, -CamerasOffset, CamerasHeight);
+	Camera2Pos.Set(EndPositionX+CamerasOffset, EndPositionY / 2, CamerasHeight);
+	Camera3Pos.Set(EndPositionX/2, EndPositionY+CamerasOffset, CamerasHeight);
+
+	Camera0Rot.Pitch = -43;
+	Camera0Rot.Yaw = 0;
+	Camera0Rot.Roll = 0;
+
+	Camera1Rot.Pitch = -43;
+	Camera1Rot.Yaw = Camera0Rot.Yaw + 90;
+	Camera1Rot.Roll = 0;
+	
+	Camera2Rot.Pitch = -43;
+	Camera2Rot.Yaw = Camera0Rot.Yaw + 180;
+	Camera2Rot.Roll = 0;
+	
+	Camera3Rot.Pitch = -43;
+	Camera3Rot.Yaw = Camera0Rot.Yaw - 90;
+	Camera3Rot.Roll = 0;
+	
+	PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	TargetLocation = Camera0Pos;
+	TargetRotation = Camera0Rot;
+	Camera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), Camera0Pos, Camera0Rot);
+	Camera->GetCameraComponent()->SetFieldOfView(94.f);
+	PlayerController->SetViewTarget(Camera);
+}
 
 // Called every frame
 void UGDCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType,
@@ -62,33 +74,27 @@ void UGDCameraComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if(!Camera->GetActorLocation().Equals(TargetLocation, 0.1))
+	{
+		FVector StepLocation = FMath::VInterpTo(Camera->GetActorLocation(), TargetLocation, 1.f, 0.1f);
+		Camera->SetActorLocation(StepLocation);
+	}
+	
+	if(!Camera->GetActorRotation().Equals(TargetRotation, 0.1))
+	{
+		FRotator StepRotation = FMath::RInterpTo(Camera->GetActorRotation(), TargetRotation, 1.f, 0.1f);
+		Camera->SetActorRotation(StepRotation);
+	}
+
 }
 
 void UGDCameraComponent::RotateCamera(int Direction)
 {
 	if (GridSize > 0)
 	{
-		UE_LOG(LogTemp, Display, TEXT("EndPosX, %f"), EndPositionX.X);
-		UE_LOG(LogTemp, Display, TEXT("EndPosY, %f"), EndPositionY.Y);
-		FVector Camera0Pos(EndPositionX.X / 2, -CamerasOffset, CamerasHeight);
-		FVector Camera3Pos(EndPositionX.X + CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-		FVector Camera2Pos(EndPositionX.X / 2, EndPositionY.Y + CamerasOffset, CamerasHeight);
-		FVector Camera1Pos(-CamerasOffset, EndPositionY.Y / 2, CamerasHeight);
-		FRotator CameraRotation;
+		UE_LOG(LogTemp, Display, TEXT("EndPosX, %f"), EndPositionX);
+		UE_LOG(LogTemp, Display, TEXT("EndPosY, %f"), EndPositionY);
 		UE_LOG(LogTemp, Display, TEXT("Direction, %i"), Direction);
-		if (Direction > 0)
-		{
-			CameraRotation = FRotator(Camera->GetActorRotation().Pitch,
-			                          Camera->GetActorRotation().Yaw - 90,
-			                          Camera->GetActorRotation().Roll);
-		}
-		else
-		{
-			CameraRotation = FRotator(Camera->GetActorRotation().Pitch,
-			                          Camera->GetActorRotation().Yaw + 90,
-			                          Camera->GetActorRotation().Roll);
-		}
 		ActualCameraIndex += Direction;
 		if (ActualCameraIndex < 0) ActualCameraIndex = 3;
 		if (ActualCameraIndex > 3) ActualCameraIndex = 0;
@@ -96,31 +102,25 @@ void UGDCameraComponent::RotateCamera(int Direction)
 		switch (ActualCameraIndex)
 		{
 		case 0:
-			Camera->SetActorLocationAndRotation(Camera0Pos, CameraRotation);
+			TargetLocation = Camera0Pos;
+			TargetRotation = Camera0Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 1:
-			Camera->SetActorLocationAndRotation(Camera1Pos, CameraRotation);
+			TargetLocation = Camera1Pos;
+			TargetRotation = Camera1Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 2:
-			Camera->SetActorLocationAndRotation(Camera2Pos, CameraRotation);
+			TargetLocation = Camera2Pos;
+			TargetRotation = Camera2Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 3:
-			Camera->SetActorLocationAndRotation(Camera3Pos, CameraRotation);
+			TargetLocation = Camera3Pos;
+			TargetRotation = Camera3Rot;
+			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		}
-	}
-}
-
-void UGDCameraComponent::SetGridManager(AGDGrid* Gm)
-{
-	GridManager = Gm;
-	if (GridManager)
-	{
-		TArray<TArray<AGDTile*>> TilesGrid;
-		UE_LOG(LogTemp, Display, TEXT("grid size, %i"), GridManager->GetSize());
-		GridSize = GridManager->GetSize() - 1;
-		TilesGrid = GridManager->GetTilesGrid();
-		EndPositionY = TilesGrid[0].Last()->GetActorLocation();
-		EndPositionX = TilesGrid.Last()[0]->GetActorLocation();
 	}
 }

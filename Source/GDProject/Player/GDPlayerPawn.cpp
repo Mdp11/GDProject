@@ -121,25 +121,6 @@ AGDTile* AGDPlayerPawn::GetTileUnderMouse() const
 void AGDPlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	TArray<AActor*> FoundGridManagerActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
-	if (FoundGridManagerActors.Num() > 0)
-	{
-		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
-		if (GridManager) UE_LOG(LogTemp, Warning, TEXT("Founded GridManager"));
-	}
-	//Founding all cameras in the scene
-	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACameraActor::StaticClass(), FoundActors);
-	if (FoundActors.Num() > 0 && CameraManager) {
-		CameraManager->Camera = Cast<ACameraActor>(FoundActors[0]);
-	}
-	CameraManager->SetGridManager(GridManager);
-	if (GridManager)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("grid size, %i"),GridManager->GetSize());
-		UE_LOG(LogTemp, Warning, TEXT("Tiles grid info, %i"),GridManager->GetTilesGrid().Num());
-	}
 
 	if (UnitActionsWidgetClass)
 	{
