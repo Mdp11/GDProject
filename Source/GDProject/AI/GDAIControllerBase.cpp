@@ -39,7 +39,7 @@ void AGDAIControllerBase::Play()
 	if (NearestEnemy)
 	{
 		AGDTile* TargetEnemyTile = IGDTileElement::Execute_GetTile(NearestEnemy);
-		ControlledUnit->ComputeMovementPath(TargetEnemyTile);
+		ControlledUnit->ComputeAttackPath(TargetEnemyTile);
 		ControlledUnit->RequestAction(TargetEnemyTile);
 	}
 	else
