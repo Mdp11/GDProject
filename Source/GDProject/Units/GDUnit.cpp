@@ -3,8 +3,6 @@
 
 #include "GDUnit.h"
 
-#include <algorithm>
-
 #include "GDProject/Components/GDHealthComponent.h"
 #include "GDProject/Player/GDPlayerPawn.h"
 #include "GDProject/Tiles/GDTile.h"
@@ -13,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "GDProject/AI/GDAIControllerBase.h"
 
 
 AGDUnit::AGDUnit()
@@ -47,6 +46,7 @@ AGDUnit::AGDUnit()
 
 	bIsDead = false;
 	bWarp = false;
+	bIsAIControlled = false;
 
 	WalkingSpeed = 250.f;
 	RunningSpeed = 600.f;
@@ -92,6 +92,11 @@ void AGDUnit::BeginPlay()
 	CheckAnimations();
 
 	ResetActionPoints();
+
+	if (Cast<AGDAIControllerBase>(GetController()))
+	{
+		bIsAIControlled = true;
+	}
 }
 
 void AGDUnit::OnHealthChanged(UGDHealthComponent* HealthComp, float Health, float HealthDelta,
@@ -166,7 +171,7 @@ void AGDUnit::CheckForGuardingUnits()
 {
 	if (CurrentTile->HasGuardingUnits())
 	{
-		for (auto& Unit : CurrentTile->GetGuardingUnits())
+		for (const auto& Unit : CurrentTile->GetGuardingUnits())
 		{
 			if (IsEnemy(Unit) && Unit->IsTileInAttackRange(CurrentTile))
 			{
@@ -210,8 +215,11 @@ void AGDUnit::StopMove()
 {
 	bMoveRequested = false;
 
-	CurrentTile->Select();
-	Execute_Select(this);
+	if (!bIsAIControlled)
+	{
+		CurrentTile->Select();
+		Execute_Select(this);
+	}
 
 	if (TargetToAttackAfterMove)
 	{
@@ -219,7 +227,14 @@ void AGDUnit::StopMove()
 	}
 	else
 	{
-		bRotationRequested = true;
+		if (!bIsAIControlled)
+		{
+			bRotationRequested = true;
+		}
+		else
+		{
+			RemoveFromActiveEntities();
+		}
 	}
 }
 
@@ -268,7 +283,7 @@ void AGDUnit::Rotate()
 	OnActionFinished();
 }
 
-bool AGDUnit::IsEnemy(AGDUnit* OtherUnit) const
+bool AGDUnit::IsEnemy(const AGDUnit* OtherUnit) const
 {
 	return OwningPlayer != OtherUnit->OwningPlayer;
 }
@@ -323,7 +338,7 @@ void AGDUnit::Tick(float DeltaTime)
 	}
 }
 
-AGDTile* AGDUnit::GetTile_Implementation()
+AGDTile* AGDUnit::GetTile_Implementation() const
 {
 	return CurrentTile;
 }
@@ -343,12 +358,12 @@ void AGDUnit::SetTile_Implementation(AGDTile* Tile)
 	CurrentTile->SetTileElement(this);
 }
 
-bool AGDUnit::CanBeSelected_Implementation()
+bool AGDUnit::CanBeSelected_Implementation() const
 {
 	return true;
 }
 
-bool AGDUnit::CanMove_Implementation()
+bool AGDUnit::CanMove_Implementation() const
 {
 	return true;
 }
@@ -356,8 +371,8 @@ bool AGDUnit::CanMove_Implementation()
 void AGDUnit::Select_Implementation()
 {
 	AddOutline(FLinearColor::Green);
-	HighlightMovementRange();
-	HighlightEnemiesInAttackRange();
+	ComputeMovementRange();
+	ComputeEnemiesInAttackRange();
 }
 
 void AGDUnit::Deselect_Implementation()
@@ -403,7 +418,7 @@ bool AGDUnit::IsTileInAttackRange(AGDTile* Tile) const
 	return IsTileInAttackRangeFromTile(Tile, CurrentTile);
 }
 
-bool AGDUnit::IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const
+bool AGDUnit::IsTileInAttackRangeFromTile(const AGDTile* SourceTile, AGDTile* TargetTile) const
 {
 	return (SourceTile->GetCoordinates().X == TargetTile->GetCoordinates().X && FMath::Abs(
 				SourceTile->GetCoordinates().Y - TargetTile->GetCoordinates().Y) <= AttackRange ||
@@ -569,7 +584,7 @@ void AGDUnit::ResetHighlightedActionTiles()
 		Tile->RemoveHighlight();
 		if (Tile->HasGuardingUnits())
 		{
-			for (auto& Unit : Tile->GetGuardingUnits())
+			for (const auto& Unit : Tile->GetGuardingUnits())
 			{
 				Unit->RemoveOutline();
 			}
@@ -623,7 +638,7 @@ void AGDUnit::SetDirection(const EDirection NewDirection)
 	SetActorRotation(NewRotator);
 }
 
-void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
+void AGDUnit::ComputeMovementPath(AGDTile* TargetTile)
 {
 	TArray<AGDTile*> NewMovementPath = CurrentTile->GetGrid()->ComputePathBetweenTiles(
 		CurrentTile, TargetTile, this);
@@ -632,8 +647,7 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 		NewMovementPath.RemoveAt(0); //First tile is the one unit is on, so it can be removed
 
 		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupiedByEnemy(this) && CurrentActionPoints > 1 &&
-			NewMovementPath.
-			Num() <= GetMovementRange();
+			NewMovementPath.Num() <= GetMovementRange();
 
 		const bool bCanReachEmptyTile = !TargetTile->IsOccupied() &&
 			NewMovementPath.Num() <= GetMovementRange() * GetActionPoints();
@@ -643,17 +657,23 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 			MovementPath = MoveTemp(NewMovementPath);
 			for (const auto& Tile : MovementPath)
 			{
-				Tile->Highlight(EHighlightInfo::Default);
+				if (!bIsAIControlled)
+				{
+					Tile->Highlight(EHighlightInfo::Default);
+				}
 
 				if (Tile->HasGuardingUnits())
 				{
 					bool bInRangeOfAnyGuardingUnit = false;
 
-					for (auto& Unit : Tile->GetGuardingUnits())
+					for (const auto& Unit : Tile->GetGuardingUnits())
 					{
 						if (Unit->IsTileInAttackRange(Tile))
 						{
-							Unit->AddOutline(FLinearColor::Red);
+							if (!bIsAIControlled)
+							{
+								Unit->AddOutline(FLinearColor::Red);
+							}
 							bInRangeOfAnyGuardingUnit = true;
 						}
 					}
@@ -672,7 +692,7 @@ void AGDUnit::HighlightMovementPath(AGDTile* TargetTile)
 	}
 }
 
-void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
+void AGDUnit::ComputeAttackPath(AGDTile* TargetTile)
 {
 	AGDTile* TileToReach = nullptr;
 
@@ -695,7 +715,7 @@ void AGDUnit::HighlightAttackPath(AGDTile* TargetTile)
 
 	if (TileToReach)
 	{
-		HighlightMovementPath(TileToReach);
+		ComputeMovementPath(TileToReach);
 	}
 }
 
@@ -713,12 +733,12 @@ void AGDUnit::HighlightActions(AGDTile* TargetTile)
 				{
 					HighlightedEnemyTile = TargetTile;
 					HighlightedEnemyTile->Highlight(EHighlightInfo::Enemy);
-					HighlightAttackPath(TargetTile);
+					ComputeAttackPath(TargetTile);
 				}
 			}
 			else if (IsTileInRangeOfAction(TargetTile))
 			{
-				HighlightMovementPath(TargetTile);
+				ComputeMovementPath(TargetTile);
 			}
 		}
 	}
@@ -763,7 +783,7 @@ bool AGDUnit::IsUnitRotating() const
 	return bRotationRequested;
 }
 
-void AGDUnit::HighlightMovementRange()
+void AGDUnit::ComputeMovementRange()
 {
 	AGDGrid* Grid = CurrentTile->GetGrid();
 
@@ -783,7 +803,10 @@ void AGDUnit::HighlightMovementRange()
 				{
 					const bool bShortDistance = PathLength <= GetMovementRange() ? true : false;
 
-					Tile->ApplyMovementRangeInfoDecal(bShortDistance);
+					if (!bIsAIControlled)
+					{
+						Tile->ApplyMovementRangeInfoDecal(bShortDistance);
+					}
 
 					if (bShortDistance)
 					{
@@ -799,9 +822,9 @@ void AGDUnit::HighlightMovementRange()
 	}
 }
 
-void AGDUnit::HighlightEnemiesInAttackRange()
+void AGDUnit::ComputeEnemiesInAttackRange()
 {
-	AGDGrid* Grid = CurrentTile->GetGrid();
+	const AGDGrid* Grid = CurrentTile->GetGrid();
 
 	const int UnitActionPoints = GetActionPoints();
 
@@ -814,7 +837,10 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 		{
 			if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRange(Tile))
 			{
-				Tile->ApplyEnemyInfoDecal();
+				if (!bIsAIControlled)
+				{
+					Tile->ApplyEnemyInfoDecal();
+				}
 				HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
 			}
 		}
@@ -830,7 +856,10 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 				{
 					if (Tile->IsOccupiedByEnemy(this) && IsTileInAttackRangeFromTile(Tile, ReachableTile))
 					{
-						Tile->ApplyEnemyInfoDecal();
+						if (!bIsAIControlled)
+						{
+							Tile->ApplyEnemyInfoDecal();
+						}
 						HighlightedEnemyTilesInRange.Emplace(MoveTemp(Tile));
 					}
 				}
@@ -839,7 +868,7 @@ void AGDUnit::HighlightEnemiesInAttackRange()
 	}
 }
 
-bool AGDUnit::IsTileInRangeOfAction(AGDTile* Tile) const
+bool AGDUnit::IsTileInRangeOfAction(const AGDTile* Tile) const
 {
 	return HighlightedTilesInShortRange.Contains(Tile) || HighlightedTilesInLongRange.Contains(Tile) ||
 		HighlightedEnemyTilesInRange.Contains(Tile);
