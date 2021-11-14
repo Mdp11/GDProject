@@ -4,25 +4,76 @@
 #include "GDProject/AI/GDAIControllerBase.h"
 
 #include "EngineUtils.h"
-#include "GDProject/Tiles/GDGrid.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 
 void AGDAIControllerBase::Play()
 {
-	AGDUnit* ControlledUnit = Cast<AGDUnit>(GetPawn());
-
+	SetControlledUnit();
+	
 	if (!ControlledUnit)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("AIController unit not set."))
 		return;
 	}
-	ControlledUnit->AddOutline(FColor::Red);
 
-	AGDTile* CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit);
-	AGDGrid* Grid = CurrentTile->GetGrid();
+	ComputeActions();
 
+	if (ShouldUseSpecial())
+	{
+		UseSpecial();
+	}
+	else if (ControlledUnit->HighlightedEnemyTilesInRange.Num() > 0)
+	{
+		Attack();
+	}
+	else
+	{
+		Move();
+	}
+}
+
+TArray<AGDUnit*> AGDAIControllerBase::GetEnemiesSortedByDistance() const
+{
+	TArray<AGDUnit*> Enemies;
+
+	for (TActorIterator<AGDUnit> It(GetWorld()); It; ++It)
+	{
+		AGDUnit* CurrentUnit = *It;
+		if (CurrentUnit != ControlledUnit && CurrentUnit->IsEnemy(ControlledUnit) && !CurrentUnit->bIsDead)
+		{
+			Enemies.Push(CurrentUnit);
+		}
+	}
+
+	Algo::Sort(Enemies,
+	           [CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit)](const AGDUnit* Lhs, const AGDUnit* Rhs)
+	           {
+		           return IGDTileElement::Execute_GetTile(Lhs)->GetDistanceFrom(CurrentTile) <
+			           IGDTileElement::Execute_GetTile(Rhs)->GetDistanceFrom(CurrentTile);
+	           });
+
+	return Enemies;
+}
+
+void AGDAIControllerBase::ComputeActions()
+{
 	ControlledUnit->ComputeMovementRange();
 	ControlledUnit->ComputeEnemiesInAttackRange();
+}
+
+bool AGDAIControllerBase::ShouldUseSpecial()
+{
+	return false;
+}
+
+void AGDAIControllerBase::UseSpecial()
+{
+}
+
+void AGDAIControllerBase::Attack()
+{
+	AGDTile* CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit);
 
 	AGDUnit* NearestEnemy{nullptr};
 
@@ -42,55 +93,29 @@ void AGDAIControllerBase::Play()
 		ControlledUnit->ComputeAttackPath(TargetEnemyTile);
 		ControlledUnit->RequestAction(TargetEnemyTile);
 	}
-	else
-	{
-		auto Enemies = GetEnemiesSortedByDistance();
-		AGDTile* TargetTile{nullptr};
-
-		for (const auto& Tile : ControlledUnit->HighlightedTilesInLongRange)
-		{
-			if (TargetTile == nullptr || TargetTile->GetDistanceFrom(IGDTileElement::Execute_GetTile(Enemies[0])) > Tile->GetDistanceFrom(IGDTileElement::Execute_GetTile(Enemies[0])))
-			{
-				TargetTile = Tile;
-			}
-		}
-		ControlledUnit->ComputeMovementPath(TargetTile);
-		ControlledUnit->RequestAction(TargetTile);
-	}
-
-	ControlledUnit->RemoveOutline();
 }
 
-TArray<AGDUnit*> AGDAIControllerBase::GetEnemiesSortedByDistance() const
+void AGDAIControllerBase::Move()
 {
-	AGDUnit* ControlledUnit = Cast<AGDUnit>(GetPawn());
+	auto Enemies = GetEnemiesSortedByDistance();
+	AGDTile* TargetTile{nullptr};
 
-	if (!ControlledUnit)
+	for (const auto& Tile : ControlledUnit->HighlightedTilesInLongRange)
 	{
-		return {};
-	}
-
-	TArray<AGDUnit*> Enemies;
-
-	for (TActorIterator<AGDUnit> It(GetWorld()); It; ++It)
-	{
-		AGDUnit* CurrentUnit = *It;
-		if (CurrentUnit != ControlledUnit && CurrentUnit->IsEnemy(ControlledUnit) && !CurrentUnit->bIsDead)
+		if (TargetTile == nullptr || TargetTile->GetDistanceFrom(IGDTileElement::Execute_GetTile(Enemies[0])) > Tile->
+			GetDistanceFrom(IGDTileElement::Execute_GetTile(Enemies[0])))
 		{
-			Enemies.Push(CurrentUnit);
+			TargetTile = Tile;
 		}
 	}
+	ControlledUnit->ComputeMovementPath(TargetTile);
+	ControlledUnit->RequestAction(TargetTile);
+}
 
-	if (Enemies.Num() == 0)
+void AGDAIControllerBase::SetControlledUnit()
+{
+	if (!ControlledUnit)
 	{
-		return {};
+		ControlledUnit = Cast<AGDUnit>(GetPawn());
 	}
-
-	Algo::Sort(Enemies, [CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit)](const AGDUnit* Lhs, const AGDUnit* Rhs)
-	{
-		return IGDTileElement::Execute_GetTile(Lhs)->GetDistanceFrom(CurrentTile) <
-			IGDTileElement::Execute_GetTile(Rhs)->GetDistanceFrom(CurrentTile);
-	});
-
-	return Enemies;
 }

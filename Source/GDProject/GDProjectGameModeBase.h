@@ -23,6 +23,7 @@ protected:
 	TMap<int, bool> Players;
 
 	TSet<AGDUnit*> AIUnits;
+	AGDUnit* CurrentAIUnit;
 
 	UPROPERTY(BlueprintReadOnly)
 	int CurrentPlayerTurn;

@@ -123,14 +123,23 @@ void AGDProjectGameModeBase::Tick(float DeltaSeconds)
 	if (AIUnits.Num() > 0 && !Cast<AGDPlayerPawn>(GetWorld()->GetFirstPlayerController()->GetPawn())->
 		IsAnyEntityActive())
 	{
-		AGDAIControllerBase* AIController = Cast<AGDAIControllerBase>((*AIUnits.begin())->GetController());
-		AIController->Play();
-	
-		AIUnits.Remove(*AIUnits.begin());
-	
-		if (AIUnits.Num() == 0)
+		if (!CurrentAIUnit)
 		{
-			EndTurn();
+			CurrentAIUnit = *AIUnits.begin();
+			CurrentAIUnit->AddOutline(FColor::Red);
+			AIUnits.Remove(CurrentAIUnit);
+			AGDAIControllerBase* AIController = Cast<AGDAIControllerBase>(CurrentAIUnit->GetController());
+			AIController->Play();
+		}
+		else
+		{
+			CurrentAIUnit->RemoveOutline();
+			CurrentAIUnit = nullptr;
+
+			if (AIUnits.Num() == 0)
+			{
+				EndTurn();
+			}
 		}
 	}
 }

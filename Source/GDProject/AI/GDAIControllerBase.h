@@ -14,10 +14,24 @@ class GDPROJECT_API AGDAIControllerBase : public AAIController
 	GENERATED_BODY()
 
 public:
-	void Play();
+	virtual void Play();
 
-private:
-
-	TArray<AGDUnit*> GetEnemiesSortedByDistance() const;
+protected:
+	UPROPERTY()
+	AGDUnit* ControlledUnit;
 	
+	virtual TArray<AGDUnit*> GetEnemiesSortedByDistance() const;
+
+	virtual void ComputeActions();
+
+	virtual bool ShouldUseSpecial();
+
+	virtual void UseSpecial();
+
+	virtual void Attack();
+
+	virtual void Move();
+	
+private:
+	void SetControlledUnit();
 };
