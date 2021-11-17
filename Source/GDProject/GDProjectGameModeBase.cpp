@@ -7,6 +7,7 @@
 #include "Player/GDPlayerPawn.h"
 #include "GDProject/Units/GDUnit.h"
 #include "AI/GDAIControllerBase.h"
+#include "AI/GDAIControllerMedium.h"
 
 AGDProjectGameModeBase::AGDProjectGameModeBase()
 {
@@ -47,7 +48,16 @@ void AGDProjectGameModeBase::OnTurnBegin()
 
 	if (CurrentPlayerTurn != 0)
 	{
-		AIUnits = PlayersUnits[CurrentPlayerTurn];
+		AIUnits = PlayersUnits[CurrentPlayerTurn].Array();
+
+		for (int32 i = 0; i <= AIUnits.Num() - 1; ++i)
+		{
+			const int32 Index = FMath::RandRange(i, AIUnits.Num() - 1);
+			if (i != Index)
+			{
+				AIUnits.Swap(i, Index);
+			}
+		}
 	}
 }
 
@@ -128,18 +138,24 @@ void AGDProjectGameModeBase::Tick(float DeltaSeconds)
 			CurrentAIUnit = *AIUnits.begin();
 			CurrentAIUnit->AddOutline(FColor::Red);
 			AIUnits.Remove(CurrentAIUnit);
-			AGDAIControllerBase* AIController = Cast<AGDAIControllerBase>(CurrentAIUnit->GetController());
-			AIController->Play();
+
+			AGDAIControllerBase* AIControllerB = Cast<AGDAIControllerBase>(CurrentAIUnit->GetController());
+			AIControllerB->Play();
 		}
 		else
 		{
 			CurrentAIUnit->RemoveOutline();
 			CurrentAIUnit = nullptr;
+		}
+	}
+	else if (AIUnits.Num() == 0 && CurrentAIUnit)
+	{
+		CurrentAIUnit->RemoveOutline();
+		CurrentAIUnit = nullptr;
 
-			if (AIUnits.Num() == 0)
-			{
-				EndTurn();
-			}
+		if (AIUnits.Num() == 0)
+		{
+			EndTurn();
 		}
 	}
 }

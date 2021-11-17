@@ -10,7 +10,7 @@
 void AGDAIControllerBase::Play()
 {
 	SetControlledUnit();
-	
+
 	if (!ControlledUnit)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AIController unit not set."))
@@ -23,11 +23,7 @@ void AGDAIControllerBase::Play()
 	{
 		UseSpecial();
 	}
-	else if (ControlledUnit->HighlightedEnemyTilesInRange.Num() > 0)
-	{
-		Attack();
-	}
-	else
+	else if (!Attack())
 	{
 		Move();
 	}
@@ -71,28 +67,50 @@ void AGDAIControllerBase::UseSpecial()
 {
 }
 
-void AGDAIControllerBase::Attack()
+AGDTile* AGDAIControllerBase::GetAttackTargetTile()
 {
-	AGDTile* CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit);
+	AGDTile* TargetEnemyTile{nullptr};
 
-	AGDUnit* NearestEnemy{nullptr};
+	AGDTile* CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit);
 
 	for (const auto& Tile : ControlledUnit->HighlightedEnemyTilesInRange)
 	{
-		if (NearestEnemy == nullptr || IGDTileElement::Execute_GetTile(NearestEnemy)->GetDistanceFrom(CurrentTile) >
-			Tile->
-			GetDistanceFrom(CurrentTile))
+		ControlledUnit->ComputeAttackPath(Tile);
+		if (ControlledUnit->MovementPath.Num() > 0)
 		{
-			NearestEnemy = Cast<AGDUnit>(Tile->GetTileElement());
+			if (TargetEnemyTile == nullptr || TargetEnemyTile->GetDistanceFrom(CurrentTile) > Tile->GetDistanceFrom(
+				CurrentTile))
+			{
+				TargetEnemyTile = Tile;
+			}
 		}
 	}
 
-	if (NearestEnemy)
+	return TargetEnemyTile;
+}
+
+bool AGDAIControllerBase::CanAttack()
+{
+	return true;
+}
+
+bool AGDAIControllerBase::ShouldAttack()
+{
+	return true;
+}
+
+bool AGDAIControllerBase::Attack()
+{
+	AGDTile* TargetEnemyTile = GetAttackTargetTile();
+
+	if(TargetEnemyTile != nullptr)
 	{
-		AGDTile* TargetEnemyTile = IGDTileElement::Execute_GetTile(NearestEnemy);
 		ControlledUnit->ComputeAttackPath(TargetEnemyTile);
 		ControlledUnit->RequestAction(TargetEnemyTile);
 	}
+
+	return TargetEnemyTile != nullptr;
+
 }
 
 void AGDAIControllerBase::Move()

@@ -21,6 +21,10 @@ public:
 
 	bool HasFullHealth() const;
 
+	float GetCurrentHealth() const;
+	
+	float GetMaxHealth() const;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Health")
 	float DefaultHealth;

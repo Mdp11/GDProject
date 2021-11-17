@@ -27,6 +27,7 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 
 	friend class UGDHitNotify;
 	friend class AGDAIControllerBase;
+	friend class AGDAIControllerMedium;
 
 public:
 	AGDUnit();
@@ -82,7 +83,7 @@ protected:
 	bool bIsDead;
 
 	bool bWarp;
-	
+
 	bool bIsAIControlled;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -276,6 +277,12 @@ public:
 	float GetDefence() const;
 
 	bool HasFullHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth() const;
 
 	void AddOutline(const FLinearColor& OutlineColor);
 

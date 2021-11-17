@@ -22,7 +22,9 @@ protected:
 
 	TMap<int, bool> Players;
 
-	TSet<AGDUnit*> AIUnits;
+	TArray<AGDUnit*> AIUnits;
+
+	UPROPERTY()
 	AGDUnit* CurrentAIUnit;
 
 	UPROPERTY(BlueprintReadOnly)
