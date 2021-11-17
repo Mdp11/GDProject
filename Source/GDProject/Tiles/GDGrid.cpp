@@ -40,7 +40,14 @@ void AGDGrid::BuildMap()
 
 	int RowIndex = 0;
 	int ColumnIndex = 0;
-
+	
+	int RowScheme = 1;
+	int ColumnScheme = 1;
+	
+	GenerateGrid();
+	// UE_LOG(LogTemp, Display, TEXT("Tile type %i"), TileScheme[RowIndex][ColumnIndex]);
+	// UE_LOG(LogTemp, Display, TEXT("Tile type %i"), TileScheme[RowIndex][ColumnIndex]);
+	
 	for (int32 BlockIndex = 0; BlockIndex < NumBlocks; BlockIndex++)
 	{
 		const float XOffset = (BlockIndex / Width) * BlockSpacing;
@@ -50,21 +57,17 @@ void AGDGrid::BuildMap()
 
 		AGDTile* NewTile;
 
-		GenerateGrid();
-
-		//UE_LOG(LogTemp, Display, TEXT("Tile type %i"), TileScheme[RowIndex][ColumnIndex]);
-
-		if (TileScheme[RowIndex][ColumnIndex] == LOWLAND)
+		if (TileScheme[RowScheme][ColumnScheme] == LOWLAND)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(BaseTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTile>(LowlandTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
-		else if (TileScheme[RowIndex][ColumnIndex] == FOREST)
+		else if (TileScheme[RowScheme][ColumnScheme] == FOREST)
 		{
 			NewTile = GetWorld()->SpawnActor<AGDTile>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
-		else if (TileScheme[RowIndex][ColumnIndex] == RIVER)
+		else if (TileScheme[RowScheme][ColumnScheme] == RIVER)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(BaseTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTile>(RiverTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else
 		{
@@ -77,11 +80,14 @@ void AGDGrid::BuildMap()
 			NewTile->SetCoordinates({RowIndex, ColumnIndex});
 			Tiles[RowIndex][ColumnIndex] = NewTile;
 		}
-
+		
+		ColumnScheme++;
 		if (++ColumnIndex == Width)
 		{
 			RowIndex++;
 			ColumnIndex = 0;
+			RowScheme++;
+			ColumnScheme = 1;
 		}
 	}
 }
@@ -254,16 +260,17 @@ int32 AGDGrid::GetSize() const
 void AGDGrid::GenerateGrid()
 {
 	TArray<int> TileMapRow;
-	TileMapRow.Init(BASE_TILE, Width);
-	TileScheme.Init(TileMapRow, Height);
+	TileMapRow.Init(BASE_TILE, (Width + 2));
+	TileScheme.Init(TileMapRow, (Height + 2));
 	//Shuffle the pairs of coordinates to build the grid selecting random tile for iteration
 	TArray<TPair<int, int>> Undefined_Tiles;
-	for (int i = 1; i < Height - 1; i++)
+	for (int i = 1; i < (Width + 1); i++)
 	{
-		for (int j = 1; j < Width - 1; j++)
+		for (int j = 1; j < (Height + 1) ; j++)
 		{
 			TPair<int, int> Tmp(i, j);
 			Undefined_Tiles.Push(Tmp);
+			UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), i, j);
 		}
 	}
 	ShufflePositions(Undefined_Tiles);
@@ -271,7 +278,7 @@ void AGDGrid::GenerateGrid()
 	{
 		int Row = Undefined_Tiles[i].Key;
 		int Col = Undefined_Tiles[i].Value;
-		UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), Row, Col);
+		// UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), Row, Col);
 		const TPair<int, int> Tile(Row, Col);
 		TileScheme[Row][Col] = ComputeTileType(Tile);
 	}
@@ -282,8 +289,8 @@ TArray<int> AGDGrid::SurroundCheck(TPair<int, int> Tile)
 	TArray<int> SurroundCount;
 	SurroundCount.Init(0, 3);
 
-	int Row = Tile.Key;
-	int Col = Tile.Value;
+	const int Row = Tile.Key;
+	const int Col = Tile.Value;
 
 	TArray<int> Surround{
 		TileScheme[Row - 1][Col - 1], TileScheme[Row - 1][Col], TileScheme[Row - 1][Col + 1],
@@ -347,9 +354,6 @@ int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 		scaled_ForestWeight = (Forest_Percentage * surround_weight) + ForestWeight;
 		scaled_RiverWeight = (River_Percentage * surround_weight) + RiverWeight; 
 	}
-	UE_LOG(LogTemp, Error, TEXT("scaled_LowlandWeight, %f"), scaled_LowlandWeight);
-	UE_LOG(LogTemp, Error, TEXT("scaled_ForestWeight, %f"), scaled_ForestWeight);
-	UE_LOG(LogTemp, Error, TEXT("scaled_RiverWeight, %f"), scaled_RiverWeight);
 
 	const float ForestValue = scaled_LowlandWeight + scaled_ForestWeight;
 
