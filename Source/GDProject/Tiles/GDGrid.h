@@ -42,8 +42,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
 	float Forest_Percentage;
 
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	// float River_Percentage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
-	float River_Percentage;
+	float Rock_Percentage;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float BlockSpacing;
@@ -59,6 +62,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDTile> RiverTileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDTile> RockTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDUnit> TileUnitClassDummy;

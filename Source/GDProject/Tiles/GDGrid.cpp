@@ -20,7 +20,7 @@ AGDGrid::AGDGrid()
 #define BASE_TILE 0
 #define LOWLAND 1
 #define FOREST 2
-#define RIVER 3
+#define ROCK 3
 
 void AGDGrid::BeginPlay()
 {
@@ -65,9 +65,9 @@ void AGDGrid::BuildMap()
 		{
 			NewTile = GetWorld()->SpawnActor<AGDTile>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
-		else if (TileScheme[RowScheme][ColumnScheme] == RIVER)
+		else if (TileScheme[RowScheme][ColumnScheme] == ROCK)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(RiverTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTile>(RockTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else
 		{
@@ -308,7 +308,7 @@ TArray<int> AGDGrid::SurroundCheck(TPair<int, int> Tile)
 		{
 			SurroundCount[1] += 1;
 		}
-		else if (Surround[i] == RIVER)
+		else if (Surround[i] == ROCK)
 		{
 			SurroundCount[2] += 1;
 		}
@@ -335,10 +335,10 @@ int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 	int row = Tile.Key;
 	int col = Tile.Value;
 	
-	if (RiverWeight > 0 && (TileScheme[row - 1][col] == RIVER ||
-		TileScheme[row + 1][col] == RIVER ||
-		TileScheme[row][col - 1] == RIVER ||
-		TileScheme[row][col + 1] == RIVER))
+	if (RiverWeight > 0 && (TileScheme[row - 1][col] == ROCK ||
+		TileScheme[row + 1][col] == ROCK ||
+		TileScheme[row][col - 1] == ROCK ||
+		TileScheme[row][col + 1] == ROCK))
 	{
 		float new_river_prob = 0.95;
 		float new_forest_prob = 0.03;
@@ -352,7 +352,7 @@ int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 	{
 		scaled_LowlandWeight = (Lowland_Percentage * surround_weight) + LowlandWeight;
 		scaled_ForestWeight = (Forest_Percentage * surround_weight) + ForestWeight;
-		scaled_RiverWeight = (River_Percentage * surround_weight) + RiverWeight; 
+		scaled_RiverWeight = (Rock_Percentage * surround_weight) + RiverWeight; 
 	}
 
 	const float ForestValue = scaled_LowlandWeight + scaled_ForestWeight;
@@ -368,6 +368,6 @@ int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 	}
 	else
 	{
-		return RIVER;
+		return ROCK;
 	}
 }
