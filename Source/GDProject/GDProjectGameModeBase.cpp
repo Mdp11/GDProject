@@ -7,7 +7,6 @@
 #include "Player/GDPlayerPawn.h"
 #include "GDProject/Units/GDUnit.h"
 #include "AI/GDAIControllerBase.h"
-#include "AI/GDAIControllerMedium.h"
 
 AGDProjectGameModeBase::AGDProjectGameModeBase()
 {
