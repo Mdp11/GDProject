@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "GDProject/Tiles/GDTile.h"
 #include "GDAIControllerBase.generated.h"
 
+class AGDTile;
 class AGDUnit;
 
 UCLASS()
@@ -20,6 +20,8 @@ public:
 protected:
 	UPROPERTY()
 	AGDUnit* ControlledUnit;
+
+	TArray<AGDTile*> AttackableTiles;
 
 	virtual TArray<AGDUnit*> GetEnemiesSortedByDistance() const;
 
@@ -35,9 +37,11 @@ protected:
 
 	virtual bool ShouldAttack();
 
-	virtual bool Attack();
+	virtual void Attack();
 
 	virtual void Move();
+
+	virtual void ComputeAttackableTiles();
 
 private:
 	void SetControlledUnit();

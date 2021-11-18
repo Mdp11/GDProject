@@ -7,6 +7,7 @@
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 
+
 void AGDAIControllerBase::Play()
 {
 	SetControlledUnit();
@@ -23,10 +24,16 @@ void AGDAIControllerBase::Play()
 	{
 		UseSpecial();
 	}
-	else if (!Attack())
+	else if (AttackableTiles.Num() > 0)
+	{
+		Attack();
+	}
+	else
 	{
 		Move();
 	}
+
+	AttackableTiles.Empty();
 }
 
 TArray<AGDUnit*> AGDAIControllerBase::GetEnemiesSortedByDistance() const
@@ -56,6 +63,7 @@ void AGDAIControllerBase::ComputeActions()
 {
 	ControlledUnit->ComputeMovementRange();
 	ControlledUnit->ComputeEnemiesInAttackRange();
+	ComputeAttackableTiles();
 }
 
 bool AGDAIControllerBase::ShouldUseSpecial()
@@ -73,16 +81,12 @@ AGDTile* AGDAIControllerBase::GetAttackTargetTile()
 
 	AGDTile* CurrentTile = IGDTileElement::Execute_GetTile(ControlledUnit);
 
-	for (const auto& Tile : ControlledUnit->HighlightedEnemyTilesInRange)
+	for (const auto& Tile : AttackableTiles)
 	{
-		ControlledUnit->ComputeAttackPath(Tile);
-		if (ControlledUnit->MovementPath.Num() > 0)
+		if (TargetEnemyTile == nullptr || TargetEnemyTile->GetDistanceFrom(CurrentTile) > Tile->GetDistanceFrom(
+			CurrentTile))
 		{
-			if (TargetEnemyTile == nullptr || TargetEnemyTile->GetDistanceFrom(CurrentTile) > Tile->GetDistanceFrom(
-				CurrentTile))
-			{
-				TargetEnemyTile = Tile;
-			}
+			TargetEnemyTile = Tile;
 		}
 	}
 
@@ -99,18 +103,12 @@ bool AGDAIControllerBase::ShouldAttack()
 	return true;
 }
 
-bool AGDAIControllerBase::Attack()
+void AGDAIControllerBase::Attack()
 {
 	AGDTile* TargetEnemyTile = GetAttackTargetTile();
 
-	if(TargetEnemyTile != nullptr)
-	{
-		ControlledUnit->ComputeAttackPath(TargetEnemyTile);
-		ControlledUnit->RequestAction(TargetEnemyTile);
-	}
-
-	return TargetEnemyTile != nullptr;
-
+	ControlledUnit->ComputeAttackPath(TargetEnemyTile);
+	ControlledUnit->RequestAction(TargetEnemyTile);
 }
 
 void AGDAIControllerBase::Move()
@@ -128,6 +126,25 @@ void AGDAIControllerBase::Move()
 	}
 	ControlledUnit->ComputeMovementPath(TargetTile);
 	ControlledUnit->RequestAction(TargetTile);
+}
+
+void AGDAIControllerBase::ComputeAttackableTiles()
+{
+	for (const auto& Tile : ControlledUnit->HighlightedEnemyTilesInRange)
+	{
+		if (ControlledUnit->IsTileInAttackRange(Tile))
+		{
+			AttackableTiles.Push(Tile);
+		}
+		else
+		{
+			ControlledUnit->ComputeAttackPath(Tile);
+			if (ControlledUnit->MovementPath.Num() > 0)
+			{
+				AttackableTiles.Push(Tile);
+			}
+		}
+	}
 }
 
 void AGDAIControllerBase::SetControlledUnit()
