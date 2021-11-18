@@ -270,7 +270,7 @@ void AGDGrid::GenerateGrid()
 		{
 			TPair<int, int> Tmp(i, j);
 			Undefined_Tiles.Push(Tmp);
-			UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), i, j);
+			// UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), i, j);
 		}
 	}
 	ShufflePositions(Undefined_Tiles);

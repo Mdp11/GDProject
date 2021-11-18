@@ -24,25 +24,34 @@ void UGDCameraComponent::BeginPlay()
 	Super::BeginPlay();
 	TArray<AActor*> FoundGridManagerActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
+	int GridManagerX = 0;
+	int GridManagerY = 0;
+	int GridManagerZ = 0;
 	if (FoundGridManagerActors.Num() > 0)
 	{
 		GridManager = Cast<AGDGrid>(FoundGridManagerActors[0]);
 		if (GridManager)
 		{
+			GridManagerX = GridManager->GetActorLocation().X;
+			GridManagerY = GridManager->GetActorLocation().Y;
+			GridManagerZ = GridManager->GetActorLocation().Z;
 			TArray<TArray<AGDTile*>> TilesGrid;
 			UE_LOG(LogTemp, Display, TEXT("grid size, %i"), GridManager->GetSize());
 			GridSize = GridManager->GetSize() - 1;
 			TilesGrid = GridManager->GetTilesGrid();
-			EndPositionY = TilesGrid[0].Last()->GetActorLocation().Y;
-			EndPositionX = TilesGrid.Last()[0]->GetActorLocation().X;
+			EndPositionX = (TilesGrid.Last()[0]->GetActorLocation().X);
+			EndPositionY = (TilesGrid[0].Last()->GetActorLocation().Y);
+			CamerasHeight += GridManagerZ;
 		}
 	}
 
+
+	
 	//Setting camera positions base on grid size
-	Camera0Pos.Set(-CamerasOffset,EndPositionY / 2,CamerasHeight);
-	Camera1Pos.Set(EndPositionX/2, -CamerasOffset, CamerasHeight);
-	Camera2Pos.Set(EndPositionX+CamerasOffset, EndPositionY / 2, CamerasHeight);
-	Camera3Pos.Set(EndPositionX/2, EndPositionY+CamerasOffset, CamerasHeight);
+	Camera0Pos.Set(GridManagerX-CamerasOffset,((EndPositionY+GridManagerY)/2),CamerasHeight);
+	Camera1Pos.Set(((EndPositionX+GridManagerX)/2), GridManagerY - CamerasOffset, CamerasHeight);
+	Camera2Pos.Set(EndPositionX + CamerasOffset, ((EndPositionY+GridManagerY) / 2), CamerasHeight);
+	Camera3Pos.Set(((EndPositionX+GridManagerX)/2), EndPositionY+CamerasOffset, CamerasHeight);
 
 	Camera0Rot.Pitch = -43;
 	Camera0Rot.Yaw = 0;
@@ -92,34 +101,26 @@ void UGDCameraComponent::RotateCamera(int Direction)
 {
 	if (GridSize > 0)
 	{
-		UE_LOG(LogTemp, Display, TEXT("EndPosX, %f"), EndPositionX);
-		UE_LOG(LogTemp, Display, TEXT("EndPosY, %f"), EndPositionY);
-		UE_LOG(LogTemp, Display, TEXT("Direction, %i"), Direction);
 		ActualCameraIndex += Direction;
 		if (ActualCameraIndex < 0) ActualCameraIndex = 3;
 		if (ActualCameraIndex > 3) ActualCameraIndex = 0;
-		UE_LOG(LogTemp, Display, TEXT("Index, %i"), ActualCameraIndex);
 		switch (ActualCameraIndex)
 		{
 		case 0:
 			TargetLocation = Camera0Pos;
 			TargetRotation = Camera0Rot;
-			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 1:
 			TargetLocation = Camera1Pos;
 			TargetRotation = Camera1Rot;
-			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 2:
 			TargetLocation = Camera2Pos;
 			TargetRotation = Camera2Rot;
-			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		case 3:
 			TargetLocation = Camera3Pos;
 			TargetRotation = Camera3Rot;
-			UE_LOG(LogTemp, Display, TEXT("Camera Rot %f, %f, %f"), TargetRotation.Pitch, TargetRotation.Yaw, TargetRotation.Roll);
 			break;
 		}
 	}
