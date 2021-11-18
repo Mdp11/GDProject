@@ -658,7 +658,7 @@ void AGDUnit::ComputeMovementPath(AGDTile* TargetTile)
 
 		const bool bCanReachAndAttackEnemy = TargetTile->IsOccupiedByEnemy(this) && CurrentActionPoints > 1 &&
 			NewMovementPath.Num() <= GetMovementRange();
- 
+
 		const bool bCanReachEmptyTile = !TargetTile->IsOccupied() &&
 			NewMovementPath.Num() <= GetMovementRange() * GetActionPoints();
 

@@ -40,9 +40,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	void SetNextPlayerTurn();
 
 	UFUNCTION(BlueprintCallable)

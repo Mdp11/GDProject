@@ -13,5 +13,4 @@ class GDPROJECT_API AGDAIControllerMedium : public AGDAIControllerBase
 
 protected:
 	virtual AGDTile* GetAttackTargetTile() override;
-	
 };
