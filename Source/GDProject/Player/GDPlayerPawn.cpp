@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraActor.h"
 #include "GDProject/GDProjectGameModeBase.h"
+#include "GDProject/Components/GDCameraComponent.h"
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 #include "GDProject/Items/GDItemBase.h"
@@ -24,24 +25,8 @@ AGDPlayerPawn::AGDPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-	// TArray<AActor*> FoundGridManagerActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDGrid::StaticClass(), FoundGridManagerActors);
-	// UE_LOG(LogTemp, Warning, TEXT("Founded GridManager, %i"), FoundGridManagerActors.Num())
-	// if (FoundGridManagerActors.Num() > 0)
-	// {
-	// 	GridManger = Cast<AGDGrid>(FoundGridManagerActors[0]);
-	// 	if (GridManger) UE_LOG(LogTemp, Error, TEXT("Founded GridManager"));
-	// }
-	// TArray<AActor*> FoundCameraManagerActors;
-	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGDCameraManager::StaticClass(), FoundCameraManagerActors);
-	// UE_LOG(LogTemp, Warning, TEXT("Founded CameraManager, %i"), FoundCameraManagerActors.Num())
-	// if (FoundCameraManagerActors.Num() > 0)
-	// {
-	// 	CameraManger = Cast<AGDCameraManager>(FoundCameraManagerActors[0]);
-	// 	if (CameraManger) UE_LOG(LogTemp, Error, TEXT("Founded CameraManager"));
-	// 	CameraManger->SetGridManager(GridManger);
-	// }
-
+	//Camera component setup
+	CameraManager = CreateDefaultSubobject<UGDCameraComponent>(TEXT("CameraManager"));
 	Inventory = CreateDefaultSubobject<UGDInventoryComponent>(TEXT("Inventory"));
 }
 
@@ -54,8 +39,8 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	DECLARE_DELEGATE_OneParam(FDelegate_RemoveSelection, bool);
 	PlayerInputComponent->BindAction<FDelegate_RemoveSelection>("RemoveSelection", EInputEvent::IE_Pressed, this,
 	                                                            &AGDPlayerPawn::DeselectTileElement, true);
-	// PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
-	// PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
+	PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
+	PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
 }
 
 void AGDPlayerPawn::OnTurnBegin()
@@ -229,13 +214,13 @@ void AGDPlayerPawn::TriggerClick()
 void AGDPlayerPawn::RotateCameraLeft()
 {
 	UE_LOG(LogTemp, Error, TEXT("Rotating Left"));
-	if (CameraManger) CameraManger->RotateCamera(1);
+	if (CameraManager) CameraManager->RotateCamera(1);
 }
 
 void AGDPlayerPawn::RotateCameraRight()
 {
 	UE_LOG(LogTemp, Error, TEXT("Rotating Right"));
-	if (CameraManger) CameraManger->RotateCamera(-1);
+	if (CameraManager) CameraManager->RotateCamera(-1);
 }
 
 void AGDPlayerPawn::SelectTileElement()

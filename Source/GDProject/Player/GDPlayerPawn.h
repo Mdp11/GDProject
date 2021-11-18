@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "GDProject/Camera/GDCameraManager.h"
 #include "GDProject/Tiles/GDGrid.h"
 
 #include "GDPlayerPawn.generated.h"
@@ -21,14 +20,15 @@ public:
 	AGDPlayerPawn();
 
 protected:
-	UPROPERTY(EditAnywhere)
-	AGDCameraManager* CameraManger;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGDCameraComponent* CameraManager;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	class UGDInventoryComponent* Inventory;
 
 	UPROPERTY(EditAnywhere)
-	AGDGrid* GridManger;
+	AGDGrid* GridManager;
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
 	AGDTile* HoveringTile;

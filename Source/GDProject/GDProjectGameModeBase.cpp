@@ -138,8 +138,11 @@ void AGDProjectGameModeBase::Tick(float DeltaSeconds)
 			CurrentAIUnit->AddOutline(FColor::Red);
 			AIUnits.Remove(CurrentAIUnit);
 
-			AGDAIControllerBase* AIControllerB = Cast<AGDAIControllerBase>(CurrentAIUnit->GetController());
-			AIControllerB->Play();
+			AGDAIControllerBase* AIController = Cast<AGDAIControllerBase>(CurrentAIUnit->GetController());
+			if (AIController)
+			{
+				AIController->Play();
+			}
 		}
 		else
 		{
