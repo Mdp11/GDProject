@@ -35,7 +35,6 @@ void AGDGrid::BuildMap()
 
 	TArray<AGDTile*> SampleRow;
 	SampleRow.Init(nullptr, Width);
-
 	Tiles.Init(SampleRow, Height);
 
 	int RowIndex = 0;
