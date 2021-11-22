@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "GDPoIBattle.h"
+#include "GDPoIBonfire.h"
 #include "GDPointOfInterest.h"
 #include "GameFramework/Actor.h"
 #include "GDMapGenerator.generated.h"
@@ -30,15 +32,21 @@ public:
 	int32 MaxNodeLevel;
 	
     UPROPERTY(EditAnywhere)
-    int32 NodeHorizontalDistance = 4000;
+    int32 NodeHorizontalDistance;
 
 	UPROPERTY(EditAnywhere)
-	int32 NodeVerticallDistance = 2300;
+	int32 NodeVerticallDistance;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDPointOfInterest> BasePOI;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDPointOfInterest> BattlePOI;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDPointOfInterest> BonfirePOI;
+
+	
 	struct PoINode
 	{
 		AGDPointOfInterest* PoI;
