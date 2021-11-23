@@ -21,16 +21,16 @@ class GDPROJECT_API IGDTileElement
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
-	AGDTile* GetTile();
+	AGDTile* GetTile() const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
 	void SetTile(AGDTile* Tile);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
-	bool CanBeSelected();
+	bool CanBeSelected() const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
-	bool CanMove();
+	bool CanMove() const;
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Tiles")
 	void Select();

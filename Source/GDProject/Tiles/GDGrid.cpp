@@ -4,6 +4,7 @@
 #include "GDGrid.h"
 
 #include "GDTile.h"
+#include "GDProject/Units/GDUnit.h"
 
 AGDGrid::AGDGrid()
 {
@@ -114,7 +115,7 @@ const TArray<TArray<AGDTile*>>& AGDGrid::GetTilesGrid() const
 #define G_SCORE Key
 #define F_SCORE Value
 
-TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile)
+TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, AGDUnit* MovingUnit)
 {
 	//Map having tiles as keys and g/h values in pair
 	TMap<AGDTile*, TPair<float, float>> Grid;
@@ -155,17 +156,28 @@ TArray<AGDTile*> AGDGrid::ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* T
 
 			float TentativeGScore = Grid[CurrentTile].G_SCORE + 1.f;
 
+			//Increase score if enemy will attack when walking on that tile
+			if (MovingUnit && Neighbour->HasGuardingUnits())
+			{
+				for (auto& GuardingUnit : Neighbour->GetGuardingUnits())
+				{
+					if (MovingUnit->IsEnemy(GuardingUnit))
+					{
+						TentativeGScore += 0.5f;
+					}
+				}
+			}
+
+			//Slightly increase score if there's a turn (to prefer straighter paths)
 			AGDTile** PreviousTilePointer = CameFrom.Find(CurrentTile);
 			if (PreviousTilePointer)
 			{
 				AGDTile* PreviousTile = *PreviousTilePointer;
-				if (PreviousTile->GetCoordinates().X == CurrentTile->GetCoordinates().X && CurrentTile->
-					GetCoordinates()
-					.X != Neighbour->GetCoordinates().X ||
-					PreviousTile->GetCoordinates().Y == CurrentTile->GetCoordinates().Y && CurrentTile->
-					GetCoordinates().Y != Neighbour->GetCoordinates().Y)
+				if (PreviousTile->GetCoordinates().X == CurrentTile->GetCoordinates().X && CurrentTile->GetCoordinates()
+					.X != Neighbour->GetCoordinates().X || PreviousTile->GetCoordinates().Y == CurrentTile->
+					GetCoordinates().Y && CurrentTile->GetCoordinates().Y != Neighbour->GetCoordinates().Y)
 				{
-					TentativeGScore += 0.6f;
+					TentativeGScore += 0.2f;
 				}
 			}
 
