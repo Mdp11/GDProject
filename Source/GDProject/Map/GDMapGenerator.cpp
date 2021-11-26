@@ -10,8 +10,10 @@
 #include "Math/UnrealMathUtility.h"
 
 #define BASE_POI 1
-#define BATTLE_POI 2
-#define BONFIRE_POI 3
+#define BONFIRE_POI 2
+#define BATTLE_0_POI 3
+#define BATTLE_1_POI 4
+#define BATTLE_2_POI 5
 
 
 
@@ -62,29 +64,41 @@ void AGDMapGenerator::BeginPlay()
 		UE_LOG(LogTemp, Display, TEXT("Generate lvl %i"), i)
 		for (int j = 0; j < MaxNodeLevel; j++)
 		{
-			if (Map[i][j] == BATTLE_POI)
+			AGDPointOfInterest* NewPOI;
+			PoINode* NewNode;
+			UE_LOG(LogTemp, Display, TEXT("Generate POI %i"), Map[i][j])
+			if (Map[i][j] == 0) continue;
+			switch (Map[i][j])
 			{
-				UE_LOG(LogTemp, Display, TEXT("BATTLE loc %f - %f"), POI_Location.X, POI_Location.Y)
-	            AGDPointOfInterest* NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(BattlePOI, POI_Location, FRotator(0, 0, 0));
-				PoINode* NewNode = new PoINode(NewPOI, POI_Location, i);
-				PoIList.Add(NewNode);
-				POI_Location.Y += NodeHorizontalDistance;
+				case BATTLE_0_POI:
+					UE_LOG(LogTemp, Display, TEXT("BATTLE 0 loc %f - %f"), POI_Location.X, POI_Location.Y)
+                    NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_0_POI, POI_Location, FRotator(0, 0, 0));
+                	PoIList.Add(NewNode);
+                	POI_Location.Y += NodeHorizontalDistance;
+					break;
+				case BATTLE_1_POI:
+					UE_LOG(LogTemp, Display, TEXT("BATTLE 1 loc %f - %f"), POI_Location.X, POI_Location.Y)
+					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_1_POI, POI_Location, FRotator(0, 0, 0));
+					POI_Location.Y += NodeHorizontalDistance;
+					break;
+				case BATTLE_2_POI:
+					UE_LOG(LogTemp, Display, TEXT("BATTLE 2 loc %f - %f"), POI_Location.X, POI_Location.Y)
+					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_2_POI, POI_Location, FRotator(0, 0, 0));
+					POI_Location.Y += NodeHorizontalDistance;
+				break;
+				case BONFIRE_POI:
+					UE_LOG(LogTemp, Display, TEXT("BONFIRE loc %f - %f"), POI_Location.X, POI_Location.Y)
+					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(BonfirePOI, POI_Location, FRotator(0, 0, 0));
+					POI_Location.Y += NodeHorizontalDistance;
+				break;
+				default:
+					UE_LOG(LogTemp, Display, TEXT("BASE loc %f - %f"), POI_Location.X, POI_Location.Y)
+					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(BasePOI, POI_Location, FRotator(0, 0, 0));
+					POI_Location.Y += NodeHorizontalDistance;
+				break;
 			}
-			else if (Map[i][j] == BONFIRE_POI)
-			{
-				UE_LOG(LogTemp, Display, TEXT("BONFIRE loc %f - %f"), POI_Location.X, POI_Location.Y)
-				AGDPointOfInterest* NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(BonfirePOI, POI_Location, FRotator(0, 0, 0));
-				PoINode* NewNode = new PoINode(NewPOI, POI_Location, i);
-				PoIList.Add(NewNode);
-				POI_Location.Y += NodeHorizontalDistance;
-			} else if (Map[i][j] == BASE_POI)
-			{
-				UE_LOG(LogTemp, Display, TEXT("PoI loc %f - %f"), POI_Location.X, POI_Location.Y)
-				AGDPointOfInterest* NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(BasePOI, POI_Location, FRotator(0, 0, 0));
-				PoINode* NewNode = new PoINode(NewPOI, POI_Location, i);
-				PoIList.Add(NewNode);
-				POI_Location.Y += NodeHorizontalDistance;
-			}
+			NewNode = new PoINode(NewPOI, POI_Location, i);
+			PoIList.Add(NewNode);
 		}
 		POI_Location.X += NodeVerticallDistance;
 	}
@@ -101,11 +115,19 @@ void AGDMapGenerator::GenerateMapScheme()
 	
 	for (int i = 1; i < Levels; i++)
 	{
-
 		int levelPoI = FMath::RandRange(2, MaxNodeLevel);
+		int Hard_PoI = 1;
+		int Medium_PoI = 1;
+		int BattlePOIDiff = 3;
 		for (int j = 0; j < levelPoI; j++)
 		{
-			Map[i][j] = BATTLE_POI;
+			if (Hard_PoI || Medium_PoI)
+			{
+				BattlePOIDiff = FMath::RandRange(BATTLE_0_POI, BATTLE_2_POI);
+				if (BattlePOIDiff == BATTLE_1_POI) Medium_PoI--;
+				if (BattlePOIDiff == BATTLE_2_POI) Hard_PoI--;
+			}
+			Map[i][j] = BattlePOIDiff;
 		}
 		if(--RestoreCount == 0)
         {

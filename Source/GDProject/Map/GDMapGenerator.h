@@ -41,8 +41,14 @@ public:
 	TSubclassOf<AGDPointOfInterest> BasePOI;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AGDPointOfInterest> BattlePOI;
+	TSubclassOf<AGDPointOfInterest> Battle_0_POI;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDPointOfInterest> Battle_1_POI;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDPointOfInterest> Battle_2_POI;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDPointOfInterest> BonfirePOI;
 
