@@ -26,6 +26,8 @@ class GDPROJECT_API AGDUnit : public ACharacter, public IGDTileElement
 	GENERATED_BODY()
 
 	friend class UGDHitNotify;
+	friend class AGDAIControllerBase;
+	friend class AGDAIControllerMedium;
 
 public:
 	AGDUnit();
@@ -81,6 +83,8 @@ protected:
 	bool bIsDead;
 
 	bool bWarp;
+
+	bool bIsAIControlled;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bMoveRequested;
@@ -185,7 +189,7 @@ protected:
 
 	virtual bool IsTileInAttackRange(AGDTile* Tile) const;
 
-	bool IsTileInAttackRangeFromTile(AGDTile* SourceTile, AGDTile* TargetTile) const;
+	bool IsTileInAttackRangeFromTile(const AGDTile* SourceTile, AGDTile* TargetTile) const;
 
 	virtual bool IsCriticalHit();
 
@@ -237,13 +241,13 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-	virtual AGDTile* GetTile_Implementation() override;
+	virtual AGDTile* GetTile_Implementation() const override;
 
 	virtual void SetTile_Implementation(AGDTile* Tile) override;
 
-	virtual bool CanBeSelected_Implementation() override;
+	virtual bool CanBeSelected_Implementation() const override;
 
-	virtual bool CanMove_Implementation() override;
+	virtual bool CanMove_Implementation() const override;
 
 	virtual void Select_Implementation() override;
 
@@ -257,7 +261,7 @@ public:
 
 	void Rotate();
 
-	bool IsEnemy(AGDUnit* OtherUnit) const;
+	bool IsEnemy(const AGDUnit* OtherUnit) const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetOwningPlayer(int NewOwningPlayer);
@@ -273,6 +277,12 @@ public:
 	float GetDefence() const;
 
 	bool HasFullHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth() const;
 
 	void AddOutline(const FLinearColor& OutlineColor);
 
@@ -292,15 +302,15 @@ private:
 
 	TArray<AGDTile*> MovementPath;
 
-	void HighlightMovementPath(AGDTile* TargetTile);
+	void ComputeMovementPath(AGDTile* TargetTile);
 
-	void HighlightAttackPath(AGDTile* TargetTile);
+	void ComputeAttackPath(AGDTile* TargetTile);
 
-	void HighlightMovementRange();
+	void ComputeMovementRange();
 
-	void HighlightEnemiesInAttackRange();
+	void ComputeEnemiesInAttackRange();
 
-	bool IsTileInRangeOfAction(AGDTile* Tile) const;
+	bool IsTileInRangeOfAction(const AGDTile* Tile) const;
 };
 
 EDirection GetOppositeDirection(const EDirection Direction);
