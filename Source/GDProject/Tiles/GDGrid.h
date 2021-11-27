@@ -107,7 +107,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Material")
 	class UMaterial* EnemyDecalMaterial;
 
-	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile);
+	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, AGDUnit* MovingUnit);
 
 	TSet<AGDTile*> GetTilesAtDistance(AGDTile* StartTile, int Distance) const;
 

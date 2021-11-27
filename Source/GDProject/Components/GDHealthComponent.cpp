@@ -13,6 +13,16 @@ bool UGDHealthComponent::HasFullHealth() const
 	return CurrentHealth == DefaultHealth;
 }
 
+float UGDHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
+float UGDHealthComponent::GetMaxHealth() const
+{
+	return DefaultHealth;
+}
+
 void UGDHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
