@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 
+#include "GDTileForest.h"
+#include "GDTileLowland.h"
+#include "GDTileRocks.h"
 #include "GameFramework/Actor.h"
 
 #include "GDGrid.generated.h"
@@ -55,16 +58,16 @@ protected:
 	TSubclassOf<AGDTile> BaseTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AGDTile> LowlandTileClass;
+	TSubclassOf<AGDTileLowland> LowlandTileClass;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AGDTile> ForestTileClass;
+	TSubclassOf<AGDTileForest> ForestTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDTile> RiverTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AGDTile> RockTileClass;
+	TSubclassOf<AGDTileRocks> RockTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDUnit> TileUnitClassDummy;

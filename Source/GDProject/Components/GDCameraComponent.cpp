@@ -53,19 +53,19 @@ void UGDCameraComponent::BeginPlay()
 	Camera2Pos.Set(EndPositionX + CamerasOffset, ((EndPositionY+GridManagerY) / 2), CamerasHeight);
 	Camera3Pos.Set(((EndPositionX+GridManagerX)/2), EndPositionY+CamerasOffset, CamerasHeight);
 
-	Camera0Rot.Pitch = -43;
+	Camera0Rot.Pitch = -CameraAngle;
 	Camera0Rot.Yaw = 0;
 	Camera0Rot.Roll = 0;
 
-	Camera1Rot.Pitch = -43;
+	Camera1Rot.Pitch = -CameraAngle;
 	Camera1Rot.Yaw = Camera0Rot.Yaw + 90;
 	Camera1Rot.Roll = 0;
 	
-	Camera2Rot.Pitch = -43;
+	Camera2Rot.Pitch = -CameraAngle;
 	Camera2Rot.Yaw = Camera0Rot.Yaw + 180;
 	Camera2Rot.Roll = 0;
 	
-	Camera3Rot.Pitch = -43;
+	Camera3Rot.Pitch = -CameraAngle;
 	Camera3Rot.Yaw = Camera0Rot.Yaw - 90;
 	Camera3Rot.Roll = 0;
 	
@@ -73,7 +73,7 @@ void UGDCameraComponent::BeginPlay()
 	TargetLocation = Camera0Pos;
 	TargetRotation = Camera0Rot;
 	Camera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), Camera0Pos, Camera0Rot);
-	Camera->GetCameraComponent()->SetFieldOfView(94.f);
+	Camera->GetCameraComponent()->SetFieldOfView(CameraFOV);
 	PlayerController->SetViewTarget(Camera);
 }
 

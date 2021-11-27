@@ -58,15 +58,15 @@ void AGDGrid::BuildMap()
 
 		if (TileScheme[RowScheme][ColumnScheme] == LOWLAND)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(LowlandTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileLowland>(LowlandTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else if (TileScheme[RowScheme][ColumnScheme] == FOREST)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileForest>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else if (TileScheme[RowScheme][ColumnScheme] == ROCK)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(RockTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileRocks>(RockTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else
 		{
@@ -318,46 +318,47 @@ TArray<int> AGDGrid::SurroundCheck(TPair<int, int> Tile)
 int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 {
 	TArray<int> SurroundCount = SurroundCheck(Tile);
-	float LowlandWeight = SurroundCount[0] / 8.f;
-	float ForestWeight = SurroundCount[1] / 8.f;
-	float RiverWeight = SurroundCount[2] / 8.f;
+	const float LowlandWeight = SurroundCount[0] / 8.f;
+	const float ForestWeight = SurroundCount[1] / 8.f;
+	const float RiverWeight = SurroundCount[2] / 8.f;
 
 	float Weight_Sum = LowlandWeight + ForestWeight + RiverWeight;
 
 	//Calcolo del valore per scalare i pesi circostanti
 	float surround_weight = 1 - Weight_Sum;
 
-	float scaled_LowlandWeight;
-	float scaled_ForestWeight;
-	float scaled_RiverWeight;
+	float Scaled_LowlandWeight;
+	float Scaled_ForestWeight;
+	float Scaled_RiverWeight;
 
 	int row = Tile.Key;
 	int col = Tile.Value;
 	
-	if (RiverWeight > 0 && (TileScheme[row - 1][col] == ROCK ||
-		TileScheme[row + 1][col] == ROCK ||
-		TileScheme[row][col - 1] == ROCK ||
-		TileScheme[row][col + 1] == ROCK))
-	{
-		float new_river_prob = 0.95;
-		float new_forest_prob = 0.03;
-		float new_lowland_prob = 0.02;
+	// if (RiverWeight > 0 && (TileScheme[row - 1][col] == ROCK ||
+	// 	TileScheme[row + 1][col] == ROCK ||
+	// 	TileScheme[row][col - 1] == ROCK ||
+	// 	TileScheme[row][col + 1] == ROCK))
+	// {
+	// 	float new_river_prob = 0.95;
+	// 	float new_forest_prob = 0.03;
+	// 	float new_lowland_prob = 0.02;
+	//
+	// 	Scaled_LowlandWeight = (new_lowland_prob * surround_weight) + LowlandWeight;
+	// 	Scaled_ForestWeight = (new_forest_prob * surround_weight) + ForestWeight;
+	// 	Scaled_RiverWeight = (new_river_prob * surround_weight) + RiverWeight; 
+	// }
+	// else
+	// {
+	//
+	// }
+	Scaled_LowlandWeight = (Lowland_Percentage * surround_weight) + LowlandWeight;
+	Scaled_ForestWeight = (Forest_Percentage * surround_weight) + ForestWeight;
+	Scaled_RiverWeight = (Rock_Percentage * surround_weight) + RiverWeight; 
 
-		scaled_LowlandWeight = (new_lowland_prob * surround_weight) + LowlandWeight;
-		scaled_ForestWeight = (new_forest_prob * surround_weight) + ForestWeight;
-		scaled_RiverWeight = (new_river_prob * surround_weight) + RiverWeight; 
-	}
-	else
-	{
-		scaled_LowlandWeight = (Lowland_Percentage * surround_weight) + LowlandWeight;
-		scaled_ForestWeight = (Forest_Percentage * surround_weight) + ForestWeight;
-		scaled_RiverWeight = (Rock_Percentage * surround_weight) + RiverWeight; 
-	}
-
-	const float ForestValue = scaled_LowlandWeight + scaled_ForestWeight;
-
+	const float ForestValue = Scaled_LowlandWeight + Scaled_ForestWeight;
+	//Tile type generation
 	const float TileType = FMath::FRandRange(0.f, 1.f);
-	if (TileType <= scaled_LowlandWeight)
+	if (TileType <= Scaled_LowlandWeight)
 	{
 		return LOWLAND;
 	}
@@ -367,6 +368,14 @@ int32 AGDGrid::ComputeTileType(TPair<int, int> Tile)
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Selecting tile -> %i - %i"), row-1, col-1);
+		UE_LOG(LogTemp, Warning, TEXT("Height -> %i"), Height);
+		UE_LOG(LogTemp, Warning, TEXT("Width -> %i"), Width);
+		if (row == 1 || row == Width || col == 1 || col == Width)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Lowland instead Rock"), Height);
+			return LOWLAND;
+		}
 		return ROCK;
 	}
 }
