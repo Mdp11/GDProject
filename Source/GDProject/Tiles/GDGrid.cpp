@@ -58,15 +58,15 @@ void AGDGrid::BuildMap()
 
 		if (TileScheme[RowScheme][ColumnScheme] == LOWLAND)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(LowlandTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileLowland>(LowlandTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else if (TileScheme[RowScheme][ColumnScheme] == FOREST)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileForest>(ForestTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else if (TileScheme[RowScheme][ColumnScheme] == ROCK)
 		{
-			NewTile = GetWorld()->SpawnActor<AGDTile>(RockTileClass, BlockLocation, FRotator(0, 0, 0));
+			NewTile = GetWorld()->SpawnActor<AGDTileRocks>(RockTileClass, BlockLocation, FRotator(0, 0, 0));
 		}
 		else
 		{
