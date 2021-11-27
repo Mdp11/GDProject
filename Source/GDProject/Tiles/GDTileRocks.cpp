@@ -3,3 +3,7 @@
 
 #include "GDTileRocks.h"
 
+AGDTileRocks::AGDTileRocks()
+{
+	bIsTraversable = false;
+}

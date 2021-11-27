@@ -13,5 +13,7 @@ UCLASS()
 class GDPROJECT_API AGDTileRocks : public AGDTile
 {
 	GENERATED_BODY()
-	
+
+	AGDTileRocks();
+	 
 };
