@@ -31,10 +31,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Size")
 	int32 MaxNodeLevel;
 	
-    UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Size")
     int32 NodeHorizontalDistance;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Size")
 	int32 NodeVerticallDistance;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
