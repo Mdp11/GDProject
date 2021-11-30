@@ -11,10 +11,6 @@ AGDGrid::AGDGrid()
 {
 	DummyRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DummyRoot"));
 	RootComponent = DummyRoot;
-
-	Width = 20;
-	Height = 20;
-	BlockSpacing = 10.f;
 	bMapGenerated = false;
 }
 
@@ -47,6 +43,8 @@ void AGDGrid::BuildMap()
 	GenerateGrid();
 	// UE_LOG(LogTemp, Display, TEXT("Tile type %i"), TileScheme[RowIndex][ColumnIndex]);
 	// UE_LOG(LogTemp, Display, TEXT("Tile type %i"), TileScheme[RowIndex][ColumnIndex]);
+
+	BlockSpacing = 255;
 	
 	for (int32 BlockIndex = 0; BlockIndex < NumBlocks; BlockIndex++)
 	{
