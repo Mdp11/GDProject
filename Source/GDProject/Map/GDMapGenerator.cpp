@@ -102,6 +102,11 @@ void AGDMapGenerator::BeginPlay()
 		}
 		POI_Location.X += NodeVerticallDistance;
 	}
+	POI_Location.X -= NodeVerticallDistance;
+	POI_Location.Y = 0; 
+	AGDPointOfInterest* BossPoint = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_2_POI, POI_Location, FRotator(0, 0, 0));
+	PoINode* BossNode = new PoINode(BossPoint, POI_Location, 0);
+	PoIList.Add(BossNode);
 }
 
 
@@ -113,22 +118,42 @@ void AGDMapGenerator::GenerateMapScheme()
 	Map[0][0] = BASE_POI;
 	int RestoreCount = 3;
 	
-	for (int i = 1; i < Levels; i++)
+	for (int i = 1; i < Levels+1; i++)
 	{
 		int levelPoI = FMath::RandRange(2, MaxNodeLevel);
 		int Hard_PoI = 1;
 		int Medium_PoI = 1;
-		int BattlePOIDiff = 3;
+
 		for (int j = 0; j < levelPoI; j++)
 		{
-			if (Hard_PoI || Medium_PoI)
+			int BattlePOIDiff = FMath::RandRange(BATTLE_0_POI, BATTLE_2_POI);
+			if (BattlePOIDiff == BATTLE_2_POI)
 			{
-				BattlePOIDiff = FMath::RandRange(BATTLE_0_POI, BATTLE_2_POI);
-				if (BattlePOIDiff == BATTLE_1_POI) Medium_PoI--;
-				if (BattlePOIDiff == BATTLE_2_POI) Hard_PoI--;
+				if(Hard_PoI != 0)
+				{
+					Hard_PoI--;
+				}
+				else if(Medium_PoI != 0)
+				{
+					BattlePOIDiff = BATTLE_1_POI;
+					Medium_PoI--;
+				}
+				else
+				{
+					BattlePOIDiff = BATTLE_0_POI;
+				}
+			}
+			else if (BattlePOIDiff == BATTLE_1_POI && Medium_PoI)
+			{
+				Medium_PoI--;
+			}
+			else
+			{
+				BattlePOIDiff = BATTLE_0_POI;
 			}
 			Map[i][j] = BattlePOIDiff;
 		}
+		
 		if(--RestoreCount == 0)
         {
 			Map[i][levelPoI-1] = BONFIRE_POI;
