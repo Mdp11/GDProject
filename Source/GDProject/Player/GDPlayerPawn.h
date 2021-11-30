@@ -65,6 +65,11 @@ public:
 
 	void RemoveActiveEntity(UObject* Entity);
 
+	bool IsAnyEntityActive() const
+	{
+		return ActiveEntities.Num() > 0;
+	}
+
 	UFUNCTION(BlueprintCallable)
 	void DeselectTileElement(bool bReset = true);
 
