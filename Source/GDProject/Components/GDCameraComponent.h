@@ -23,7 +23,7 @@ public:
 
 	//This value indicate the distance between the camera and the grid
 	UPROPERTY(EditAnywhere)
-	float CamerasOffset = 530;
+	float CamerasOffset = 450;
 
 	UPROPERTY(EditAnywhere)
 	float CamerasHeight = 750;
@@ -32,7 +32,7 @@ public:
 	float CameraFOV = 105.f;
 
 	UPROPERTY(EditAnywhere)
-	float CameraAngle = 40;
+	float CameraAngle = 46;
 	
 	UPROPERTY(EditAnywhere)
 	AGDGrid* GridManager;
