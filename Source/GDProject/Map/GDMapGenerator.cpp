@@ -114,7 +114,7 @@ void AGDMapGenerator::GenerateMapScheme()
 {
 	TArray<int> SampleRow;
 	SampleRow.Init(0, MaxNodeLevel + 1);
-	Map.Init(SampleRow, Levels+2);
+	Map.Init(SampleRow, Levels+1);
 	Map[0][0] = BASE_POI;
 	int RestoreCount = 3;
 	
@@ -123,16 +123,29 @@ void AGDMapGenerator::GenerateMapScheme()
 		int levelPoI = FMath::RandRange(2, MaxNodeLevel);
 		int Hard_PoI = 1;
 		int Medium_PoI = 1;
-		int BattlePOIDiff = BATTLE_0_POI;
+
 		for (int j = 0; j < levelPoI; j++)
 		{
-			BattlePOIDiff = FMath::RandRange(BATTLE_0_POI, BATTLE_2_POI);
-			if (BattlePOIDiff == BATTLE_1_POI && Medium_PoI)
+			int BattlePOIDiff = FMath::RandRange(BATTLE_0_POI, BATTLE_2_POI);
+			if (BattlePOIDiff == BATTLE_2_POI)
+			{
+				if(Hard_PoI != 0)
+				{
+					Hard_PoI--;
+				}
+				else if(Medium_PoI != 0)
+				{
+					BattlePOIDiff = BATTLE_1_POI;
+					Medium_PoI--;
+				}
+				else
+				{
+					BattlePOIDiff = BATTLE_0_POI;
+				}
+			}
+			else if (BattlePOIDiff == BATTLE_1_POI && Medium_PoI)
 			{
 				Medium_PoI--;
-			} else if (BattlePOIDiff == BATTLE_2_POI && Hard_PoI)
-			{
-				Hard_PoI--;
 			}
 			else
 			{
@@ -140,6 +153,7 @@ void AGDMapGenerator::GenerateMapScheme()
 			}
 			Map[i][j] = BattlePOIDiff;
 		}
+		
 		if(--RestoreCount == 0)
         {
 			Map[i][levelPoI-1] = BONFIRE_POI;
