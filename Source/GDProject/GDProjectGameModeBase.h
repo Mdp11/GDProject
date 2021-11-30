@@ -59,4 +59,10 @@ public:
 	void GameOver(int WinningPlayer);
 
 	int GetCurrentPlayerTurn() const;
+
+	UFUNCTION(BlueprintCallable)
+	TSet<AGDUnit*> GetPlayerUnits() const
+	{
+		return PlayersUnits[0];
+	}
 };
