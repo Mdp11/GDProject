@@ -74,6 +74,7 @@ void UGDCameraComponent::BeginPlay()
 	TargetRotation = Camera0Rot;
 	Camera = GetWorld()->SpawnActor<ACameraActor>(ACameraActor::StaticClass(), Camera0Pos, Camera0Rot);
 	Camera->GetCameraComponent()->SetFieldOfView(CameraFOV);
+	Camera->GetCameraComponent()->SetAspectRatio(1.777778);	
 	PlayerController->SetViewTarget(Camera);
 }
 

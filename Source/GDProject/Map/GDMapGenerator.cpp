@@ -73,17 +73,20 @@ void AGDMapGenerator::BeginPlay()
 				case BATTLE_0_POI:
 					UE_LOG(LogTemp, Display, TEXT("BATTLE 0 loc %f - %f"), POI_Location.X, POI_Location.Y)
                     NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_0_POI, POI_Location, FRotator(0, 0, 0));
+					NewPOI->Difficulty = 0;
                 	PoIList.Add(NewNode);
                 	POI_Location.Y += NodeHorizontalDistance;
 					break;
 				case BATTLE_1_POI:
 					UE_LOG(LogTemp, Display, TEXT("BATTLE 1 loc %f - %f"), POI_Location.X, POI_Location.Y)
 					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_1_POI, POI_Location, FRotator(0, 0, 0));
+					NewPOI->Difficulty = 1;
 					POI_Location.Y += NodeHorizontalDistance;
 					break;
 				case BATTLE_2_POI:
 					UE_LOG(LogTemp, Display, TEXT("BATTLE 2 loc %f - %f"), POI_Location.X, POI_Location.Y)
 					NewPOI = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_2_POI, POI_Location, FRotator(0, 0, 0));
+					NewPOI->Difficulty = 2;
 					POI_Location.Y += NodeHorizontalDistance;
 				break;
 				case BONFIRE_POI:

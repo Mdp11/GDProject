@@ -18,6 +18,9 @@ public:
 	TArray<AGDPointOfInterest*> AdjList;
 
 	int Level;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Difficulty")
+	int Difficulty;
 
 protected:
 	// Called when the game starts or when spawned
