@@ -118,7 +118,7 @@ void AGDMapGenerator::GenerateMapScheme()
 	Map[0][0] = BASE_POI;
 	int RestoreCount = 3;
 	
-	for (int i = 1; i < Levels+1; i++)
+	for (int i = 1; i < Levels-1; i++)
 	{
 		int levelPoI = FMath::RandRange(2, MaxNodeLevel);
 		int Hard_PoI = 1;
