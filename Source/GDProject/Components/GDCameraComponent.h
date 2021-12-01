@@ -23,11 +23,17 @@ public:
 
 	//This value indicate the distance between the camera and the grid
 	UPROPERTY(EditAnywhere)
-	float CamerasOffset = 680;
+	float CamerasOffset = 450;
 
 	UPROPERTY(EditAnywhere)
-	float CamerasHeight = 1030;
+	float CamerasHeight = 750;
 
+	UPROPERTY(EditAnywhere)
+	float CameraFOV = 105.f;
+
+	UPROPERTY(EditAnywhere)
+	float CameraAngle = 46;
+	
 	UPROPERTY(EditAnywhere)
 	AGDGrid* GridManager;
 	//EndPositionY and EndPositionX are the position of the last tiles on the respective axes

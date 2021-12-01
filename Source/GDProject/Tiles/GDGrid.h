@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 
+#include "GDTileForest.h"
+#include "GDTileLowland.h"
+#include "GDTileRocks.h"
 #include "GameFramework/Actor.h"
 
 #include "GDGrid.generated.h"
@@ -20,6 +23,8 @@ public:
 	AGDGrid();
 
 private:
+	TArray<TArray<int>> TileScheme;
+	
 	TArray<TArray<AGDTile*>> Tiles;
 
 	static TArray<AGDTile*> ReconstructPath(const TMap<AGDTile*, AGDTile*> CameFrom, AGDTile* Tile);
@@ -34,6 +39,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Size")
 	int32 Height;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float Lowland_Percentage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float Forest_Percentage;
+
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	// float River_Percentage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Property")
+	float Rock_Percentage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float BlockSpacing;
 
@@ -41,10 +58,16 @@ protected:
 	TSubclassOf<AGDTile> BaseTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AGDTile> ForestTileClass;
+	TSubclassOf<AGDTileLowland> LowlandTileClass;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDTileForest> ForestTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDTile> RiverTileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AGDTileRocks> RockTileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AGDUnit> TileUnitClassDummy;
@@ -53,9 +76,17 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	void BuildMap(const TArray<TArray<int>>& TileScheme);
+	void GenerateGrid();
+
+	int32 ComputeTileType(TPair<int, int> Tile);
+
+	TArray<int> SurroundCheck(TPair<int, int> Tile);
+	
+	void BuildMap();
 
 	void CleanMap();
+
+	void ShufflePositions(TArray<TPair<int, int>>& Undefined_Tiles);
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Material")
@@ -76,7 +107,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Material")
 	class UMaterial* EnemyDecalMaterial;
 
-	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile);
+	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, AGDUnit* MovingUnit);
 
 	TSet<AGDTile*> GetTilesAtDistance(AGDTile* StartTile, int Distance) const;
 

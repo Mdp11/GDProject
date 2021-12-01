@@ -22,6 +22,11 @@ protected:
 
 	TMap<int, bool> Players;
 
+	TArray<AGDUnit*> AIUnits;
+
+	UPROPERTY()
+	AGDUnit* CurrentAIUnit;
+
 	UPROPERTY(BlueprintReadOnly)
 	int CurrentPlayerTurn;
 
@@ -35,6 +40,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	virtual void Tick(float DeltaSeconds) override;
+
 	void SetNextPlayerTurn();
 
 	UFUNCTION(BlueprintCallable)
@@ -47,9 +54,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AssignUnitToPlayer(AGDUnit* Unit, int Player);
 
-	void OnUnitDead(AGDUnit* Unit, int Player);
+	void OnUnitDead(const AGDUnit* Unit, int Player);
 
 	void GameOver(int WinningPlayer);
 
 	int GetCurrentPlayerTurn() const;
+
+	UFUNCTION(BlueprintCallable)
+	TSet<AGDUnit*> GetPlayerUnits() const
+	{
+		return PlayersUnits[0];
+	}
 };
