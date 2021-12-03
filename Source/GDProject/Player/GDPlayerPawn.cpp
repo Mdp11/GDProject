@@ -11,6 +11,7 @@
 #include "GDProject/Tiles/GDTile.h"
 #include "GDProject/Units/GDUnit.h"
 #include "GDProject/Items/GDItemBase.h"
+#include "GDProject/GDProjectGameModeBase.h"
 #include "GDProject/Components/GDInventoryComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
@@ -41,7 +42,9 @@ void AGDPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	                                                            &AGDPlayerPawn::DeselectTileElement, true);
 	PlayerInputComponent->BindAction("RotateCamLeft", IE_Pressed, this, &AGDPlayerPawn::RotateCameraLeft);
 	PlayerInputComponent->BindAction("RotateCamRight", IE_Pressed, this, &AGDPlayerPawn::RotateCameraRight);
+	PlayerInputComponent->BindAction("PlayerEndTurn", IE_Pressed, this, &AGDPlayerPawn::EndTurn);
 }
+
 
 void AGDPlayerPawn::OnTurnBegin()
 {
@@ -50,6 +53,15 @@ void AGDPlayerPawn::OnTurnBegin()
 void AGDPlayerPawn::OnTurnEnd()
 {
 	DeselectTileElement();
+}
+
+void AGDPlayerPawn::EndTurn()
+{
+	AGDProjectGameModeBase* GameMode = Cast<AGDProjectGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->EndTurn();
+	}
 }
 
 void AGDPlayerPawn::AddActiveEntity(UObject* Entity)
