@@ -110,7 +110,8 @@ public:
 	TArray<AGDTile*> ComputePathBetweenTiles(AGDTile* StartTile, AGDTile* TargetTile, AGDUnit* MovingUnit);
 
 	TSet<AGDTile*> GetTilesAtDistance(AGDTile* StartTile, int Distance) const;
-
+	
+	UFUNCTION(BlueprintCallable)
 	AGDTile* GetTile(const FIntPoint& Coordinates) const;
 
 	int32 GetSize() const;

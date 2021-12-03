@@ -106,7 +106,8 @@ void AGDMapGenerator::BeginPlay()
 		POI_Location.X += NodeVerticallDistance;
 	}
 	POI_Location.Y = 0; 
-	AGDPointOfInterest* BossPoint = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_2_POI, POI_Location, FRotator(0, 0, 0));
+	AGDPointOfInterest* BossPoint = GetWorld()->SpawnActor<AGDPointOfInterest>(BossBattle, POI_Location, FRotator(0, 0, 0));
+	BossPoint->Difficulty = 4;
 	PoINode* BossNode = new PoINode(BossPoint, POI_Location, 0);
 	PoIList.Add(BossNode);
 }
