@@ -105,7 +105,6 @@ void AGDMapGenerator::BeginPlay()
 		}
 		POI_Location.X += NodeVerticallDistance;
 	}
-	POI_Location.X -= NodeVerticallDistance;
 	POI_Location.Y = 0; 
 	AGDPointOfInterest* BossPoint = GetWorld()->SpawnActor<AGDPointOfInterest>(Battle_2_POI, POI_Location, FRotator(0, 0, 0));
 	PoINode* BossNode = new PoINode(BossPoint, POI_Location, 0);
@@ -121,7 +120,7 @@ void AGDMapGenerator::GenerateMapScheme()
 	Map[0][0] = BASE_POI;
 	int RestoreCount = 3;
 	
-	for (int i = 1; i < Levels-1; i++)
+	for (int i = 1; i < Levels; i++)
 	{
 		int levelPoI = FMath::RandRange(2, MaxNodeLevel);
 		int Hard_PoI = 1;
