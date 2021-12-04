@@ -6,4 +6,5 @@
 AGDTileRocks::AGDTileRocks()
 {
 	bIsTraversable = false;
+	bObstructVisual = true;
 }
