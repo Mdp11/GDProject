@@ -60,6 +60,7 @@ public:
 	void OnTurnBegin();
 
 	void OnTurnEnd();
+	void EndTurn();
 
 	void AddActiveEntity(UObject* Entity);
 
